@@ -7,6 +7,7 @@ import {
 import type { SpotModel, QuestModel } from './api';
 
 const mockSpot1: SpotModel = {
+  liked: false,
   id: 'spot-1',
   slug: 'hundred-islands-national-park',
   name: 'Hundred Islands National Park',
@@ -34,6 +35,7 @@ const mockSpot1: SpotModel = {
 };
 
 const mockSpot2: SpotModel = {
+  liked: false,
   id: 'spot-2',
   slug: 'nearby-beach-shack',
   name: 'Nearby Beach Shack',
@@ -61,6 +63,7 @@ const mockSpot2: SpotModel = {
 };
 
 const mockSpot3: SpotModel = {
+  liked: false,
   id: 'spot-3',
   slug: 'patar-white-beach',
   name: 'Patar White Beach',

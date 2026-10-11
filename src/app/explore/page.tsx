@@ -25,6 +25,7 @@ import {
   Flag
 } from 'lucide-react';
 import { Navigation } from '@/components/Navigation';
+import { HiddenGemHighlights } from '@/components/HiddenGemHighlights';
 import { useAuth } from '@/lib/auth';
 import { useRankedFeed } from '@/lib/use-ranked-feed';
 import { SpotCardSkeleton } from '@/components/Skeleton';
@@ -170,48 +171,11 @@ export default function ExplorePage() {
 
   // Spotlight recommendations (distinct from top hero to avoid repetition)
   const topHeroSpot = visibleSpots[0] || null;
-  const spotlightSpot = visibleSpots.length > 1 ? visibleSpots[1] : null;
 
   const exploreSidePanel = (
     <div className="space-y-4">
       {/* Spotlight Card */}
-      {spotlightSpot && (
-        <article className="overflow-hidden rounded-2xl border border-emerald-200/90 bg-white shadow-xs">
-          <Link href={appRoutes.spot(spotlightSpot.id)} className="block group">
-            <DestinationMedia
-              src={spotlightSpot.imageUrl}
-              alt={spotlightSpot.name}
-              destinationName={spotlightSpot.name}
-              municipality={spotlightSpot.municipality}
-              aspectRatio="card"
-            />
-          </Link>
-          <div className="space-y-2.5 p-4">
-            <span className="inline-flex items-center gap-1.5 rounded-md bg-emerald-100 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-[#2D6A4F]">
-              <Sparkles className="h-3 w-3" />
-              Spotlight Destination
-            </span>
-            <div>
-              <h2 className="text-base font-black leading-snug text-[#582F0E]">
-                {spotlightSpot.name}
-              </h2>
-              <p className="mt-0.5 flex items-center gap-1 text-[10px] font-bold text-[#2D6A4F]">
-                <MapPin className="h-3 w-3" />
-                {spotlightSpot.municipality}
-              </p>
-            </div>
-            <p className="line-clamp-2 text-xs leading-relaxed text-[#514532]">
-              {spotlightSpot.description}
-            </p>
-            <Link
-              href={appRoutes.spot(spotlightSpot.id)}
-              className="flex w-full items-center justify-center rounded-xl bg-[#2D6A4F] hover:bg-[#1B4332] px-3 py-2 text-xs font-bold text-white transition shadow-xs active:scale-95 min-h-[38px]"
-            >
-              Explore Destination
-            </Link>
-          </div>
-        </article>
-      )}
+      <HiddenGemHighlights actorId={user?.id} />
 
       {/* JuanChoice Spotlight Rail */}
       <JuanChoiceRail />
@@ -896,43 +860,7 @@ export default function ExplorePage() {
             className="hidden lg:block lg:order-3 explore-scroll space-y-3"
           >
             {/* Spotlight Card: Shows distinct spot, not identical duplicate of hero spot */}
-            {spotlightSpot && (
-              <article className="overflow-hidden rounded-2xl border border-emerald-200/90 bg-white shadow-xs hover:shadow-md transition-all duration-300">
-                <Link href={appRoutes.spot(spotlightSpot.id)} className="block group">
-                  <DestinationMedia
-                    src={spotlightSpot.imageUrl}
-                    alt={spotlightSpot.name}
-                    destinationName={spotlightSpot.name}
-                    municipality={spotlightSpot.municipality}
-                    aspectRatio="card"
-                  />
-                </Link>
-                <div className="space-y-2.5 p-4">
-                  <span className="inline-flex items-center gap-1.5 rounded-md bg-emerald-100 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-[#2D6A4F]">
-                    <Sparkles className="h-3 w-3" />
-                    Spotlight Destination
-                  </span>
-                  <div>
-                    <h2 className="text-base font-black leading-snug text-[#582F0E]">
-                      {spotlightSpot.name}
-                    </h2>
-                    <p className="mt-0.5 flex items-center gap-1 text-[10px] font-bold text-[#2D6A4F]">
-                      <MapPin className="h-3 w-3" />
-                      {spotlightSpot.municipality}
-                    </p>
-                  </div>
-                  <p className="line-clamp-2 text-xs leading-relaxed text-[#514532]">
-                    {spotlightSpot.description}
-                  </p>
-                  <Link
-                    href={appRoutes.spot(spotlightSpot.id)}
-                    className="flex w-full items-center justify-center rounded-xl bg-[#2D6A4F] hover:bg-[#1B4332] px-3 py-2 text-xs font-bold text-white transition shadow-xs active:scale-95 min-h-[38px]"
-                  >
-                    Explore Destination
-                  </Link>
-                </div>
-              </article>
-            )}
+            <HiddenGemHighlights actorId={user?.id} />
 
             <JuanChoiceRail />
           </aside>

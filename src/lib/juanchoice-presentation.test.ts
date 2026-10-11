@@ -61,8 +61,10 @@ describe('JuanChoice presentation environment handshake', () => {
     // Simulated API response where backend set voting_enabled: true, but environment was untrusted
     const untrustedOverview: JuanChoiceOverview = {
       server_time: '2026-10-04T12:00:00.000Z',
-      region: { code: 'pangasinan', name: 'Pangasinan', timezone: 'Asia/Manila' },
+      region: { key: 'pangasinan', label: 'Pangasinan', timezone: 'Asia/Manila' },
+      view: 'open', next: null, previous: null, notice: null,
       current: {
+        period_start: '2026-10-01',
         id: 'round-1',
         slug: 'round-1',
         region: 'pangasinan',
@@ -224,6 +226,7 @@ describe('JuanChoice candidate deep links, sharing, and routing safety', () => {
       environment: 'presentation_demo',
       current: {
         id: differentCampaignId,
+        period_start: '2026-10-01',
         slug: 'different-campaign',
         region: 'pangasinan',
         theme: 'Other Campaign',
@@ -249,15 +252,12 @@ describe('Presentation demo labeling and reward distinction contracts', () => {
   it('formats receipt and reward copy unambiguously for demo vs official modes', () => {
     const receipt: JuanChoiceReceipt = {
       ballot: {
-        id: 'ballot-1',
-        campaign_id: 'campaign-1',
-        user_id: 'user-guest-1',
         candidate_id: 'candidate-1',
         version: 1,
-        created_at: '2026-10-04T12:00:00.000Z',
-        updated_at: '2026-10-04T12:00:00.000Z',
       },
       replayed: false,
+      participation: { civic_xp: 25, stamps: 1, token_grant_mjdq: '0' },
+      policy_version: 'juanchoice-pilot-v1',
     };
 
     // Presentation build receipt formatting contract:
@@ -283,12 +283,9 @@ describe('Presentation demo labeling and reward distinction contracts', () => {
   it('formats final results copy unambiguously for demo vs official modes', () => {
     const resultDetail: Pick<JuanChoiceDetail, 'result'> = {
       result: {
-        campaign_id: 'round-1',
         valid_ballots: 42,
         co_winner_ids: ['cand-tondol'],
         finalized_at: '2026-10-06T20:00:00.000Z',
-        status: 'finalized',
-        is_test: false,
       },
     };
 

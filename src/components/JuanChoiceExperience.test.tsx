@@ -51,8 +51,10 @@ import { JuanChoiceExperience } from './JuanChoiceExperience';
 
 const mockPresentationOverview: JuanChoiceOverview = {
   server_time: '2026-10-04T12:00:00.000Z',
-  region: { code: 'pangasinan', name: 'Pangasinan', timezone: 'Asia/Manila' },
+  region: { key: 'pangasinan', label: 'Pangasinan', timezone: 'Asia/Manila' },
+  view: 'open', next: null, previous: null,
   current: {
+    period_start: '2026-10-01',
     id: 'round-1',
     slug: 'round-1',
     region: 'pangasinan',
@@ -79,8 +81,8 @@ const mockCampaignDetail: JuanChoiceDetail = {
     policy_version: 'juanchoice-pilot-v1',
   },
   standings: [
-    { candidate_id: 'cand-1', spot_id: 'spot-1', spot_name: 'Tondol White Sand Beach', votes: 2, share: 0.5 },
-    { candidate_id: 'cand-2', spot_id: 'spot-2', spot_name: 'Patar Beach Lighthouse', votes: 2, share: 0.5 },
+    { candidate_id: 'cand-1', spot_id: 'spot-1', spot_name: 'Tondol White Sand Beach', votes: 2 },
+    { candidate_id: 'cand-2', spot_id: 'spot-2', spot_name: 'Patar Beach Lighthouse', votes: 2 },
   ],
   result: null,
 };
@@ -90,13 +92,11 @@ const mockMyState: JuanChoiceMyState = {
   eligibility: {
     eligible: true,
     reason: null,
-    account_created_at: '2026-10-01T00:00:00.000Z',
-    verified_visits_count: 1,
-    required_visits: 1,
     eligible_at: null,
   },
   ballot: null,
-  participation: null,
+  vote_unavailable_reason: null,
+  server_time: '2026-10-04T12:00:00.000Z',
 };
 
 function makeAxiosError(message: string, status?: number, code?: string) {
@@ -132,15 +132,12 @@ describe('JuanChoiceExperience component integration tests', () => {
 
     const mockReceipt: JuanChoiceReceipt = {
       ballot: {
-        id: 'ballot-101',
-        campaign_id: 'round-1',
-        user_id: 'usr-1',
         candidate_id: 'cand-1',
         version: 1,
-        created_at: '2026-10-04T12:05:00.000Z',
-        updated_at: '2026-10-04T12:05:00.000Z',
       },
       replayed: false,
+      participation: { civic_xp: 25, stamps: 1, token_grant_mjdq: '0' },
+      policy_version: 'juanchoice-pilot-v1',
     };
     mockJuanChoice.putJuanChoiceBallot.mockResolvedValue(mockReceipt);
 
@@ -299,12 +296,9 @@ describe('JuanChoiceExperience component integration tests', () => {
       ...mockCampaignDetail,
       campaign: { ...mockCampaignDetail.campaign, status: 'closed' },
       result: {
-        campaign_id: 'round-1',
         valid_ballots: 4,
         co_winner_ids: ['cand-1', 'cand-2'],
         finalized_at: '2026-10-06T20:00:00.000Z',
-        status: 'finalized',
-        is_test: true,
       },
     };
 
@@ -342,8 +336,10 @@ describe('JuanChoiceExperience component integration tests', () => {
   it('strictly enforces ordinary read-only alpha behavior when isPresentation is false', async () => {
     const alphaOverview: JuanChoiceOverview = {
       server_time: '2026-10-04T12:00:00.000Z',
-      region: { code: 'pangasinan', name: 'Pangasinan', timezone: 'Asia/Manila' },
+      region: { key: 'pangasinan', label: 'Pangasinan', timezone: 'Asia/Manila' },
+      view: 'open', next: null, previous: null,
       current: {
+        period_start: '2026-10-01',
         id: 'round-alpha-1',
         slug: 'round-alpha-1',
         region: 'pangasinan',

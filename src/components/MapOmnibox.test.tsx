@@ -4,9 +4,17 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { MapOmnibox } from './MapOmnibox';
 import { SpotModel, QuestModel } from '@/lib/api';
 
+const spotDefaults = {
+  slug: 'test-spot', subcategory: 'beach', priceLevel: 0, hours: {}, amenities: [],
+  imageUrl: '', sourceType: 'editorial', sourceName: 'Test fixture', trustLevel: 'editorial',
+  recommendationReasons: [], saved: false, liked: false, trendScore: 0,
+  crowdStatus: 'unknown' as const, crowdConfidence: 'none',
+};
+
 const mockSpots: SpotModel[] = [
   {
     id: 'spot-1',
+    ...spotDefaults,
     name: 'Hundred Islands National Park',
     description: 'Scenic marine sanctuary with 123 islands',
     municipality: 'Alaminos City',
@@ -19,6 +27,7 @@ const mockSpots: SpotModel[] = [
   },
   {
     id: 'spot-2',
+    ...spotDefaults,
     name: 'Patar White Beach',
     description: 'Golden white sands in Bolinao',
     municipality: 'Bolinao',
@@ -40,7 +49,8 @@ const mockQuests: QuestModel[] = [
     rewardPoints: 200,
     gpsLat: 16.205,
     gpsLng: 120.045,
-    spotsCount: 3,
+    category: 'eco',
+    radiusMeters: 100,
   },
 ];
 
