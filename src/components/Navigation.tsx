@@ -334,14 +334,21 @@ export const Navigation: React.FC<{
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isProfileOpen, isNotificationsOpen, drawerOpen, sidePanelOpen]);
 
-  const navItems = [
+  interface NavItem {
+    label: string;
+    href: string;
+    icon: React.ElementType;
+    flair?: string;
+    badge?: string;
+  }
+
+  const navItems: NavItem[] = [
     { label: 'Explore Feed', href: '/explore', icon: Compass, flair: 'Feed' },
     { label: 'Interactive Map', href: '/map', icon: MapPin },
     { label: 'The Trail', href: '/trail', icon: Route, flair: 'Soon' },
     { label: 'Quests & Events', href: '/quests', icon: Zap, flair: 'Bounties' },
     { label: 'JuanChoice', href: '/choice', icon: Award, flair: 'Free vote' },
     { label: 'Merchant Shop', href: '/shop', icon: ShoppingBag },
-    { label: 'Governance DAO', href: '/vote', icon: Vote, badge: 'DAO' },
     { label: 'Leaderboard', href: '/leaderboard', icon: Award },
     { label: 'Download App', href: '/download', icon: Smartphone, flair: 'APK' },
     { label: 'Merchant Hub', href: '/affiliate', icon: Store, flair: 'Soon' },
@@ -780,7 +787,7 @@ export const Navigation: React.FC<{
                         Level {currentLevel}
                       </span>
                       <span className="font-extrabold text-[var(--color-brand-brown)]">
-                        {wallet ? `${wallet.balanceMjdq.toLocaleString()} mJDQ` : '500 mJDQ'}
+                        {wallet ? `${wallet.balanceMjdq.toLocaleString()} mJDQ` : 'mJDQ unavailable'}
                       </span>
                     </div>
                   </Link>
@@ -850,7 +857,6 @@ export const Navigation: React.FC<{
                       {[
                         { label: 'Merchant Voucher Shop', href: '/shop', icon: ShoppingBag, flair: 'Rewards' },
                         { label: 'Merchant Hub', href: '/affiliate', icon: Store, flair: 'Soon' },
-                        { label: 'Governance DAO', href: '/vote', icon: Vote, flair: 'mJDQ' },
                         { label: 'Hall of Scouts', href: '/leaderboard', icon: Award, flair: 'Rankings' },
                         { label: 'JuanChoice Voting', href: '/choice', icon: Award, flair: 'Free vote' },
                         { label: 'My Submissions', href: '/history', icon: History, flair: 'Proofs' },
@@ -1153,7 +1159,7 @@ export const Navigation: React.FC<{
                       Level {currentLevel}
                     </span>
                     <span className="font-extrabold text-[var(--color-brand-brown)]">
-                      {wallet ? `${wallet.balanceMjdq.toLocaleString()} mJDQ` : '500 mJDQ'}
+                      {wallet ? `${wallet.balanceMjdq.toLocaleString()} mJDQ` : 'mJDQ unavailable'}
                     </span>
                   </div>
                   <div className="mt-2 pt-2 border-t border-[var(--color-border-default)]/40 flex items-center justify-between text-[11px]">

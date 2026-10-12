@@ -301,7 +301,7 @@ export default function NewSpotPage() {
             </div>
             <h1 className="text-2xl md:text-4xl font-black">Share a Destination</h1>
             <p className="text-xs md:text-sm text-emerald-50">
-              Share local beaches, food spots, cultural sites, and eco-trails. We’re reviewing Pangasinan destinations first for the pilot. Upload a real photo to help travelers discover authentic places.
+              Share local beaches, food spots, cultural sites, and eco-trails. Your destination will be visible immediately after you post it. Upload a real photo to help travelers discover authentic places.
             </p>
           </div>
 

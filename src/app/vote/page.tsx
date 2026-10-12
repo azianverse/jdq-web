@@ -169,48 +169,32 @@ export default function VotePage() {
     <Navigation>
       <ErrorBoundary fallbackTitle="Unable to display Governance Proposals">
         <div className="space-y-6 w-full">
-          {/* Header Banner */}
-          <div className="p-6 md:p-8 rounded-3xl bg-white border border-[var(--color-border-default)] shadow-xs relative overflow-hidden">
+          {/* Retirement Banner */}
+          <div className="p-6 md:p-8 rounded-3xl bg-amber-50 border-2 border-amber-200 shadow-xs relative overflow-hidden">
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-[var(--color-brand-accent)]" />
-                  <span className="text-xs font-black tracking-wider text-[var(--color-brand-accent-dark)] uppercase">
-                    Community Tourism Governance
-                  </span>
-                  <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-[var(--color-brand-primary)]/10 text-[var(--color-brand-primary)]">
-                    mJDQ Governance
+                  <AlertCircle className="w-5 h-5 text-amber-700" />
+                  <span className="text-xs font-black tracking-wider text-amber-800 uppercase">
+                    Governance Notice · Retired System
                   </span>
                 </div>
-                <h1 className="text-2xl md:text-3xl font-black text-[var(--color-brand-brown)] tracking-tight">
-                  Community Tourism Proposals
+                <h1 className="text-2xl md:text-3xl font-black text-[#582F0E] tracking-tight">
+                  Destination & Proposal Voting Retired
                 </h1>
-                <p className="text-xs md:text-sm text-[var(--color-text-secondary)] max-w-2xl leading-relaxed">
-                  {config
-                    ? `Cast community votes (${voteFeeSplit?.fee} mJDQ per vote). ${(config.burnBps / 100).toFixed(0)}% is permanently burned and ${(100 - config.burnBps / 100).toFixed(0)}% enters the LGU tourism improvement escrow.`
-                    : 'Cast community votes on local tourism and conservation proposals.'}
+                <p className="text-xs md:text-sm text-[#514532] max-w-2xl leading-relaxed">
+                  Destination approval voting and proposal voting have been retired. Destination submissions are now automatically published. Community voting is now conducted exclusively in <strong>JuanChoice</strong>. Historical proposals remain viewable below for transparency.
                 </p>
               </div>
 
               <div className="flex flex-wrap items-center gap-3 shrink-0">
-                <div className="p-4 rounded-2xl bg-[var(--color-bg-subtle)] border border-[var(--color-border-default)] flex items-center gap-3">
-                  <Wallet className="w-6 h-6 text-[var(--color-brand-primary)]" />
-                  <div>
-                    <div className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase">mJDQ Token Balance</div>
-                    <div className="text-sm font-extrabold text-[var(--color-brand-primary)]">
-                      {wallet ? `${wallet.balanceMjdq} mJDQ` : '100 mJDQ'}
-                    </div>
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => setSuggestFormOpen(!suggestFormOpen)}
-                  className="inline-flex items-center gap-2 bg-[var(--color-brand-primary)] hover:bg-[var(--color-brand-primary-hover)] text-white font-black px-6 py-4 rounded-2xl shadow-md transition transform active:scale-95 text-xs cursor-pointer"
+                <a
+                  href="/choice"
+                  className="inline-flex items-center gap-2 bg-[#2D6A4F] hover:bg-[#1B4332] text-white font-black px-6 py-4 rounded-2xl shadow-md transition transform active:scale-95 text-xs cursor-pointer"
                 >
-                  <PlusCircle className="w-4 h-4" />
-                  <span>{suggestFormOpen ? 'Close Form' : 'Suggest Destination'}</span>
-                  {suggestFormOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                </button>
+                  <Sparkles className="w-4 h-4 text-[#FFB703]" />
+                  <span>Go to JuanChoice Voting</span>
+                </a>
               </div>
             </div>
           </div>
@@ -456,33 +440,9 @@ export default function VotePage() {
                             <div className="py-3 bg-[#2D6A4F]/10 text-[#2D6A4F] font-black text-xs text-center rounded-2xl">
                               ✓ Vote Recorded: {userVote.toUpperCase()}
                             </div>
-                          ) : prop.state === 'voting' ? (
-                            <div className="grid grid-cols-2 gap-2">
-                              <button
-                                onClick={() => {
-                                  setActiveVotingProposalId(prop.id);
-                                  setVoteChoice('yes');
-                                }}
-                                className="py-3 px-3 rounded-2xl bg-[#2D6A4F] hover:bg-[#1B4332] text-white text-xs font-black flex items-center justify-center gap-1.5 shadow-sm transition active:scale-95 cursor-pointer"
-                              >
-                                <ThumbsUp className="w-3.5 h-3.5" />
-                                <span>Vote YES</span>
-                              </button>
-
-                              <button
-                                onClick={() => {
-                                  setActiveVotingProposalId(prop.id);
-                                  setVoteChoice('no');
-                                }}
-                                className="py-3 px-3 rounded-2xl bg-[#BC4749] hover:bg-red-800 text-white text-xs font-black flex items-center justify-center gap-1.5 shadow-sm transition active:scale-95 cursor-pointer"
-                              >
-                                <ThumbsDown className="w-3.5 h-3.5" />
-                                <span>Vote NO</span>
-                              </button>
-                            </div>
                           ) : (
                             <div className="py-2.5 bg-[#FAF9F5] text-gray-500 font-bold text-xs text-center rounded-2xl border border-[#E3DFD5]">
-                              {prop.state === 'screening' ? 'Under LGU Review' : `Status: ${prop.state}`}
+                              Historical record · {prop.state.replace(/_/g, ' ')}
                             </div>
                           )}
                         </div>
