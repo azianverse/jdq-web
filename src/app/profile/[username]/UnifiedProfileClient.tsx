@@ -829,7 +829,7 @@ export function UnifiedProfileClient({ username }: UnifiedProfileClientProps) {
                         <Wallet className="w-4 h-4" />
                       </div>
                       <div className="text-xl font-black text-[#2D6A4F]">
-                        {wallet ? `${wallet.balanceMjdq.toLocaleString()}` : '500'}
+                        {wallet ? `${wallet.balanceMjdq.toLocaleString()}` : 'Unavailable'}
                       </div>
                       <div className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider">
                         mJDQ Balance

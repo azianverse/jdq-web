@@ -17,7 +17,10 @@ interface AuthContextType {
   isPreviewActive: boolean;
   togglePreview: () => void;
   dismissPreview: () => void;
-  previewStatus: PreviewStatus;
+  loginWithEmail: (email: string, password: string, rememberMe?: boolean) => Promise<{ success: boolean; error?: string }>;
+  registerWithEmail: (data: { email: string; password: string; display_name: string; age_eligibility_declared: boolean; terms_accepted: boolean }) => Promise<{ success: boolean; dev_code?: string; error?: string }>;
+  verifyEmailOtp: (email: string, code: string, rememberMe?: boolean) => Promise<{ success: boolean; error?: string }>;
+  loginWithGoogle: (credential: string, rememberMe?: boolean) => Promise<boolean>;
   loginWithSeed: (seedId: string) => Promise<boolean>;
   loginWithSimulatedWallet: (username: string, password: string, rememberMe: boolean) => Promise<boolean>;
   loginWithWallet: (address: string, signature: string, rememberMe: boolean) => Promise<boolean>;
@@ -188,6 +191,89 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, [token]);
 
+  const loginWithEmail = async (email: string, password: string, rememberMe = true) => {
+    setIsLoading(true);
+    try {
+      const res = await api.post('/auth/login', { email, password, remember_me: rememberMe });
+      if (res.data?.success) {
+        const normalized = normalizeUser(res.data.data.user);
+        if (normalized.role === 'admin' && !shouldStayInTravelerApp()) {
+          window.location.assign(adminHandoffUrl(res.data.data.token));
+          return { success: false };
+        }
+        clearStoredSession();
+        invalidateCache();
+        setToken('cookie-session');
+        setUser(normalized);
+        setSessionUnavailable(false);
+        setIsLoading(false);
+        return { success: true };
+      }
+      return { success: false, error: res.data?.error?.message || 'Invalid email or password.' };
+    } catch (err: any) {
+      return { success: false, error: err.response?.data?.error?.message || 'Login failed. Please check your credentials.' };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const registerWithEmail = async (data: { email: string; password: string; display_name: string; age_eligibility_declared: boolean; terms_accepted: boolean }) => {
+    setIsLoading(true);
+    try {
+      const res = await api.post('/auth/register', data);
+      if (res.data?.success) {
+        return { success: true, dev_code: res.data.data?.dev_code };
+      }
+      return { success: false, error: res.data?.error?.message || 'Registration failed.' };
+    } catch (err: any) {
+      return { success: false, error: err.response?.data?.error?.message || 'Registration failed.' };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const verifyEmailOtp = async (email: string, code: string, rememberMe = true) => {
+    setIsLoading(true);
+    try {
+      const res = await api.post('/auth/email/verify', { email, code, remember_me: rememberMe });
+      if (res.data?.success) {
+        const normalized = normalizeUser(res.data.data.user);
+        clearStoredSession();
+        invalidateCache();
+        setToken('cookie-session');
+        setUser(normalized);
+        setSessionUnavailable(false);
+        return { success: true };
+      }
+      return { success: false, error: res.data?.error?.message || 'Invalid verification code.' };
+    } catch (err: any) {
+      return { success: false, error: err.response?.data?.error?.message || 'Verification failed.' };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const loginWithGoogle = async (credential: string, rememberMe = true) => {
+    setIsLoading(true);
+    try {
+      const res = await api.post('/auth/google', { credential, remember_me: rememberMe });
+      if (res.data?.success) {
+        const normalized = normalizeUser(res.data.data.user);
+        clearStoredSession();
+        invalidateCache();
+        setToken('cookie-session');
+        setUser(normalized);
+        setSessionUnavailable(false);
+        return true;
+      }
+    } catch (err) {
+      console.error('Google sign-in error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+    return false;
+  };
+
   const loginWithSeed = async (seedId: string): Promise<boolean> => {
     setIsLoading(true);
     try {
@@ -324,7 +410,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isPreviewActive,
         togglePreview,
         dismissPreview,
-        previewStatus,
+        loginWithEmail,
+        registerWithEmail,
+        verifyEmailOtp,
+        loginWithGoogle,
         loginWithSeed,
         loginWithSimulatedWallet,
         loginWithWallet,
