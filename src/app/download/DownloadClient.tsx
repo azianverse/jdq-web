@@ -68,6 +68,9 @@ export function DownloadClient() {
             versionName: res.data.versionName || prev.versionName,
             versionCode: res.data.versionCode || prev.versionCode,
             fileName: res.data.fileName || prev.fileName,
+            sha256: res.data.sha256 || prev.sha256,
+            sizeBytes: typeof res.data.sizeBytes === 'number' ? res.data.sizeBytes : prev.sizeBytes,
+            publishedAt: res.data.publishedAt || prev.publishedAt,
           }));
         }
       })
