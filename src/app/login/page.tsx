@@ -30,7 +30,6 @@ export default function LoginPage() {
     registerWithEmail,
     verifyEmailOtp,
     loginWithWallet,
-    loginWithSeed,
   } = useAuth();
 
   const [activeTab, setActiveTab] = React.useState<AuthTab>('signin');
@@ -551,38 +550,6 @@ export default function LoginPage() {
           <span>Connect Web3 / EVM Wallet</span>
         </button>
 
-        {/* Scout Persona shortcut for quick pilot evaluation */}
-        <div className="space-y-2 rounded-2xl border border-emerald-300 bg-emerald-50/70 p-3 sm:p-4">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-black uppercase tracking-wider text-emerald-800">Scout Persona (30+ Days)</span>
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-200 text-emerald-900">
-              Verified Scout
-            </span>
-          </div>
-          <p className="text-xs text-emerald-900">
-            Sign in as Scout Aira (established pilot scout) to inspect verified trails and governance features.
-          </p>
-          <button
-            type="button"
-            disabled={isLoading}
-            onClick={async () => {
-              setError('');
-              try {
-                if (await loginWithSeed('qa-sim-20260927-u01')) {
-                  router.replace(redirectTarget() ?? '/choice');
-                } else {
-                  setError('Scout sign-in could not be completed.');
-                }
-              } catch {
-                setError('Scout sign-in failed.');
-              }
-            }}
-            className="w-full min-h-[40px] rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-2 px-4 transition cursor-pointer flex items-center justify-center gap-2 shadow-xs text-xs"
-          >
-            <span>{isLoading ? 'Signing in…' : 'Sign in as Scout Aira'}</span>
-          </button>
-        </div>
-
         <label className="flex items-center gap-2 text-xs font-bold text-neutral-500 cursor-pointer">
           <input
             type="checkbox"
@@ -597,10 +564,10 @@ export default function LoginPage() {
 
         <button
           type="button"
-          onClick={() => router.push('/')}
+          onClick={() => router.push('/explore')}
           className="w-full text-xs font-bold text-neutral-500 hover:underline cursor-pointer py-1 text-center"
         >
-          Back to home
+          Browse destinations
         </button>
       </section>
     </main>

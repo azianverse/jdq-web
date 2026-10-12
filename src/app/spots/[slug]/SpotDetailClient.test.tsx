@@ -83,4 +83,21 @@ describe('SpotDetailClient saved-place action', () => {
     await waitFor(() => expect(apiMock.delete).toHaveBeenCalledWith('/spots/spot-1/save'));
     expect(apiMock.post).not.toHaveBeenCalledWith('/spots/spot-1/interactions', { type: 'save' });
   });
+
+  it('shows Commons photo attribution and does not invent opening hours for open data', async () => {
+    apiMock.get.mockImplementation((url: string) => Promise.resolve({ data: { data: url.endsWith('/alternatives') ? [] : {
+      ...spot,
+      sourceName: 'Photo: BiancaBrazal · CC BY-SA 4.0',
+      sourceUrl: 'https://commons.wikimedia.org/wiki/File:Hundred_Islands.jpg',
+      trustLevel: 'open_data',
+      hours: {},
+    } } }));
+
+    render(<SpotDetailClient slug="spot-1" />);
+
+    const attribution = await screen.findByRole('link', { name: 'BiancaBrazal · CC BY-SA 4.0' });
+    expect(attribution.getAttribute('href')).toBe('https://commons.wikimedia.org/wiki/File:Hundred_Islands.jpg');
+    expect(screen.getByText('Hours not confirmed')).toBeTruthy();
+    expect(screen.getByText('Open-data source; not LGU-verified')).toBeTruthy();
+  });
 });

@@ -485,14 +485,25 @@ export const SpotDetailClient: React.FC<SpotDetailClientProps> = ({ slug }) => {
                     <span>{spot.address || spot.municipality}</span>
                   </span>
                   <span>•</span>
-                  <span className="inline-flex items-center gap-1 flex-wrap">
-                    <span>Shared by</span>
-                    <UserNametag
-                      displayName={spot.sourceName}
-                      badges={getAuthorBadges(spot.id, spot.sourceName, user ?? undefined)}
-                      size="sm"
-                    />
-                  </span>
+                  {spot.sourceName.startsWith('Photo:') && spot.sourceUrl ? (
+                    <a
+                      href={spot.sourceUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="underline underline-offset-2"
+                    >
+                      {spot.sourceName.replace(/^Photo:\s*/, '')}
+                    </a>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 flex-wrap">
+                      <span>Shared by</span>
+                      <UserNametag
+                        displayName={spot.sourceName}
+                        badges={getAuthorBadges(spot.id, spot.sourceName, user ?? undefined)}
+                        size="sm"
+                      />
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -707,7 +718,9 @@ export const SpotDetailClient: React.FC<SpotDetailClientProps> = ({ slug }) => {
                       <Clock className="w-4 h-4 text-[#7D5800] shrink-0 mt-0.5" />
                       <div>
                         <p className="font-bold text-[#582F0E]">Operating Hours</p>
-                        <p className="text-xs text-[#837560]">{spot.hours?.daily || 'Open to visitors daily'}</p>
+                        <p className="text-xs text-[#837560]">
+                          {spot.hours?.daily || (spot.trustLevel === 'open_data' ? 'Hours not confirmed' : 'Open to visitors daily')}
+                        </p>
                       </div>
                     </div>
 
@@ -716,7 +729,11 @@ export const SpotDetailClient: React.FC<SpotDetailClientProps> = ({ slug }) => {
                       <div>
                         <p className="font-bold text-[#582F0E]">Verification</p>
                         <p className="text-xs text-[#837560]">
-                          {spot.trustLevel === 'lgu_verified' ? 'LGU Verified Landmark' : 'Community Sourced'}
+                          {spot.trustLevel === 'lgu_verified'
+                            ? 'LGU Verified Landmark'
+                            : spot.trustLevel === 'open_data'
+                              ? 'Open-data source; not LGU-verified'
+                              : 'Community Sourced'}
                         </p>
                       </div>
                     </div>

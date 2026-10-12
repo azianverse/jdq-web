@@ -240,6 +240,7 @@ export interface SpotModel {
   assetIds?: string[];
   sourceType: string;
   sourceName: string;
+  sourceUrl?: string;
   trustLevel: string;
   questId?: string;
   createdBy?: string;
@@ -324,6 +325,7 @@ export function normalizeSpot(raw: any): SpotModel {
     assetIds: raw.asset_ids || [],
     sourceType: raw.source_type,
     sourceName: raw.source_name,
+    sourceUrl: raw.source_url || undefined,
     trustLevel: raw.trust_level,
     questId: raw.quest_id,
     createdBy: raw.created_by || raw.createdBy,

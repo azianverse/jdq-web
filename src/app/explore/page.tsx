@@ -394,14 +394,25 @@ export default function ExplorePage() {
                             {spot.municipality}
                           </span>
                           <span>•</span>
-                          <span className="inline-flex items-center gap-1 flex-wrap">
-                            <span>Shared by</span>
-                            <UserNametag
-                              displayName={spot.sourceName}
-                              badges={getAuthorBadges(spot.id, spot.sourceName, user ?? undefined)}
-                              size="sm"
-                            />
-                          </span>
+                          {spot.sourceName.startsWith('Photo:') && spot.sourceUrl ? (
+                            <a
+                              href={spot.sourceUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="underline underline-offset-2"
+                            >
+                              Photo: {spot.sourceName.replace(/^Photo:\s*/, '')}
+                            </a>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 flex-wrap">
+                              <span>Shared by</span>
+                              <UserNametag
+                                displayName={spot.sourceName}
+                                badges={getAuthorBadges(spot.id, spot.sourceName, user ?? undefined)}
+                                size="sm"
+                              />
+                            </span>
+                          )}
 
                           {/* Provenance Badge, Server Recommendation Reason, Quest & Report */}
                           <div className="ml-auto flex items-center gap-1.5 flex-wrap">
