@@ -395,9 +395,9 @@ export default function ExplorePage() {
                         )}
 
                         {/* Meta Header */}
-                        <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-[var(--color-text-muted)] leading-none">
+                        <div className="flex flex-wrap items-center gap-1.5 text-[12px] text-[var(--color-text-muted)] leading-none">
                           <span className="font-bold text-[var(--color-brand-primary)] flex items-center gap-1">
-                            <MapPin className="w-3 h-3" />
+                            <MapPin className="w-4 h-4" />
                             {spot.municipality}
                           </span>
                           <span>•</span>
@@ -427,7 +427,7 @@ export default function ExplorePage() {
                               title="Report inaccurate info, hazard, or inappropriate post"
                               aria-label={`Report post for ${spot.name}`}
                             >
-                              <Flag className="w-3 h-3" />
+                              <Flag className="w-5 h-5" />
                             </button>
                           </div>
                         </div>
@@ -529,7 +529,7 @@ export default function ExplorePage() {
                           <DestinationBadgeList
                             badges={getSampleDestinationBadges(spot.id, spot.category)}
                             maxDisplay={3}
-                            size="xs"
+                            size="sm"
                             iconOnly={true}
                           />
                         </div>
