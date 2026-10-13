@@ -162,7 +162,7 @@ export default function ExplorePage() {
       <JuanChoiceRail />
 
       {/* Community Scouts Discovery */}
-      <div className="bg-white rounded-2xl p-4 border border-[#E3DFD5] shadow-xs space-y-3">
+      <div className="p-3 space-y-3">
         <div className="flex items-center justify-between pb-2 border-b border-[#E8E5DE]">
           <div>
             <h3 className="text-xs font-black text-[#582F0E] uppercase tracking-wider">
@@ -199,7 +199,7 @@ export default function ExplorePage() {
                 <Link
                   key={profile.id}
                   href={travelerProfileHref(profile.id)}
-                  className="flex items-center justify-between gap-2.5 rounded-xl p-2.5 hover:bg-[#FAF9F5] border border-transparent hover:border-[#E3DFD5] transition group min-h-[44px]"
+                  className="flex items-center justify-between gap-2.5 rounded-xl p-2.5 hover:bg-[#FAF9F5] transition group min-h-[44px]"
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
                     <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#2D6A4F] to-[#1B4332] text-[11px] font-black text-white shadow-2xs group-hover:ring-2 group-hover:ring-[#FFB703]/50 transition overflow-hidden">
@@ -239,7 +239,7 @@ export default function ExplorePage() {
 
       {/* Saved Places Highlights */}
       {savedSpotHighlights.length > 0 && (
-        <div className="rounded-2xl border border-amber-200/90 bg-gradient-to-br from-amber-50/70 via-white to-amber-50/30 p-4 shadow-xs space-y-2.5">
+        <div className="p-3 space-y-2.5">
           <div className="flex items-center justify-between">
             <div>
               <span className="text-[9px] font-black uppercase tracking-wider text-[#B45309]">
@@ -257,7 +257,7 @@ export default function ExplorePage() {
               <Link
                 key={spot.id}
                 href={appRoutes.spot(spot.id)}
-                className="flex items-center gap-2.5 rounded-xl border border-amber-200/70 bg-white/90 p-2 text-xs transition hover:border-[#FFB703] hover:shadow-2xs group"
+                className="flex items-center gap-2.5 rounded-xl bg-white/90 p-2 text-xs transition hover:shadow-2xs group"
               >
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-100/70 text-[#B45309]">
                   <Bookmark className="h-4 w-4 fill-current text-[#B45309]" />
@@ -417,15 +417,15 @@ export default function ExplorePage() {
                           </div>
                         </div>
 
-                        {/* Title with Inlined Icon Tags & Micro Destination Badges Row */}
+                        {/* Title with Inlined Icon Tags & Micro Active Quest Indicator */}
                         <div className="flex items-start justify-between gap-2.5">
                           <Link href={appRoutes.spot(spot.id)} className="min-w-0 flex-1 group">
                             <div className="flex items-center gap-1.5 flex-wrap">
                               <h2 className="text-base sm:text-lg font-bold text-[var(--color-brand-brown)] group-hover:text-[var(--color-brand-primary)] transition leading-snug">
                                 {spot.name}
                                 {displayIconTags.length > 0 && (
-                                  <span className="ml-1 text-sm font-normal select-none">
-                                    ({displayIconTags.join('')})
+                                  <span className="ml-1.5 text-sm font-normal select-none">
+                                    {displayIconTags.join(' ')}
                                   </span>
                                 )}
                               </h2>
@@ -436,24 +436,17 @@ export default function ExplorePage() {
                               )}
                             </div>
                           </Link>
-                          <div className="shrink-0 flex items-center gap-1.5 pt-0.5">
-                            {/* Quest Indicator alongside badges */}
-                            {spot.questId && (
-                              <span
-                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 text-amber-900 font-bold text-[9px] border border-amber-200 select-none"
-                                title="Quest available at this destination"
-                              >
-                                <Trophy className="w-2.5 h-2.5 text-amber-600 shrink-0" />
-                                <span>Quest</span>
-                              </span>
-                            )}
-                            <DestinationBadgeList
-                              badges={getSampleDestinationBadges(spot.id, spot.category)}
-                              maxDisplay={3}
-                              size="xs"
-                              iconOnly={true}
-                            />
-                          </div>
+                          {/* Active Quest Indicator where the badges were */}
+                          {spot.questId && (
+                            <Link
+                              href={appRoutes.quest(spot.questId)}
+                              className="shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 hover:bg-amber-100 text-amber-900 font-bold text-[9px] border border-amber-200 shadow-2xs transition"
+                              title="Active quest available for this destination"
+                            >
+                              <Trophy className="w-2.5 h-2.5 text-amber-600 shrink-0" />
+                              <span>Active Quest</span>
+                            </Link>
+                          )}
                         </div>
 
                         {/* Description Text */}
@@ -476,7 +469,7 @@ export default function ExplorePage() {
                         className="border-y border-[#E3DFD5]"
                       />
 
-                      {/* Interactive Engagement Action Row (Like & Bookmark) */}
+                      {/* Interactive Engagement Action Row (Like, Bookmark, and Destination Badges aligned right) */}
                       <div className="px-3.5 py-2.5 sm:px-5 sm:py-3 bg-white flex items-center justify-between gap-2 border-t border-[#E8E5DE]/80">
                         <div className="flex items-center gap-1.5 sm:gap-2">
                           {/* Instagram-style Heart Button */}
@@ -516,14 +509,15 @@ export default function ExplorePage() {
                           </button>
                         </div>
 
-                        {/* Link to spot details where comments & routing live */}
-                        <Link
-                          href={appRoutes.spot(spot.id)}
-                          className="text-[11px] font-bold text-[var(--color-brand-primary)] hover:underline flex items-center gap-1"
-                        >
-                          <span>View Details & Comments</span>
-                          <span>→</span>
-                        </Link>
+                        {/* Destination Badges on the bottom, right aligned */}
+                        <div className="flex items-center">
+                          <DestinationBadgeList
+                            badges={getSampleDestinationBadges(spot.id, spot.category)}
+                            maxDisplay={3}
+                            size="xs"
+                            iconOnly={true}
+                          />
+                        </div>
                       </div>
                     </article>
                     </React.Fragment>
@@ -557,7 +551,7 @@ export default function ExplorePage() {
             className="hidden lg:block lg:order-1 explore-scroll space-y-3"
           >
             {/* Quick Portal Shortcuts */}
-            <div className="bg-white rounded-2xl p-5 border border-[#E3DFD5] shadow-xs space-y-3">
+            <div className="bg-transparent p-3 space-y-3">
               <div className="flex items-center justify-between pb-2 border-b border-[#E8E5DE]">
                 <h3 className="text-xs font-black text-[#582F0E] uppercase tracking-wider">Quick Portals</h3>
                 <span className="text-[10px] font-bold text-[#837560]">Hub</span>
@@ -566,7 +560,7 @@ export default function ExplorePage() {
               <div className="space-y-1.5 text-xs">
                 <Link
                   href="/quests"
-                  className="flex items-center justify-between p-2.5 rounded-xl bg-[#FAF9F5] border border-[#E3DFD5] hover:border-[#2D6A4F] hover:bg-white transition group min-h-[44px]"
+                  className="flex items-center justify-between p-2.5 rounded-xl bg-[#FAF9F5] hover:bg-white hover:border-[#2D6A4F] transition group min-h-[44px]"
                 >
                   <div className="flex items-center gap-2.5 font-bold text-[#2C221E]">
                     <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-100/80 text-[#B45309]">
@@ -581,7 +575,7 @@ export default function ExplorePage() {
 
                 <Link
                   href="/saved"
-                  className="flex items-center justify-between p-2.5 rounded-xl bg-amber-50/70 border border-amber-200/90 hover:border-[#FFB703] hover:bg-amber-50 transition group min-h-[44px]"
+                  className="flex items-center justify-between p-2.5 rounded-xl bg-amber-50/70 hover:bg-amber-50 transition group min-h-[44px]"
                 >
                   <div className="flex items-center gap-2.5 font-bold text-[#2C221E]">
                     <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-200/70 text-[#7D5800]">
@@ -596,7 +590,7 @@ export default function ExplorePage() {
 
                 <Link
                   href="/choice"
-                  className="flex items-center justify-between p-2.5 rounded-xl bg-[#FAF9F5] border border-[#E3DFD5] hover:border-[#2D6A4F] hover:bg-white transition group min-h-[44px]"
+                  className="flex items-center justify-between p-2.5 rounded-xl bg-[#FAF9F5] hover:bg-white transition group min-h-[44px]"
                 >
                   <div className="flex items-center gap-2.5 font-bold text-[#2C221E]">
                     <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-100/70 text-[#7D5800]">
@@ -611,7 +605,7 @@ export default function ExplorePage() {
 
                 <Link
                   href="/leaderboard"
-                  className="flex items-center justify-between p-2.5 rounded-xl bg-[#FAF9F5] border border-[#E3DFD5] hover:border-[#2D6A4F] hover:bg-white transition group min-h-[44px]"
+                  className="flex items-center justify-between p-2.5 rounded-xl bg-[#FAF9F5] hover:bg-white transition group min-h-[44px]"
                 >
                   <div className="flex items-center gap-2.5 font-bold text-[#2C221E]">
                     <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-stone-100 text-[#582F0E]">
@@ -626,7 +620,7 @@ export default function ExplorePage() {
 
                 <Link
                   href="/shop"
-                  className="flex items-center justify-between p-2.5 rounded-xl bg-[#FAF9F5] border border-[#E3DFD5] hover:border-[#2D6A4F] hover:bg-white transition group min-h-[44px]"
+                  className="flex items-center justify-between p-2.5 rounded-xl bg-[#FAF9F5] hover:bg-white transition group min-h-[44px]"
                 >
                   <div className="flex items-center gap-2.5 font-bold text-[#2C221E]">
                     <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-100 text-[#2D6A4F]">
@@ -641,7 +635,7 @@ export default function ExplorePage() {
 
                 <Link
                   href="/about"
-                  className="flex items-center justify-between p-2.5 rounded-xl bg-[#FAF9F5] border border-[#E3DFD5] hover:border-[#2D6A4F] hover:bg-white transition group min-h-[44px]"
+                  className="flex items-center justify-between p-2.5 rounded-xl bg-[#FAF9F5] hover:bg-white transition group min-h-[44px]"
                 >
                   <div className="flex items-center gap-2.5 font-bold text-[#2C221E]">
                     <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-100 text-blue-700">
@@ -658,7 +652,7 @@ export default function ExplorePage() {
 
             {/* Saved Places Continuation Block */}
             {savedSpotHighlights.length > 0 && (
-              <div className="rounded-2xl border border-amber-200/90 bg-gradient-to-br from-amber-50/70 via-white to-amber-50/30 p-4 shadow-xs space-y-2.5">
+              <div className="p-3 space-y-2.5">
                 <div className="flex items-center justify-between">
                   <div>
                     <span className="text-[9px] font-black uppercase tracking-wider text-[#B45309]">
@@ -676,7 +670,7 @@ export default function ExplorePage() {
                     <Link
                       key={spot.id}
                       href={appRoutes.spot(spot.id)}
-                      className="flex items-center gap-2.5 rounded-xl border border-amber-200/70 bg-white/90 p-2 text-xs transition hover:border-[#FFB703] hover:shadow-2xs group"
+                      className="flex items-center gap-2.5 rounded-xl bg-white/90 p-2 text-xs transition hover:shadow-2xs group"
                     >
                       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-100/70 text-[#B45309]">
                         <Bookmark className="h-4 w-4 fill-current text-[#B45309]" />
@@ -697,7 +691,7 @@ export default function ExplorePage() {
             )}
 
             {/* Community Scouts Discovery (Real Public Profiles) */}
-            <div className="bg-white rounded-2xl p-5 border border-[#E3DFD5] shadow-xs space-y-3">
+            <div className="p-3 space-y-3">
               <div className="flex items-center justify-between pb-2 border-b border-[#E8E5DE]">
                 <div>
                   <h3 className="text-xs font-black text-[#582F0E] uppercase tracking-wider">
@@ -734,7 +728,7 @@ export default function ExplorePage() {
                       <Link
                         key={profile.id}
                         href={travelerProfileHref(profile.id)}
-                        className="flex items-center justify-between gap-2.5 rounded-xl p-2.5 hover:bg-[#FAF9F5] border border-transparent hover:border-[#E3DFD5] transition group min-h-[44px]"
+                        className="flex items-center justify-between gap-2.5 rounded-xl p-2.5 hover:bg-[#FAF9F5] transition group min-h-[44px]"
                       >
                         <div className="flex items-center gap-2.5 min-w-0">
                           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#2D6A4F] to-[#1B4332] text-[11px] font-black text-white shadow-2xs group-hover:ring-2 group-hover:ring-[#FFB703]/50 transition overflow-hidden">

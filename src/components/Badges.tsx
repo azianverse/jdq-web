@@ -835,9 +835,6 @@ export const DestinationBadgeList: React.FC<DestinationBadgeListProps> = ({
         tabIndex={isBracketed ? 0 : undefined}
         onKeyDown={isBracketed ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setShowSummaryModal(true); } } : undefined}
       >
-        {isBracketed && (
-          <span className="text-[11px] font-black text-amber-600/80 leading-none select-none">[</span>
-        )}
         <div className={`flex flex-wrap items-center ${iconOnly ? 'gap-1' : 'gap-1.5'}`}>
           {visible.map((b) => (
             <DestinationBadgeChip key={b.id} badge={b} size={size} iconOnly={iconOnly} />
@@ -855,9 +852,6 @@ export const DestinationBadgeList: React.FC<DestinationBadgeListProps> = ({
             </span>
           )}
         </div>
-        {isBracketed && (
-          <span className="text-[11px] font-black text-amber-600/80 leading-none select-none">]</span>
-        )}
       </div>
 
       {showSummaryModal && typeof document !== 'undefined' && createPortal(
