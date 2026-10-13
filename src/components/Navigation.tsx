@@ -1050,102 +1050,120 @@ export const Navigation: React.FC<{
             </button>
           </div>
 
-          {/* Mabuhay Greeting Card (Top of Drawer - Expandable Explorer Overview) */}
+          {/* Mabuhay Greeting Card (Top of Drawer - Interactive Expandable Explorer Hub) */}
           {!isDesktopDrawerCollapsed ? (
-            <div className="mx-2 mt-2 mb-1.5 rounded-2xl bg-gradient-to-br from-[#1B4332] via-[#2D6A4F] to-[#1E4A38] text-white shadow-xs border border-emerald-500/20 relative overflow-hidden transition-all duration-200">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-amber-400/10 rounded-full blur-xl pointer-events-none" />
-              
-              {/* Clickable Header Card */}
+            <div className={`mx-2 mt-2 mb-1.5 rounded-2xl bg-gradient-to-br from-[#1B4332] via-[#2D6A4F] to-[#1E4A38] text-white shadow-sm border border-emerald-500/25 relative overflow-hidden transition-all duration-300 ease-out ${
+              isWelcomeCardExpanded ? 'ring-2 ring-[#FFB703]/30 shadow-md' : 'hover:border-emerald-400/40 hover:shadow-xs'
+            }`}>
+              {/* Dynamic Ambient Glow Orbs */}
+              <div className={`absolute top-0 right-0 w-32 h-32 bg-amber-400/15 rounded-full blur-2xl pointer-events-none transition-all duration-500 ${
+                isWelcomeCardExpanded ? 'scale-125 opacity-100' : 'scale-90 opacity-60'
+              }`} />
+              <div className="absolute -bottom-6 -left-6 w-20 h-20 bg-emerald-400/10 rounded-full blur-xl pointer-events-none" />
+
+              {/* Clickable Card Header / Surface */}
               <button
                 type="button"
                 onClick={() => setIsWelcomeCardExpanded((prev) => !prev)}
-                className="w-full text-left p-3 relative z-10 flex items-center justify-between gap-2 cursor-pointer group select-none"
+                className="w-full text-left p-3.5 relative z-10 block cursor-pointer group select-none transition-colors"
                 aria-expanded={isWelcomeCardExpanded}
                 aria-label="Toggle Explorer Overview"
               >
-                <div className="min-w-0 flex-1 space-y-0.5">
-                  <div className="flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-[#FFB703] shrink-0" />
-                    <h3 className="text-xs sm:text-[13px] font-black tracking-tight text-white truncate group-hover:text-amber-200 transition">
-                      {user?.displayName ? `Mabuhay, ${user.displayName}!` : 'Mabuhay, Explorer!'}
-                    </h3>
-                  </div>
-                  <p className="text-[10px] text-emerald-100/80 leading-tight">
-                    Level {currentLevel} • {wallet ? `${wallet.balanceMjdq.toLocaleString()} mJDQ` : 'Demo Explorer'}
-                  </p>
-                </div>
+                <div className="space-y-1.5 min-w-0">
+                  {/* Greeting & Animated Sparkle Pill */}
+                  <div className="flex items-center justify-between gap-1.5">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="w-6 h-6 rounded-lg bg-white/10 flex items-center justify-center shrink-0 border border-white/10 group-hover:bg-[#FFB703]/20 group-hover:border-[#FFB703]/30 transition-colors">
+                        <Sparkles className="w-3.5 h-3.5 text-[#FFB703] group-hover:rotate-12 transition-transform duration-300" />
+                      </div>
+                      <h3 className="text-xs sm:text-[13px] font-black tracking-tight text-white truncate group-hover:text-amber-200 transition">
+                        {user?.displayName ? `Mabuhay, ${user.displayName}!` : 'Mabuhay, Explorer!'}
+                      </h3>
+                    </div>
 
-                <div className="p-1 rounded-lg bg-white/10 group-hover:bg-white/20 transition text-emerald-200 shrink-0">
-                  {isWelcomeCardExpanded ? (
-                    <ChevronUp className="w-3.5 h-3.5 text-amber-300" />
-                  ) : (
-                    <ChevronDown className="w-3.5 h-3.5 text-emerald-200" />
-                  )}
+                    {/* Fun Tap hint chip */}
+                    <span className="text-[9px] font-black uppercase tracking-wider text-amber-300/80 bg-emerald-950/60 border border-emerald-400/30 px-2 py-0.5 rounded-full shrink-0 group-hover:text-amber-200 group-hover:border-amber-300/50 transition">
+                      {isWelcomeCardExpanded ? 'Close' : 'Stats'}
+                    </span>
+                  </div>
+
+                  {/* Subtitle with Smooth Fade when Expanded */}
+                  <div
+                    className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                      isWelcomeCardExpanded
+                        ? 'max-h-0 opacity-0 pointer-events-none -translate-y-1'
+                        : 'max-h-12 opacity-100 translate-y-0'
+                    }`}
+                  >
+                    <p className="text-[11px] text-emerald-100/90 leading-snug line-clamp-2">
+                      Track your visits, streaks, and voting across all 48 municipalities.
+                    </p>
+                    <p className="text-[10px] text-amber-300/90 font-bold mt-1">
+                      Level {currentLevel} • {wallet ? `${wallet.balanceMjdq.toLocaleString()} mJDQ` : 'Demo Explorer'}
+                    </p>
+                  </div>
                 </div>
               </button>
 
-              {/* Expandable Overview Details */}
-              {isWelcomeCardExpanded && (
-                <div className="px-3 pb-3 pt-1 border-t border-white/15 space-y-2.5 relative z-10 animate-in fade-in duration-200">
-                  {/* Streak and Level Row */}
-                  <div className="flex items-center justify-between text-[11px] pt-1">
-                    <div className="flex items-center gap-1.5 text-amber-300 font-bold">
-                      <Trophy className="w-3.5 h-3.5 text-[#FFB703]" />
-                      <span>Level {currentLevel} Explorer</span>
+              {/* Animated Expansion Container (Smooth CSS Grid Transition) */}
+              <div
+                className={`grid transition-all duration-300 ease-in-out ${
+                  isWelcomeCardExpanded ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0 pointer-events-none'
+                }`}
+              >
+                <div className="overflow-hidden">
+                  <div className="px-3.5 pb-3.5 pt-1 border-t border-white/15 space-y-3 relative z-10 animate-in fade-in slide-in-from-top-1 duration-200">
+                    {/* Explorer Tier & Round Streak Banner */}
+                    <div className="flex items-center justify-between text-xs pt-1">
+                      <div className="flex items-center gap-1.5 text-amber-300 font-extrabold">
+                        <Trophy className="w-3.5 h-3.5 text-[#FFB703]" />
+                        <span>Level {currentLevel} Explorer</span>
+                      </div>
+
+                      <div className="flex items-center gap-1 bg-amber-500/25 px-2.5 py-0.5 rounded-full border border-amber-400/40 text-[10px] font-black text-amber-200 shadow-2xs">
+                        <Flame className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
+                        <span>{drawerEngagement?.streak?.current ?? 1} Round Streak</span>
+                      </div>
                     </div>
 
-                    <div className="flex items-center gap-1 bg-amber-500/20 px-2 py-0.5 rounded-full border border-amber-400/30 text-[10px] font-black text-amber-200">
-                      <Flame className="w-3 h-3 text-amber-400 animate-pulse" />
-                      <span>{drawerEngagement?.streak?.current ?? 1} Streak</span>
+                    {/* Level Progress Bar */}
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between text-[10px] text-emerald-100 font-semibold">
+                        <span>XP to Level {currentLevel + 1}</span>
+                        <span className="font-mono text-amber-300 font-bold">
+                          {currentPoints % 50} / 50 XP ({Math.min(100, Math.round(((currentPoints % 50) / 50) * 100))}%)
+                        </span>
+                      </div>
+                      <div className="w-full bg-black/25 h-2 rounded-full overflow-hidden p-0.5 border border-white/10">
+                        <div
+                          className="bg-gradient-to-r from-[#FFB703] to-[#F59E0B] h-full rounded-full transition-all duration-500 shadow-2xs"
+                          style={{ width: `${Math.max(6, Math.min(100, Math.round(((currentPoints % 50) / 50) * 100)))}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Fun 3-Grid Explorer Metrics */}
+                    <div className="grid grid-cols-3 gap-1.5 text-center pt-0.5">
+                      <div className="p-2 rounded-xl bg-white/10 backdrop-blur-xs border border-white/10 hover:bg-white/15 transition">
+                        <span className="text-sm font-black text-white block leading-tight">{currentPoints}</span>
+                        <span className="text-[8px] font-black text-emerald-200 uppercase tracking-wider">Total XP</span>
+                      </div>
+                      <div className="p-2 rounded-xl bg-white/10 backdrop-blur-xs border border-white/10 hover:bg-white/15 transition">
+                        <span className="text-sm font-black text-amber-300 block leading-tight">
+                          {drawerEngagement?.impact?.verified_visits ?? 0}
+                        </span>
+                        <span className="text-[8px] font-black text-emerald-200 uppercase tracking-wider">Visits</span>
+                      </div>
+                      <div className="p-2 rounded-xl bg-white/10 backdrop-blur-xs border border-white/10 hover:bg-white/15 transition">
+                        <span className="text-sm font-black text-white block leading-tight">
+                          {drawerEngagement?.impact?.municipalities ?? 1}/48
+                        </span>
+                        <span className="text-[8px] font-black text-emerald-200 uppercase tracking-wider">LGUs</span>
+                      </div>
                     </div>
                   </div>
-
-                  {/* Level Progress Bar */}
-                  <div className="space-y-1">
-                    <div className="flex items-center justify-between text-[10px] text-emerald-100/90 font-semibold">
-                      <span>XP to Level {currentLevel + 1}</span>
-                      <span className="font-mono text-amber-300">
-                        {currentPoints % 50} / 50 XP ({Math.min(100, Math.round(((currentPoints % 50) / 50) * 100))}%)
-                      </span>
-                    </div>
-                    <div className="w-full bg-white/15 h-2 rounded-full overflow-hidden p-0.5">
-                      <div
-                        className="bg-gradient-to-r from-[#FFB703] to-[#F59E0B] h-full rounded-full transition-all duration-300"
-                        style={{ width: `${Math.max(6, Math.min(100, Math.round(((currentPoints % 50) / 50) * 100)))}%` }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Metric Chips */}
-                  <div className="grid grid-cols-3 gap-1.5 text-center pt-0.5">
-                    <div className="p-1.5 rounded-xl bg-white/10">
-                      <span className="text-xs font-black text-white block leading-tight">{currentPoints}</span>
-                      <span className="text-[8px] font-bold text-emerald-200/90 uppercase">Total XP</span>
-                    </div>
-                    <div className="p-1.5 rounded-xl bg-white/10">
-                      <span className="text-xs font-black text-amber-300 block leading-tight">
-                        {drawerEngagement?.impact?.verified_visits ?? 0}
-                      </span>
-                      <span className="text-[8px] font-bold text-emerald-200/90 uppercase">Visits</span>
-                    </div>
-                    <div className="p-1.5 rounded-xl bg-white/10">
-                      <span className="text-xs font-black text-white block leading-tight">
-                        {drawerEngagement?.impact?.municipalities ?? 1} / 48
-                      </span>
-                      <span className="text-[8px] font-bold text-emerald-200/90 uppercase">LGUs</span>
-                    </div>
-                  </div>
-
-                  {/* Profile link button */}
-                  <Link
-                    href={userProfileHref}
-                    className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-xl bg-[#FFB703] hover:bg-[#F59E0B] text-[#582F0E] text-[11px] font-black shadow-2xs transition active:scale-95"
-                  >
-                    <span>Open Passport Profile</span>
-                    <ChevronRight className="w-3 h-3 text-[#582F0E]" />
-                  </Link>
                 </div>
-              )}
+              </div>
             </div>
           ) : (
             <div className="mx-2 mt-2 mb-1 flex justify-center">
