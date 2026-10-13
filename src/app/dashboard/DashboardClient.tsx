@@ -44,19 +44,15 @@ import { appRoutes } from '@/lib/routes';
 export function DashboardClient() {
   const { user } = useAuth();
 
-  // 1. Recommendations & Spots State
-  const [recommendedSpots, setRecommendedSpots] = useState<SpotModel[]>([]);
-  const [loadingSpots, setLoadingSpots] = useState(true);
-
-  // 2. Engagement, Streaks & Gamified Stats
+  // 1. Engagement, Streaks & Gamified Stats
   const [engagement, setEngagement] = useState<EngagementSummary | null>(null);
   const [loadingEngagement, setLoadingEngagement] = useState(true);
 
-  // 3. Recent Activities (Submissions, verifications, visits)
+  // 2. Recent Activities (Submissions, verifications, visits)
   const [recentActivities, setRecentActivities] = useState<SubmissionModel[]>([]);
   const [loadingActivities, setLoadingActivities] = useState(true);
 
-  // 4. Voting Overview
+  // 3. Voting Overview
   const [votingStatus, setVotingStatus] = useState<{
     voting_enabled: boolean;
     notice?: string;
@@ -64,31 +60,12 @@ export function DashboardClient() {
     activeCount?: number;
   }>({ voting_enabled: false });
 
-  // 5. XP Toast / Celebrations
+  // 4. XP Toast / Celebrations
   const [bonusXp, setBonusXp] = useState<number>(0);
 
   // Load Dashboard Data
   useEffect(() => {
     let isMounted = true;
-
-    // Load recommendations
-    async function loadRecommendations() {
-      try {
-        const res = await api.get('/spots?limit=20');
-        if (isMounted && res.data?.success && Array.isArray(res.data.data)) {
-          const allSpots: SpotModel[] = (res.data.data as any[]).map(normalizeSpot);
-          // Prioritize spots with recommendation reasons or trending tags
-          const recommended = allSpots.filter(
-            (s: SpotModel) => (s.recommendationReasons && s.recommendationReasons.length > 0) || s.trendScore > 0
-          );
-          setRecommendedSpots(recommended.length >= 4 ? recommended.slice(0, 8) : allSpots.slice(0, 8));
-        }
-      } catch (err) {
-        console.error('Failed to load dashboard recommendations', err);
-      } finally {
-        if (isMounted) setLoadingSpots(false);
-      }
-    }
 
     // Load engagement / streaks / progress
     async function loadUserEngagement() {
@@ -164,7 +141,6 @@ export function DashboardClient() {
       }
     }
 
-    loadRecommendations();
     loadUserEngagement();
     loadActivities();
     loadVotingInfo();
@@ -297,94 +273,6 @@ export function DashboardClient() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             {/* Left 8-Column Area: Recommendations & Content */}
             <div className="lg:col-span-8 space-y-8">
-              {/* SECTION: Places You May Like / Recommendations */}
-              <section className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-xl bg-emerald-100 text-[#2D6A4F] flex items-center justify-center">
-                      <Sparkles className="w-4 h-4 text-[#2D6A4F]" />
-                    </div>
-                    <div>
-                      <h2 className="text-lg font-black text-[#2C221E]">Places You May Like</h2>
-                      <p className="text-xs text-[#837560]">Curated Pangasinan destinations tailored to your explorer profile</p>
-                    </div>
-                  </div>
-
-                  <Link
-                    href="/explore"
-                    className="text-xs font-black text-[#2D6A4F] hover:underline flex items-center gap-1 group"
-                  >
-                    <span>View all</span>
-                    <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-                  </Link>
-                </div>
-
-                {/* Recommended Spots Grid */}
-                {loadingSpots ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {[1, 2, 3, 4].map((i) => (
-                      <div key={i} className="h-48 rounded-2xl bg-[#FAF9F5] border border-[#E3DFD5] animate-pulse" />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {recommendedSpots.slice(0, 4).map((spot) => (
-                      <article
-                        key={spot.id}
-                        className="group bg-white rounded-2xl border border-[#E3DFD5] overflow-hidden hover:border-[#2D6A4F]/40 hover:shadow-md transition-all duration-200 flex flex-col justify-between"
-                      >
-                        <div className="relative overflow-hidden bg-stone-100">
-                          <DestinationMedia
-                            src={spot.imageUrl}
-                            alt={spot.name}
-                            destinationName={spot.name}
-                            municipality={spot.municipality}
-                            aspectRatio="card"
-                            className="group-hover:scale-103 transition-transform duration-300"
-                          />
-                          <div className="absolute top-2.5 left-2.5">
-                            <span className="px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-xs text-white text-[10px] font-black uppercase tracking-wider">
-                              {spot.municipality}
-                            </span>
-                          </div>
-                          {spot.recommendationReasons?.[0] && (
-                            <div className="absolute bottom-2.5 left-2.5">
-                              <span className="px-2 py-0.5 rounded-md bg-[#2D6A4F] text-white text-[9px] font-black">
-                                {spot.recommendationReasons[0]}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="p-4 flex-1 flex flex-col justify-between space-y-2">
-                          <div>
-                            <h3 className="font-extrabold text-sm text-[#2C221E] group-hover:text-[#2D6A4F] transition-colors line-clamp-1">
-                              {spot.name}
-                            </h3>
-                            <p className="text-xs text-[#6B5E4D] line-clamp-2 mt-1 leading-relaxed">
-                              {spot.description || `Experience nature and community culture at ${spot.name}.`}
-                            </p>
-                          </div>
-
-                          <div className="pt-2 border-t border-[#F2EFE9] flex items-center justify-between text-xs">
-                            <span className="text-[11px] text-[#837560] font-semibold">
-                              {spot.questId ? '🌿 Eco-Quest Attached' : '📍 Open Discovery'}
-                            </span>
-                            <Link
-                              href={appRoutes.spot(spot.id)}
-                              className="font-black text-[#2D6A4F] hover:underline flex items-center gap-1"
-                            >
-                              <span>Explore</span>
-                              <ArrowRight className="w-3 h-3" />
-                            </Link>
-                          </div>
-                        </div>
-                      </article>
-                    ))}
-                  </div>
-                )}
-              </section>
-
               {/* SECTION: Cultural Knowledge Quizzes (Migrated Here) */}
               <section className="space-y-4">
                 <DashboardQuizCard onPass={handleQuizPassed} />
