@@ -371,11 +371,7 @@ export default function ExplorePage() {
                   return (<React.Fragment key={spot.id}>
                     {featuredChoice && choiceInsertionIndex === index && <JuanChoiceSpotlightCard spotlight={featuredChoice} />}
                     <article
-                      className={`bg-white rounded-2xl shadow-xs hover:shadow-md transition-all duration-300 ease-out overflow-hidden ${
-                        isFeaturedHero
-                          ? 'border-2 border-amber-400 ring-2 ring-amber-300/40 shadow-amber-100/50'
-                          : 'border border-[var(--color-border-default)] hover:border-[var(--color-brand-primary)]/40'
-                      }`}
+                      className="bg-white rounded-2xl border border-[var(--color-border-default)] hover:border-[var(--color-brand-primary)]/40 shadow-xs hover:shadow-md transition-all duration-300 ease-out overflow-hidden"
                     >
                       {/* Compact Post Header & Caption Area */}
                       <div className="px-4 pt-3.5 pb-2.5 sm:px-5 sm:pt-4 sm:pb-3 space-y-2">
