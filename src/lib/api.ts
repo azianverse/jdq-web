@@ -904,17 +904,23 @@ export async function toggleSpotLike(spotId: string, shouldLike: boolean): Promi
   }
 }
 
-export type AffiliateStatus = 'received' | 'in_review' | 'approved' | 'rejected';
+export type AffiliateStatus = 'received' | 'in_review' | 'approved' | 'rejected' | 'needs_changes';
 
 export interface AffiliateApplicationPayload {
   business_name: string;
   category: string;
   municipality: string;
+  business_address?: string;
+  business_province?: string;
+  gps_lat?: number | null;
+  gps_lng?: number | null;
   contact_name: string;
   contact_email: string;
   contact_phone: string;
+  preferred_contact_method?: 'email' | 'phone' | 'sms';
   sponsorship_goals: string[];
   proposal_details?: string;
+  declaration_version?: string;
 }
 
 export interface AffiliateApplicationModel {
@@ -923,17 +929,66 @@ export interface AffiliateApplicationModel {
   business_name: string;
   category: string;
   municipality: string;
+  business_address?: string;
+  business_province?: string;
+  gps_lat?: number | null;
+  gps_lng?: number | null;
   contact_name: string;
   contact_email: string;
   contact_phone: string;
+  preferred_contact_method?: string;
   sponsorship_goals: string[];
   proposal_details: string;
   status: AffiliateStatus;
+  version?: number;
   reviewer_id?: string | null;
   reviewer_notes?: string | null;
+  applicant_feedback?: string | null;
   reviewed_at?: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface AffiliateDraftModel {
+  user_id: string;
+  draft_data: Record<string, any>;
+  current_step: number;
+  revision: number;
+  updated_at: string;
+}
+
+export interface AffiliateOptionsModel {
+  categories: Array<{ id: string; label: string; description: string }>;
+  municipalities: string[];
+  sponsorship_goals: Array<{ id: string; label: string; description: string }>;
+  declaration_version: string;
+  terms_summary: string;
+}
+
+export async function fetchAffiliateOptions(): Promise<AffiliateOptionsModel> {
+  const res = await api.get('/affiliate/options');
+  if (!res.data?.success) throw new Error(res.data?.error?.message || 'Failed to fetch affiliate options');
+  return res.data.data;
+}
+
+export async function fetchAffiliateDraft(): Promise<AffiliateDraftModel | null> {
+  const res = await api.get('/affiliate/application-draft');
+  if (!res.data?.success) throw new Error(res.data?.error?.message || 'Failed to fetch draft');
+  return res.data.data;
+}
+
+export async function saveAffiliateDraft(payload: {
+  draft_data: Record<string, any>;
+  current_step: number;
+  expected_revision?: number;
+}): Promise<AffiliateDraftModel> {
+  const res = await api.put('/affiliate/application-draft', payload);
+  if (!res.data?.success) throw new Error(res.data?.error?.message || 'Failed to save draft');
+  return res.data.data;
+}
+
+export async function deleteAffiliateDraft(): Promise<void> {
+  await api.delete('/affiliate/application-draft');
 }
 
 export async function submitAffiliateApplication(payload: AffiliateApplicationPayload): Promise<AffiliateApplicationModel> {
@@ -942,10 +997,169 @@ export async function submitAffiliateApplication(payload: AffiliateApplicationPa
   return res.data.data;
 }
 
-export async function fetchMyAffiliateApplication(): Promise<AffiliateApplicationModel | null> {
+export async function resubmitAffiliateApplication(
+  id: string,
+  payload: Partial<AffiliateApplicationPayload>
+): Promise<AffiliateApplicationModel> {
+  const res = await api.post(`/affiliate/applications/${id}/resubmit`, payload);
+  if (!res.data?.success) throw new Error(res.data?.error?.message || 'Failed to resubmit application');
+  return res.data.data;
+}
+
+export async function fetchMyAffiliateApplication(): Promise<{
+  data: AffiliateApplicationModel | null;
+  merchant: { id: string; name: string; role: string; is_published: boolean } | null;
+}> {
   const res = await api.get('/affiliate/applications/me');
   if (!res.data?.success) throw new Error(res.data?.error?.message || 'Failed to fetch application');
+  return {
+    data: res.data.data,
+    merchant: res.data.merchant || null,
+  };
+}
+
+// ---- Merchant Workspace Models & Functions ----
+
+export interface MerchantMeModel {
+  has_merchant: boolean;
+  merchant: {
+    id: string;
+    name: string;
+    category?: string;
+    municipality?: string;
+    location: string;
+    description: string;
+    status: string;
+    is_published: boolean;
+    contact_email?: string;
+    contact_phone?: string;
+    logo_url?: string | null;
+    banner_url?: string | null;
+  } | null;
+  membership: {
+    role: 'owner' | 'staff';
+    status: 'active' | 'suspended';
+    created_at: string;
+  } | null;
+}
+
+export interface MerchantDashboardModel {
+  merchant: {
+    id: string;
+    name: string;
+    category?: string;
+    municipality?: string;
+    location: string;
+    is_published: boolean;
+    status: string;
+  };
+  counts: {
+    active_products: number;
+    archived_products: number;
+  };
+  checklist: {
+    items: Array<{ id: string; title: string; completed: boolean }>;
+    completed_count: number;
+    total_count: number;
+    ready_to_publish: boolean;
+  };
+  truthful_notice: {
+    mode: string;
+    statement: string;
+  };
+}
+
+export interface MerchantProductModel {
+  id: string;
+  merchant_id: string;
+  name: string;
+  description: string;
+  price?: number | null;
+  currency: string;
+  image_url?: string | null;
+  is_published: boolean;
+  is_archived: boolean;
+  display_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export async function fetchMerchantMe(): Promise<MerchantMeModel> {
+  const res = await api.get('/merchant/me');
+  if (!res.data?.success) throw new Error(res.data?.error?.message || 'Failed to fetch merchant identity');
   return res.data.data;
+}
+
+export async function fetchMerchantDashboard(): Promise<MerchantDashboardModel> {
+  const res = await api.get('/merchant/dashboard');
+  if (!res.data?.success) throw new Error(res.data?.error?.message || 'Failed to fetch merchant dashboard');
+  return res.data.data;
+}
+
+export async function fetchMerchantProfile(): Promise<any> {
+  const res = await api.get('/merchant/profile');
+  if (!res.data?.success) throw new Error(res.data?.error?.message || 'Failed to fetch merchant profile');
+  return res.data.data;
+}
+
+export async function updateMerchantProfile(payload: {
+  name?: string;
+  description?: string;
+  location?: string;
+  municipality?: string;
+  contact_email?: string;
+  contact_phone?: string;
+  logo_url?: string | null;
+  banner_url?: string | null;
+}): Promise<any> {
+  const res = await api.patch('/merchant/profile', payload);
+  if (!res.data?.success) throw new Error(res.data?.error?.message || 'Failed to update merchant profile');
+  return res.data.data;
+}
+
+export async function publishMerchantProfile(): Promise<any> {
+  const res = await api.post('/merchant/profile/publish');
+  if (!res.data?.success) throw new Error(res.data?.error?.message || 'Failed to publish profile');
+  return res.data.data;
+}
+
+export async function unpublishMerchantProfile(): Promise<any> {
+  const res = await api.post('/merchant/profile/unpublish');
+  if (!res.data?.success) throw new Error(res.data?.error?.message || 'Failed to unpublish profile');
+  return res.data.data;
+}
+
+export async function listMerchantProducts(includeArchived = false): Promise<MerchantProductModel[]> {
+  const res = await api.get('/merchant/products', { params: { include_archived: includeArchived } });
+  if (!res.data?.success) throw new Error(res.data?.error?.message || 'Failed to fetch merchant products');
+  return res.data.data;
+}
+
+export async function createMerchantProduct(payload: {
+  name: string;
+  description?: string;
+  price?: number | null;
+  currency?: string;
+  image_url?: string | null;
+  is_published?: boolean;
+}): Promise<MerchantProductModel> {
+  const res = await api.post('/merchant/products', payload);
+  if (!res.data?.success) throw new Error(res.data?.error?.message || 'Failed to create product');
+  return res.data.data;
+}
+
+export async function updateMerchantProduct(
+  id: string,
+  payload: Partial<MerchantProductModel>
+): Promise<MerchantProductModel> {
+  const res = await api.patch(`/merchant/products/${id}`, payload);
+  if (!res.data?.success) throw new Error(res.data?.error?.message || 'Failed to update product');
+  return res.data.data;
+}
+
+export async function archiveMerchantProduct(id: string): Promise<void> {
+  const res = await api.delete(`/merchant/products/${id}`);
+  if (!res.data?.success) throw new Error(res.data?.error?.message || 'Failed to archive product');
 }
 
 export interface TrailCandidateStop {

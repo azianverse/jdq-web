@@ -5,956 +5,835 @@ import Link from 'next/link';
 import {
   Store,
   Clock3,
-  Sparkles,
   ShieldCheck,
   CheckCircle2,
-  TrendingUp,
   MapPin,
-  Ticket,
   ArrowRight,
-  Send,
+  ArrowLeft,
   Building2,
   HelpCircle,
   Lock,
   ChevronDown,
   RotateCcw,
-  Zap,
   AlertCircle,
   XCircle,
+  Save,
+  Check,
+  Compass,
+  FileCheck,
+  ExternalLink
 } from 'lucide-react';
 import { Navigation } from '@/components/Navigation';
 import { useAuth } from '@/lib/auth';
 import { triggerCelebration } from '@/components/CelebrationEffects';
-import { submitAffiliateApplication, fetchMyAffiliateApplication } from '@/lib/api';
+import {
+  fetchAffiliateOptions,
+  fetchAffiliateDraft,
+  saveAffiliateDraft,
+  deleteAffiliateDraft,
+  submitAffiliateApplication,
+  resubmitAffiliateApplication,
+  fetchMyAffiliateApplication,
+  AffiliateApplicationModel,
+  AffiliateOptionsModel,
+  AffiliateDraftModel
+} from '@/lib/api';
 
-const STORAGE_KEY = 'jdq_merchant_application_v1';
-
-const PANGASINAN_MUNICIPALITIES = [
-  'Alaminos City (Hundred Islands)',
-  'Dagupan City (Bangus Capital)',
-  'Bolinao (Cape & Beaches)',
-  'Lingayen (Provincial Capitol)',
-  'San Carlos City',
-  'Urdaneta City',
-  'Calasiao (Puto Specialty)',
-  'Manaoag (Minor Basilica)',
-  'Dasol (Salt Capital)',
-  'Burgos (Cabongaoan Beach)',
-  'Anda (Tondol White Sand)',
-  'Binmaley',
-  'Sual',
-  'Infanta',
-  'Agno',
-  'Mabini',
-  'Bani',
-  'San Fabian',
-  'Mangaldan',
-  'Bayambang',
-  'Rosales',
-  'Tayug',
-  'Other Pangasinan Municipality',
+const DEFAULT_CATEGORIES = [
+  { id: 'dining', label: 'Dining & Native Delicacies', description: 'Restaurants, seafood grills, and local delicacies' },
+  { id: 'hospitality', label: 'Lodging & Hospitality', description: 'Resorts, homestays, and beachfront cottages' },
+  { id: 'souvenirs', label: 'Handicrafts & Pasalubong', description: 'Local weaving, crafts, and keepsakes' },
+  { id: 'activities', label: 'Tours & Coastal Activities', description: 'Boatmen, surf rentals, and guided heritage trails' },
+  { id: 'wellness', label: 'Eco-Farm & Agritourism', description: 'Salt farms, orchards, and farm-to-table stops' },
 ];
 
-const BUSINESS_CATEGORIES = [
-  { id: 'dining', label: 'Food & Dining (Restaurant, Grill, Cafe, Street Food)' },
-  { id: 'pasalubong', label: 'Souvenirs & Pasalubong (Bangus, Salt, Puto, Crafts)' },
-  { id: 'lodging', label: 'Lodging & Homestay (Resort, Hotel, Transient House)' },
-  { id: 'adventure', label: 'Adventure & Eco-Tours (Boat Tour, Island Hopping, Rental)' },
-  { id: 'heritage', label: 'Cultural & Heritage (Artisan Workshop, Farm Tourism)' },
-  { id: 'retail', label: 'Retail & Specialty Store' },
+const DEFAULT_MUNICIPALITIES = [
+  'Alaminos City', 'Bolinao', 'Dagupan City', 'Lingayen', 'San Carlos City', 'Urdaneta City',
+  'Calasiao', 'Manaoag', 'Dasol', 'Burgos', 'Anda', 'Binmaley', 'Sual', 'Infanta', 'Agno',
+  'Mabini', 'Bani', 'San Fabian', 'Mangaldan', 'Bayambang', 'Rosales', 'Tayug'
 ];
 
-const SPONSORSHIP_OPTIONS = [
-  { id: 'quest_stop', label: 'Co-sponsor an official tourism quest (checkpoint or arrival point)' },
-  { id: 'voucher_perk', label: 'Offer $mJDQ reward vouchers & discounts in the Merchant Shop' },
-  { id: 'map_pin', label: 'Feature our store with a verified business beacon on the interactive map' },
-  { id: 'event_sponsor', label: 'Festival & seasonal tourism promotion partner' },
+const DEFAULT_GOALS = [
+  { id: 'quest_stop', label: 'Host a Quest Checkpoint', description: 'Feature as a waypoint in cultural or eco trails' },
+  { id: 'voucher_perk', label: 'Offer In-Store Traveler Perks', description: 'Provide exclusive discount vouchers for quest completers' },
+  { id: 'storytelling', label: 'Cultural & Heritage Storytelling', description: 'Share historical lore and authentic craftsmanship' },
+  { id: 'event_sponsor', label: 'Community Eco-Raid Co-Host', description: 'Partner on beach cleanups and environmental events' },
 ];
-
-interface ApplicationData {
-  businessName: string;
-  category: string;
-  municipality: string;
-  contactName: string;
-  contactEmail: string;
-  contactPhone: string;
-  sponsorshipGoals: string[];
-  proposalDetails: string;
-  submittedAt: string;
-  referenceId: string;
-  status: 'received' | 'in_review' | 'approved' | 'rejected' | 'draft' | 'pending';
-  isServerRecord?: boolean;
-  reviewerNotes?: string | null;
-}
 
 export function AffiliateClient() {
   const { user } = useAuth();
-  const [existingApp, setExistingApp] = useState<ApplicationData | null>(null);
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [activeFaq, setActiveFaq] = useState<number | null>(null);
 
-  // Form state
+  // Catalog Options
+  const [options, setOptions] = useState<AffiliateOptionsModel | null>(null);
+
+  // Existing Application & Workspace info
+  const [existingApp, setExistingApp] = useState<AffiliateApplicationModel | null>(null);
+  const [merchantWorkspace, setMerchantWorkspace] = useState<{ id: string; name: string; role: string; is_published: boolean } | null>(null);
+  const [loadingInitial, setLoadingInitial] = useState(true);
+
+  // Wizard Flow state (1: Business Info, 2: Location, 3: Contact, 4: Participation, 5: Review & Submit)
+  const [currentStep, setCurrentStep] = useState<number>(1);
+  const [isWizardOpen, setIsWizardOpen] = useState(false);
+  const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [lastDraftRevision, setLastDraftRevision] = useState<number>(1);
+
+  // Form Fields
   const [businessName, setBusinessName] = useState('');
-  const [category, setCategory] = useState(BUSINESS_CATEGORIES[0].id);
-  const [municipality, setMunicipality] = useState(PANGASINAN_MUNICIPALITIES[0]);
+  const [category, setCategory] = useState('dining');
+  const [municipality, setMunicipality] = useState('Alaminos City');
+  const [businessAddress, setBusinessAddress] = useState('');
+  const [gpsLat, setGpsLat] = useState<string>('');
+  const [gpsLng, setGpsLng] = useState<string>('');
   const [contactName, setContactName] = useState('');
   const [contactEmail, setContactEmail] = useState('');
   const [contactPhone, setContactPhone] = useState('');
-  const [sponsorshipGoals, setSponsorshipGoals] = useState<string[]>([
-    'quest_stop',
-    'voucher_perk',
-  ]);
+  const [preferredContactMethod, setPreferredContactMethod] = useState<'email' | 'phone' | 'sms'>('email');
+  const [sponsorshipGoals, setSponsorshipGoals] = useState<string[]>(['quest_stop']);
   const [proposalDetails, setProposalDetails] = useState('');
-  const [formError, setFormError] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [agreedDeclaration, setAgreedDeclaration] = useState(false);
 
-  // Load existing application from API if authenticated, falling back to localStorage draft
+  // UI helpers
+  const [formError, setFormError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [activeFaq, setActiveFaq] = useState<number | null>(null);
+
+  // Load initial options & application status
   useEffect(() => {
     let isMounted = true;
-    async function loadApp() {
-      if (user) {
-        try {
-          const serverApp = await fetchMyAffiliateApplication();
-          if (serverApp && isMounted) {
-            setExistingApp({
-              businessName: serverApp.business_name,
-              category: serverApp.category,
-              municipality: serverApp.municipality,
-              contactName: serverApp.contact_name,
-              contactEmail: serverApp.contact_email,
-              contactPhone: serverApp.contact_phone,
-              sponsorshipGoals: serverApp.sponsorship_goals,
-              proposalDetails: serverApp.proposal_details,
-              submittedAt: serverApp.created_at,
-              referenceId: serverApp.id,
-              status: serverApp.status,
-              isServerRecord: true,
-              reviewerNotes: serverApp.reviewer_notes,
-            });
-            return;
-          }
-        } catch {
-          // Network or auth error; proceed to check local draft
-        }
-      }
+
+    async function loadData() {
       try {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved && isMounted) {
-          const parsed = JSON.parse(saved) as ApplicationData;
-          setExistingApp({
-            ...parsed,
-            status: parsed.status || 'draft',
-            isServerRecord: false,
-          });
+        setLoadingInitial(true);
+        // Load options
+        try {
+          const opt = await fetchAffiliateOptions();
+          if (isMounted) setOptions(opt);
+        } catch {
+          // fallback defaults remain
         }
-      } catch {
-        // Storage unavailable
+
+        // Load applicant application
+        if (user) {
+          try {
+            const { data, merchant } = await fetchMyAffiliateApplication();
+            if (isMounted) {
+              setExistingApp(data);
+              setMerchantWorkspace(merchant);
+
+              // Pre-fill user contact info if available
+              if (!contactName && user.displayName) setContactName(user.displayName);
+              if (!contactEmail && user.email) setContactEmail(user.email);
+
+              // If applicant has draft and no active application
+              if (!data || data.status === 'rejected') {
+                const draft = await fetchAffiliateDraft();
+                if (draft && draft.draft_data) {
+                  populateFromDraft(draft);
+                }
+              } else if (data.status === 'needs_changes') {
+                // Pre-populate fields from existing application for resubmission
+                populateFromApplication(data);
+              }
+            }
+          } catch {}
+        }
+      } finally {
+        if (isMounted) setLoadingInitial(false);
       }
     }
-    loadApp();
-    return () => {
-      isMounted = false;
-    };
+
+    loadData();
+    return () => { isMounted = false; };
   }, [user]);
 
-  // Pre-fill user details if available and form is blank
-  useEffect(() => {
-    if (user && !contactName) {
-      setContactName(user.displayName || '');
-    }
-    if (user && !contactEmail && user.email) {
-      setContactEmail(user.email);
-    }
-  }, [user, contactName, contactEmail]);
+  const populateFromDraft = (draft: AffiliateDraftModel) => {
+    const d = draft.draft_data;
+    if (d.businessName) setBusinessName(d.businessName);
+    if (d.category) setCategory(d.category);
+    if (d.municipality) setMunicipality(d.municipality);
+    if (d.businessAddress) setBusinessAddress(d.businessAddress);
+    if (d.gpsLat !== undefined) setGpsLat(d.gpsLat ? String(d.gpsLat) : '');
+    if (d.gpsLng !== undefined) setGpsLng(d.gpsLng ? String(d.gpsLng) : '');
+    if (d.contactName) setContactName(d.contactName);
+    if (d.contactEmail) setContactEmail(d.contactEmail);
+    if (d.contactPhone) setContactPhone(d.contactPhone);
+    if (d.preferredContactMethod) setPreferredContactMethod(d.preferredContactMethod);
+    if (d.sponsorshipGoals) setSponsorshipGoals(d.sponsorshipGoals);
+    if (d.proposalDetails) setProposalDetails(d.proposalDetails);
+    if (draft.current_step) setCurrentStep(draft.current_step);
+    if (draft.revision) setLastDraftRevision(draft.revision);
+  };
 
-  const toggleSponsorshipGoal = (id: string) => {
-    setSponsorshipGoals((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+  const populateFromApplication = (app: AffiliateApplicationModel) => {
+    setBusinessName(app.business_name);
+    setCategory(app.category);
+    setMunicipality(app.municipality);
+    setBusinessAddress(app.business_address || '');
+    setGpsLat(app.gps_lat ? String(app.gps_lat) : '');
+    setGpsLng(app.gps_lng ? String(app.gps_lng) : '');
+    setContactName(app.contact_name);
+    setContactEmail(app.contact_email);
+    setContactPhone(app.contact_phone);
+    if (app.preferred_contact_method) setPreferredContactMethod(app.preferred_contact_method as any);
+    setSponsorshipGoals(app.sponsorship_goals || ['quest_stop']);
+    setProposalDetails(app.proposal_details || '');
+  };
+
+  // Auto-save draft on step transition
+  const handleSaveDraft = async (step: number = currentStep) => {
+    if (!user) return;
+    try {
+      setAutoSaveStatus('saving');
+      const draftPayload = {
+        businessName,
+        category,
+        municipality,
+        businessAddress,
+        gpsLat: gpsLat ? parseFloat(gpsLat) : null,
+        gpsLng: gpsLng ? parseFloat(gpsLng) : null,
+        contactName,
+        contactEmail,
+        contactPhone,
+        preferredContactMethod,
+        sponsorshipGoals,
+        proposalDetails,
+      };
+
+      const res = await saveAffiliateDraft({
+        draft_data: draftPayload,
+        current_step: step,
+      });
+      setLastDraftRevision(res.revision);
+      setAutoSaveStatus('saved');
+      setTimeout(() => setAutoSaveStatus('idle'), 2000);
+    } catch {
+      setAutoSaveStatus('error');
+    }
+  };
+
+  const nextStep = () => {
+    setFormError('');
+    // Step-specific validations
+    if (currentStep === 1) {
+      if (!businessName.trim() || businessName.trim().length < 2) {
+        setFormError('Please enter a valid business or establishment name (at least 2 characters).');
+        return;
+      }
+    } else if (currentStep === 2) {
+      if (!municipality.trim()) {
+        setFormError('Please select your Pangasinan municipality.');
+        return;
+      }
+    } else if (currentStep === 3) {
+      if (!contactName.trim() || contactName.trim().length < 2) {
+        setFormError('Please enter the owner or representative contact name.');
+        return;
+      }
+      if (!contactEmail.trim() || !contactEmail.includes('@')) {
+        setFormError('Please provide a valid contact email.');
+        return;
+      }
+      if (!contactPhone.trim() || contactPhone.trim().length < 7) {
+        setFormError('Please provide a valid contact phone number.');
+        return;
+      }
+    } else if (currentStep === 4) {
+      if (sponsorshipGoals.length === 0) {
+        setFormError('Please select at least one participation interest.');
+        return;
+      }
+    }
+
+    const next = Math.min(5, currentStep + 1);
+    setCurrentStep(next);
+    void handleSaveDraft(next);
+  };
+
+  const prevStep = () => {
+    setFormError('');
+    const prev = Math.max(1, currentStep - 1);
+    setCurrentStep(prev);
+    void handleSaveDraft(prev);
+  };
+
+  const toggleGoal = (id: string) => {
+    setSponsorshipGoals(prev => 
+      prev.includes(id) ? prev.filter(g => g !== id) : [...prev, id]
     );
   };
 
-  const handleStartEditing = () => {
-    if (existingApp) {
-      setBusinessName(existingApp.businessName);
-      setCategory(existingApp.category);
-      setMunicipality(existingApp.municipality);
-      setContactName(existingApp.contactName);
-      setContactEmail(existingApp.contactEmail);
-      setContactPhone(existingApp.contactPhone);
-      setSponsorshipGoals(existingApp.sponsorshipGoals);
-      setProposalDetails(existingApp.proposalDetails);
-    }
-    setIsFormOpen(true);
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setFormError('');
-
-    if (!businessName.trim()) {
-      setFormError('Please enter your business or establishment name.');
+  const handleSubmitApplication = async () => {
+    if (!agreedDeclaration) {
+      setFormError('Please read and confirm the sovereign tourism declaration before submitting.');
       return;
     }
-    if (!contactName.trim()) {
-      setFormError('Please enter the owner or contact person name.');
-      return;
-    }
-    if (!contactEmail.trim() || !contactEmail.includes('@')) {
-      setFormError('Please enter a valid business contact email address.');
-      return;
-    }
-    if (!contactPhone.trim() || contactPhone.length < 7) {
-      setFormError('Please enter a valid contact phone number.');
-      return;
-    }
-    if (sponsorshipGoals.length === 0) {
-      setFormError('Please select at least one sponsorship or partnership goal.');
-      return;
-    }
-
-    const refId = existingApp?.referenceId || `JDQ-MERCH-${Date.now().toString(36).toUpperCase()}`;
-    const payload: ApplicationData = {
-      businessName: businessName.trim(),
-      category,
-      municipality,
-      contactName: contactName.trim(),
-      contactEmail: contactEmail.trim(),
-      contactPhone: contactPhone.trim(),
-      sponsorshipGoals,
-      proposalDetails: proposalDetails.trim(),
-      submittedAt: new Date().toISOString(),
-      referenceId: refId,
-      status: 'received',
-      isServerRecord: false,
-    };
 
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-    } catch {
-      // storage unavailable
-    }
+      setSubmitting(true);
+      setFormError('');
 
-    setExistingApp(payload);
-    setIsFormOpen(false);
-    triggerCelebration({ type: 'poppers', playAudio: true });
+      const payload = {
+        business_name: businessName.trim(),
+        category,
+        municipality,
+        business_address: businessAddress.trim() || undefined,
+        gps_lat: gpsLat ? parseFloat(gpsLat) : null,
+        gps_lng: gpsLng ? parseFloat(gpsLng) : null,
+        contact_name: contactName.trim(),
+        contact_email: contactEmail.trim(),
+        contact_phone: contactPhone.trim(),
+        preferred_contact_method: preferredContactMethod,
+        sponsorship_goals: sponsorshipGoals,
+        proposal_details: proposalDetails.trim() || undefined,
+        declaration_version: '1.0',
+      };
 
-    if (user) {
-      setIsSubmitting(true);
-      submitAffiliateApplication({
-        business_name: payload.businessName,
-        category: payload.category,
-        municipality: payload.municipality,
-        contact_name: payload.contactName,
-        contact_email: payload.contactEmail,
-        contact_phone: payload.contactPhone,
-        sponsorship_goals: payload.sponsorshipGoals,
-        proposal_details: payload.proposalDetails,
-      })
-        .then((serverResult) => {
-          const syncedApp: ApplicationData = {
-            businessName: serverResult.business_name,
-            category: serverResult.category,
-            municipality: serverResult.municipality,
-            contactName: serverResult.contact_name,
-            contactEmail: serverResult.contact_email,
-            contactPhone: serverResult.contact_phone,
-            sponsorshipGoals: serverResult.sponsorship_goals,
-            proposalDetails: serverResult.proposal_details,
-            submittedAt: serverResult.created_at,
-            referenceId: serverResult.id,
-            status: serverResult.status,
-            isServerRecord: true,
-            reviewerNotes: serverResult.reviewer_notes,
-          };
-          setExistingApp(syncedApp);
-          try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(syncedApp));
-          } catch {}
-        })
-        .catch((err) => {
-          console.warn('[Affiliate] Background server sync:', err?.message || err);
-        })
-        .finally(() => {
-          setIsSubmitting(false);
-        });
+      let result: AffiliateApplicationModel;
+      if (existingApp && existingApp.status === 'needs_changes') {
+        result = await resubmitAffiliateApplication(existingApp.id, payload);
+      } else {
+        result = await submitAffiliateApplication(payload);
+      }
+
+      setExistingApp(result);
+      setIsWizardOpen(false);
+      triggerCelebration({ type: 'poppers', playAudio: true });
+    } catch (err: any) {
+      setFormError(err.message || 'Submission failed. Please check your network connection.');
+    } finally {
+      setSubmitting(false);
     }
   };
 
+  const categoryList = options?.categories || DEFAULT_CATEGORIES;
+  const municipalityList = options?.municipalities || DEFAULT_MUNICIPALITIES;
+  const goalList = options?.sponsorship_goals || DEFAULT_GOALS;
+
   return (
-    <Navigation>
-      <div className="mx-auto w-full max-w-5xl space-y-8 sm:space-y-10 px-4 py-6 sm:px-6 sm:py-10 lg:px-8">
-        {/* Hero Section */}
-        <section className="relative overflow-hidden rounded-[2rem] border border-[var(--color-border-default)] bg-white p-6 sm:p-10 shadow-sm">
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute -right-20 -top-24 h-72 w-72 rounded-full bg-emerald-500/10 blur-3xl"
-          />
-          <div className="relative max-w-3xl space-y-4">
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-100 text-[#2D6A4F] shadow-xs">
-                <Store aria-hidden="true" className="h-6 w-6" />
-              </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-extrabold text-amber-900">
-                <Clock3 aria-hidden="true" className="h-3.5 w-3.5" />
-                Coming Soon • Merchant Portal
-              </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-extrabold text-[#2D6A4F]">
-                <Sparkles aria-hidden="true" className="h-3.5 w-3.5 text-[#FFB703]" />
-                Applications Open
-              </span>
-            </div>
+    <div className="min-h-screen bg-[#FDFBF7] text-[#1B1C1A]">
+      <Navigation />
 
-            <p className="text-xs font-black uppercase tracking-[0.2em] text-[#2D6A4F]">
-              JuanDerQuest Merchant &amp; Partner Network
-            </p>
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-[#582F0E]">
-              Merchant Affiliate Hub
-            </h1>
-            <p className="text-sm sm:text-base leading-relaxed text-[#514532]">
-              Promote your local Pangasinan restaurant, resort, artisan shop, or tour service directly to thousands
-              of active eco-travelers and quest hunters. While the full self-service analytics dashboard is in active
-              development, local businesses can apply now to become an accredited merchant affiliate and co-sponsor
-              official tourism quests.
-            </p>
-
-            <div className="pt-2 flex flex-wrap items-center gap-3">
-              {!existingApp || isFormOpen ? (
-                <a
-                  href="#apply-form"
-                  onClick={() => setIsFormOpen(true)}
-                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#2D6A4F] px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#1B4332] active:scale-98"
-                >
-                  <Send className="w-4 h-4" />
-                  <span>Apply to Become an Affiliate</span>
-                </a>
-              ) : (
-                <button
-                  type="button"
-                  onClick={handleStartEditing}
-                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#2D6A4F] px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#1B4332] active:scale-98 cursor-pointer"
-                >
-                  <RotateCcw className="w-4 h-4" />
-                  <span>View / Edit Your Application</span>
-                </button>
-              )}
-              <Link
-                href="/quests"
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-[var(--color-border-default)] bg-[#FAF9F5] px-5 py-3 text-sm font-bold text-[#582F0E] transition hover:bg-white active:scale-98"
-              >
-                <Zap className="w-4 h-4 text-[#FFB703]" />
-                <span>Browse Active Quests</span>
-              </Link>
-              <Link
-                href="/shop"
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-[var(--color-border-default)] bg-transparent px-5 py-3 text-sm font-bold text-[#582F0E] transition hover:bg-stone-50 active:scale-98"
-              >
-                <Ticket className="w-4 h-4 text-[#2D6A4F]" />
-                <span>View Merchant Shop</span>
-              </Link>
-            </div>
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
+        {/* Breadcrumb & Header */}
+        <div className="mb-6">
+          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#2D6A4F] mb-1">
+            <Store size={14} /> JuanDerQuest Partner Network
           </div>
-        </section>
+          <h1 className="text-3xl font-extrabold text-[#1B4332] tracking-tight">
+            Merchant & Partner Affiliation
+          </h1>
+          <p className="text-sm text-[#555] max-w-2xl mt-1">
+            Showcase your Pangasinan restaurant, resort, pasalubong store, or coastal tour to thousands of cultural adventurers.
+          </p>
+        </div>
 
-        {/* Existing Application Status Banner (if user already submitted or saved draft) */}
-        {existingApp && !isFormOpen && (
-          <section
-            aria-label="Your Application Status"
-            className={`rounded-3xl border p-6 sm:p-8 shadow-xs space-y-4 ${
-              !existingApp.isServerRecord
-                ? 'border-stone-300 bg-stone-50/90'
-                : existingApp.status === 'approved'
-                ? 'border-emerald-300 bg-gradient-to-br from-emerald-50/80 to-white'
-                : existingApp.status === 'rejected'
-                ? 'border-rose-300 bg-gradient-to-br from-rose-50/80 to-white'
-                : 'border-amber-300 bg-gradient-to-br from-amber-50/80 to-white'
-            }`}
-          >
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-4 border-b border-black/10">
-              <div className="flex items-center gap-3">
-                <div
-                  className={`flex h-11 w-11 items-center justify-center rounded-2xl text-white shadow-xs shrink-0 ${
-                    !existingApp.isServerRecord
-                      ? 'bg-stone-500'
-                      : existingApp.status === 'approved'
-                      ? 'bg-emerald-600'
-                      : existingApp.status === 'rejected'
-                      ? 'bg-rose-600'
-                      : 'bg-amber-600'
-                  }`}
-                >
-                  {!existingApp.isServerRecord ? (
-                    <Clock3 className="h-6 w-6" />
-                  ) : existingApp.status === 'approved' ? (
-                    <CheckCircle2 className="h-6 w-6" />
-                  ) : existingApp.status === 'rejected' ? (
-                    <XCircle className="h-6 w-6" />
-                  ) : (
-                    <Clock3 className="h-6 w-6" />
-                  )}
-                </div>
-                <div>
-                  <div
-                    className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider mb-1 ${
-                      !existingApp.isServerRecord
-                        ? 'bg-stone-200 text-stone-800'
-                        : existingApp.status === 'approved'
-                        ? 'bg-emerald-100 text-emerald-900'
-                        : existingApp.status === 'rejected'
-                        ? 'bg-rose-100 text-rose-900'
-                        : 'bg-amber-100 text-amber-900'
-                    }`}
-                  >
-                    <Clock3 className="w-3 h-3" />
-                    <span>
-                      {existingApp.status === 'approved'
-                        ? 'Accredited Partner Candidate'
-                        : existingApp.status === 'rejected'
-                        ? 'Application Not Approved'
-                        : existingApp.status === 'draft'
-                        ? 'Unsent Local Draft'
-                        : 'Application Under Review'}
-                    </span>
-                  </div>
-                  <h2 className="text-xl font-black text-[#582F0E]">
-                    {existingApp.businessName}
-                  </h2>
-                </div>
-              </div>
-              <div className="text-left sm:text-right">
-                <span className="text-[10px] uppercase font-bold text-gray-400 block">
-                  Reference Tracking Code
-                </span>
-                <code className="text-xs font-mono font-bold text-[#582F0E] bg-white px-2.5 py-1 rounded-lg border border-black/10">
-                  {existingApp.referenceId}
-                </code>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-[#514532]">
-              <div className="p-3 bg-white rounded-xl border border-black/5">
-                <span className="text-gray-400 block text-[10px] font-bold">Municipality</span>
-                <span className="font-bold text-[#582F0E]">{existingApp.municipality}</span>
-              </div>
-              <div className="p-3 bg-white rounded-xl border border-black/5">
-                <span className="text-gray-400 block text-[10px] font-bold">Contact Person</span>
-                <span className="font-bold text-[#582F0E]">{existingApp.contactName}</span>
-              </div>
-              <div className="p-3 bg-white rounded-xl border border-black/5">
-                <span className="text-gray-400 block text-[10px] font-bold">Date</span>
-                <span className="font-bold text-[#582F0E]">
-                  {new Date(existingApp.submittedAt).toLocaleDateString(undefined, {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric',
-                  })}
-                </span>
-              </div>
-            </div>
-
-            <div
-              className={`p-4 rounded-2xl border text-xs leading-relaxed flex items-start gap-2.5 ${
-                !existingApp.isServerRecord
-                  ? 'bg-stone-100/70 border-stone-200 text-stone-700'
-                  : existingApp.status === 'approved'
-                  ? 'bg-emerald-100/50 border-emerald-200 text-[#2D6A4F]'
-                  : existingApp.status === 'rejected'
-                  ? 'bg-rose-100/50 border-rose-200 text-rose-800'
-                  : 'bg-amber-100/50 border-amber-200 text-amber-900'
-              }`}
-            >
-              <ShieldCheck className="w-5 h-5 shrink-0 mt-0.5" />
+        {/* Existing Application / Approved Status Banner */}
+        {existingApp && (
+          <div className="mb-8 p-6 bg-white rounded-2xl border border-[#D5C4AC] shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                {!existingApp.isServerRecord ? (
-                  <p>
-                    <strong>Unsent draft:</strong> This application is saved in your local browser cache. Sign in to your JuanDerQuest account to submit it for official moderation.
-                  </p>
-                ) : existingApp.status === 'approved' ? (
-                  <p>
-                    <strong>Accredited partner status:</strong> Your establishment credentials have been verified by provincial administrators.
-                    <em> Policy Notice: In accordance with quarantine requirements, live voucher offers and merchant budget spending remain draft-only until Phase 7 financial verification.</em>
-                  </p>
-                ) : existingApp.status === 'rejected' ? (
-                  <p>
-                    <strong>Application not approved:</strong>{' '}
-                    {existingApp.reviewerNotes
-                      ? `Reviewer feedback: "${existingApp.reviewerNotes}"`
-                      : 'Please check your establishment details and resubmit.'}
-                  </p>
-                ) : (
-                  <p>
-                    <strong>What happens next:</strong> Our Pangasinan tourism partner desk will review your establishment credentials within 24 to 48 business hours. Once accredited, you will receive an onboarding pack.
-                  </p>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold uppercase tracking-wider text-[#777]">Application Reference</span>
+                  <span className="text-xs bg-[#E9E8E4] px-2 py-0.5 rounded font-mono text-[#444]">{existingApp.id}</span>
+                  <span className="text-xs text-[#888]">v{existingApp.version || 1}</span>
+                </div>
+                <h3 className="text-xl font-bold text-[#1B4332] mt-1">{existingApp.business_name}</h3>
+                <div className="flex items-center gap-3 text-xs text-[#666] mt-1">
+                  <span>{existingApp.municipality}, Pangasinan</span>
+                  <span>•</span>
+                  <span className="capitalize">{existingApp.category}</span>
+                </div>
+              </div>
+
+              {/* Status pill & CTA */}
+              <div className="flex items-center gap-3">
+                {existingApp.status === 'approved' && (
+                  <div className="flex flex-col items-end">
+                    <span className="px-3 py-1 bg-[#DCFCE7] text-[#166534] font-bold rounded-full text-xs flex items-center gap-1.5">
+                      <CheckCircle2 size={14} /> Approved Partner
+                    </span>
+                    <Link
+                      href="/merchant"
+                      className="mt-2 text-xs font-bold text-[#2D6A4F] hover:underline flex items-center gap-1"
+                    >
+                      Open Merchant Dashboard <ArrowRight size={12} />
+                    </Link>
+                  </div>
+                )}
+
+                {existingApp.status === 'received' && (
+                  <span className="px-3 py-1 bg-[#DBEAFE] text-[#1E40AF] font-bold rounded-full text-xs flex items-center gap-1.5">
+                    <Clock3 size={14} /> Received & In Queue
+                  </span>
+                )}
+
+                {existingApp.status === 'in_review' && (
+                  <span className="px-3 py-1 bg-[#FEF3C7] text-[#92400E] font-bold rounded-full text-xs flex items-center gap-1.5">
+                    <Compass size={14} /> In Review by LGU Tourism
+                  </span>
+                )}
+
+                {existingApp.status === 'needs_changes' && (
+                  <button
+                    onClick={() => {
+                      populateFromApplication(existingApp);
+                      setIsWizardOpen(true);
+                    }}
+                    className="px-4 py-2 bg-[#FFB703] text-[#6B4B00] font-bold rounded-xl text-xs hover:bg-[#FCA311] transition-all flex items-center gap-1.5"
+                  >
+                    <AlertCircle size={14} /> Resubmit Requested Revisions
+                  </button>
+                )}
+
+                {existingApp.status === 'rejected' && (
+                  <button
+                    onClick={() => setIsWizardOpen(true)}
+                    className="px-4 py-2 bg-[#E9E8E4] text-[#333] font-bold rounded-xl text-xs hover:bg-[#DDD] transition-all"
+                  >
+                    Start New Application
+                  </button>
                 )}
               </div>
             </div>
 
-            <div className="pt-1 flex justify-end">
-              <button
-                type="button"
-                onClick={handleStartEditing}
-                className="text-xs font-bold text-[#2D6A4F] hover:underline cursor-pointer flex items-center gap-1"
-              >
-                <span>Edit application details</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </section>
-        )}
-
-        {/* 4 Superpowers Grid */}
-        <section aria-labelledby="merchant-perks-title" className="space-y-4">
-          <div>
-            <h2 id="merchant-perks-title" className="text-xl sm:text-2xl font-black text-[#582F0E]">
-              Why Partner with JuanDerQuest?
-            </h2>
-            <p className="text-xs sm:text-sm text-[#837560]">
-              Convert digital tourist curiosity into physical foot traffic at your cash register.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <article className="p-5 sm:p-6 rounded-2xl bg-white border border-[var(--color-border-default)] shadow-xs space-y-2">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center shrink-0">
-                  <Zap className="w-5 h-5 text-amber-600" />
-                </div>
-                <h3 className="font-extrabold text-sm sm:text-base text-[#582F0E]">
-                  Quest Co-Sponsorship &amp; Waypoints
-                </h3>
-              </div>
-              <p className="text-xs text-[#514532] leading-relaxed">
-                Be designated as an official arrival checkpoint or reward claim hub for tourism quests.
-                Travelers are guided to your venue by GPS to complete photo proofs and claim bounties.
-              </p>
-            </article>
-
-            <article className="p-5 sm:p-6 rounded-2xl bg-white border border-[var(--color-border-default)] shadow-xs space-y-2">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-emerald-100 text-[#2D6A4F] flex items-center justify-center shrink-0">
-                  <Ticket className="w-5 h-5 text-[#2D6A4F]" />
-                </div>
-                <h3 className="font-extrabold text-sm sm:text-base text-[#582F0E]">
-                  Merchant Shop Voucher Redemption
-                </h3>
-              </div>
-              <p className="text-xs text-[#514532] leading-relaxed">
-                Offer exclusive dining discounts, tasting samplers, or pasalubong tokens in the in-app
-                Merchant Shop. Explorers redeem their earned $mJDQ rewards right at your counter.
-              </p>
-            </article>
-
-            <article className="p-5 sm:p-6 rounded-2xl bg-white border border-[var(--color-border-default)] shadow-xs space-y-2">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-800 flex items-center justify-center shrink-0">
-                  <MapPin className="w-5 h-5 text-blue-600" />
-                </div>
-                <h3 className="font-extrabold text-sm sm:text-base text-[#582F0E]">
-                  Verified Sovereign Map Beacon
-                </h3>
-              </div>
-              <p className="text-xs text-[#514532] leading-relaxed">
-                Gain a verified merchant pin on our high-resolution OpenStreetMap Leaflet engine with
-                sovereign turn-by-turn routing via the Valhalla OSM daemon.
-              </p>
-            </article>
-
-            <article className="p-5 sm:p-6 rounded-2xl bg-white border border-[var(--color-border-default)] shadow-xs space-y-2">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-purple-100 text-purple-800 flex items-center justify-center shrink-0">
-                  <TrendingUp className="w-5 h-5 text-purple-600" />
-                </div>
-                <h3 className="font-extrabold text-sm sm:text-base text-[#582F0E]">
-                  Foot-Traffic &amp; Sentiment Analytics
-                </h3>
-              </div>
-              <p className="text-xs text-[#514532] leading-relaxed">
-                Access verified arrival counters, peak traveler hour graphs, and authentic traveler
-                endorsements from the Scout Field Logbook.
-              </p>
-            </article>
-          </div>
-        </section>
-
-        {/* Sneak Peek: Upcoming Merchant Dashboard (Locked Preview) */}
-        <section aria-labelledby="dashboard-preview-title" className="space-y-4">
-          <div className="flex items-center justify-between flex-wrap gap-2">
-            <div>
-              <h2 id="dashboard-preview-title" className="text-xl sm:text-2xl font-black text-[#582F0E]">
-                Merchant Control Room Preview
-              </h2>
-              <p className="text-xs sm:text-sm text-[#837560]">
-                A peek into the upcoming dashboard interface available to accredited merchant affiliates.
-              </p>
-            </div>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-stone-100 border border-stone-200 text-xs font-mono font-bold text-gray-500">
-              <Lock className="w-3.5 h-3.5 text-gray-400" />
-              <span>Preview Mode</span>
-            </span>
-          </div>
-
-          <div className="relative rounded-3xl border border-[var(--color-border-default)] bg-[#FAF9F5] p-5 sm:p-8 overflow-hidden space-y-6">
-            {/* KPI Cards Mockup */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-              <div className="p-4 rounded-2xl bg-white border border-[#E3DFD5] shadow-xs space-y-1">
-                <span className="text-[11px] font-bold text-gray-400 block uppercase tracking-wider">
-                  Verified Visitors
-                </span>
-                <p className="text-2xl font-black text-[#2D6A4F]">142</p>
-                <span className="text-[10px] font-extrabold text-emerald-600">
-                  ↑ +28% this month
-                </span>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-white border border-[#E3DFD5] shadow-xs space-y-1">
-                <span className="text-[11px] font-bold text-gray-400 block uppercase tracking-wider">
-                  $mJDQ Token Volume
-                </span>
-                <p className="text-2xl font-black text-amber-600">3,850</p>
-                <span className="text-[10px] font-extrabold text-gray-500">
-                  Redeemed by travelers
-                </span>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-white border border-[#E3DFD5] shadow-xs space-y-1">
-                <span className="text-[11px] font-bold text-gray-400 block uppercase tracking-wider">
-                  Active Vouchers
-                </span>
-                <p className="text-2xl font-black text-[#582F0E]">54</p>
-                <span className="text-[10px] font-extrabold text-emerald-600">
-                  3 active campaigns
-                </span>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-white border border-[#E3DFD5] shadow-xs space-y-1">
-                <span className="text-[11px] font-bold text-gray-400 block uppercase tracking-wider">
-                  Scout Rating
-                </span>
-                <p className="text-2xl font-black text-[#2D6A4F]">4.9 ★</p>
-                <span className="text-[10px] font-extrabold text-gray-500">
-                  92 verified reviews
-                </span>
-              </div>
-            </div>
-
-            {/* Active Quest Sponsorship Spotlight Card */}
-            <div className="p-5 rounded-2xl bg-white border border-[#E3DFD5] space-y-3">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-3 border-b border-[#E8E5DE]">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-amber-100 flex items-center justify-center text-amber-700 font-bold text-xs">
-                    🏆
-                  </div>
-                  <div>
-                    <h4 className="font-extrabold text-sm text-[#582F0E]">
-                      Hundred Islands Maritime Trail Quest
-                    </h4>
-                    <p className="text-[11px] text-gray-500">
-                      Official Marine Checkpoint &amp; Rest Stop Sponsor
-                    </p>
-                  </div>
-                </div>
-                <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
-                  Active Campaign
-                </span>
-              </div>
-              <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-[#514532]">
-                <span>
-                  <strong>Perk Offered:</strong> 10% Off Lunch on 100 mJDQ Voucher
-                </span>
-                <span className="text-emerald-700 font-bold">
-                  ✓ Geofence Radius Verification: 100m Active
-                </span>
-              </div>
-            </div>
-
-            {/* Teaser Overlay Banner */}
-            <div className="rounded-2xl border border-amber-200 bg-amber-50/90 p-4 text-xs text-amber-900 flex items-start gap-3">
-              <Building2 className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" />
-              <div>
-                <p className="font-bold text-sm text-amber-950">
-                  Self-Service Campaign Creator Coming Soon
-                </p>
-                <p className="leading-relaxed">
-                  The automated voucher generator and self-service quest sponsorship bidding tool are
-                  currently in alpha engineering. Submit your application below to secure priority onboarding
-                  and white-glove setup.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Application Form Section */}
-        {(!existingApp || isFormOpen) && (
-          <section
-            id="apply-form"
-            aria-labelledby="apply-form-title"
-            className="rounded-3xl border border-[var(--color-border-default)] bg-white p-6 sm:p-10 shadow-sm space-y-6"
-          >
-            <div className="border-b border-[var(--color-border-default)] pb-4">
-              <div className="flex items-center gap-2 font-bold text-xs uppercase tracking-wider text-[#2D6A4F] mb-1">
-                <Sparkles className="w-3.5 h-3.5 text-[#FFB703]" />
-                <span>Join the Merchant Network</span>
-              </div>
-              <h2 id="apply-form-title" className="text-2xl sm:text-3xl font-black text-[#582F0E]">
-                Apply for Merchant Affiliate Accreditation
-              </h2>
-              <p className="text-xs sm:text-sm text-[#514532] mt-1">
-                Complete this quick application to feature your establishment in quests, the interactive map,
-                and the merchant voucher shop.
-              </p>
-            </div>
-
-            {formError && (
-              <div
-                role="alert"
-                className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-xs font-bold text-red-800 animate-in fade-in"
-              >
-                {formError}
+            {/* Applicant Feedback Notification */}
+            {existingApp.status === 'needs_changes' && existingApp.applicant_feedback && (
+              <div className="mt-4 p-4 bg-[#FFF7ED] border border-[#FFEDD5] rounded-xl text-xs text-[#9A3412]">
+                <strong className="block font-bold mb-1">Feedback from Tourism Moderation:</strong>
+                {existingApp.applicant_feedback}
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Business Name */}
-                <div className="space-y-1.5 sm:col-span-2">
-                  <label htmlFor="biz-name" className="text-xs font-bold text-[#582F0E] block">
-                    Business / Establishment Name <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    id="biz-name"
-                    type="text"
-                    required
-                    value={businessName}
-                    onChange={(e) => setBusinessName(e.target.value)}
-                    placeholder="e.g. Alaminos Bangus Grill & Pasalubong Center"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--color-border-default)] text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#2D6A4F] bg-[#FAF9F5]"
-                  />
-                </div>
-
-                {/* Business Category */}
-                <div className="space-y-1.5">
-                  <label htmlFor="biz-cat" className="text-xs font-bold text-[#582F0E] block">
-                    Business Category <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    id="biz-cat"
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--color-border-default)] text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#2D6A4F] bg-[#FAF9F5]"
-                  >
-                    {BUSINESS_CATEGORIES.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Municipality */}
-                <div className="space-y-1.5">
-                  <label htmlFor="biz-muni" className="text-xs font-bold text-[#582F0E] block">
-                    Pangasinan Municipality <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    id="biz-muni"
-                    value={municipality}
-                    onChange={(e) => setMunicipality(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--color-border-default)] text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#2D6A4F] bg-[#FAF9F5]"
-                  >
-                    {PANGASINAN_MUNICIPALITIES.map((m) => (
-                      <option key={m} value={m}>
-                        {m}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Contact Name */}
-                <div className="space-y-1.5">
-                  <label htmlFor="contact-name" className="text-xs font-bold text-[#582F0E] block">
-                    Owner / Authorized Representative <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    id="contact-name"
-                    type="text"
-                    required
-                    value={contactName}
-                    onChange={(e) => setContactName(e.target.value)}
-                    placeholder="Full Name"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--color-border-default)] text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#2D6A4F] bg-[#FAF9F5]"
-                  />
-                </div>
-
-                {/* Contact Email */}
-                <div className="space-y-1.5">
-                  <label htmlFor="contact-email" className="text-xs font-bold text-[#582F0E] block">
-                    Business Email Address <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    id="contact-email"
-                    type="email"
-                    required
-                    value={contactEmail}
-                    onChange={(e) => setContactEmail(e.target.value)}
-                    placeholder="merchant@example.com"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--color-border-default)] text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#2D6A4F] bg-[#FAF9F5]"
-                  />
-                </div>
-
-                {/* Contact Phone */}
-                <div className="space-y-1.5 sm:col-span-2">
-                  <label htmlFor="contact-phone" className="text-xs font-bold text-[#582F0E] block">
-                    Mobile / Telephone Number <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    id="contact-phone"
-                    type="tel"
-                    required
-                    value={contactPhone}
-                    onChange={(e) => setContactPhone(e.target.value)}
-                    placeholder="e.g. 0917-123-4567"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--color-border-default)] text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#2D6A4F] bg-[#FAF9F5]"
-                  />
-                </div>
-              </div>
-
-              {/* Sponsorship Goals Checkboxes */}
-              <div className="space-y-2 pt-2">
-                <label className="text-xs font-bold text-[#582F0E] block">
-                  Desired Partnership &amp; Promotion Channels <span className="text-red-500">*</span>
-                </label>
-                <div className="space-y-2">
-                  {SPONSORSHIP_OPTIONS.map((opt) => (
-                    <label
-                      key={opt.id}
-                      className="flex items-start gap-2.5 p-3 rounded-xl border border-[var(--color-border-default)] bg-[#FAF9F5] hover:bg-white transition cursor-pointer select-none text-xs text-[#514532]"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={sponsorshipGoals.includes(opt.id)}
-                        onChange={() => toggleSponsorshipGoal(opt.id)}
-                        className="mt-0.5 rounded border-gray-300 text-[#2D6A4F] focus:ring-[#2D6A4F]"
-                      />
-                      <span>{opt.label}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {/* Proposal Details */}
-              <div className="space-y-1.5 pt-2">
-                <label htmlFor="proposal" className="text-xs font-bold text-[#582F0E] block">
-                  Perk or Sponsorship Concept (Optional)
-                </label>
-                <textarea
-                  id="proposal"
-                  rows={3}
-                  value={proposalDetails}
-                  onChange={(e) => setProposalDetails(e.target.value)}
-                  placeholder="e.g. We would like to offer a 10% discount on fresh Bangus lunch to travelers who arrive via the Hundred Islands Trail Quest..."
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--color-border-default)] text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#2D6A4F] bg-[#FAF9F5]"
-                />
-              </div>
-
-              {/* Action Buttons */}
-              <div className="pt-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 border-t border-[var(--color-border-default)]">
-                {existingApp && isFormOpen && (
-                  <button
-                    type="button"
-                    onClick={() => setIsFormOpen(false)}
-                    className="px-5 py-3 rounded-xl border border-[var(--color-border-default)] text-xs font-bold text-gray-600 hover:bg-stone-50 cursor-pointer"
-                  >
-                    Cancel Editing
-                  </button>
-                )}
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#2D6A4F] hover:bg-[#1B4332] px-6 py-3 text-xs sm:text-sm font-bold text-white shadow-sm transition active:scale-98 cursor-pointer disabled:opacity-50"
+            {existingApp.status === 'approved' && merchantWorkspace && (
+              <div className="mt-4 p-4 bg-[#F0FDF4] border border-[#BBF7D0] rounded-xl flex items-center justify-between">
+                <span className="text-xs text-[#166534] font-medium">
+                  Your dedicated merchant showcase workspace is active. Manage your profile, products, and contact info.
+                </span>
+                <Link
+                  href="/merchant"
+                  className="px-3 py-1.5 bg-[#1B4332] text-white rounded-lg text-xs font-bold hover:bg-[#2D6A4F] transition-all"
                 >
-                  <Send className="w-4 h-4" />
-                  <span>
-                    {isSubmitting
-                      ? 'Submitting Application...'
-                      : existingApp
-                      ? 'Update Application'
-                      : 'Submit Merchant Application'}
-                  </span>
-                </button>
+                  Manage Merchant Space
+                </Link>
               </div>
-            </form>
-          </section>
+            )}
+          </div>
         )}
 
-        {/* Merchant FAQs */}
-        <section aria-labelledby="merchant-faq-title" className="space-y-4">
-          <div>
-            <h2 id="merchant-faq-title" className="text-xl sm:text-2xl font-black text-[#582F0E]">
-              Frequently Asked Questions
-            </h2>
-            <p className="text-xs sm:text-sm text-[#837560]">
-              Everything you need to know about the JuanDerQuest Merchant Affiliate program.
+        {/* Hero & CTA (If no active application or when closed) */}
+        {!isWizardOpen && (!existingApp || existingApp.status === 'rejected') && (
+          <div className="bg-white rounded-3xl p-8 border border-[#D5C4AC] mb-8 relative overflow-hidden shadow-sm">
+            <div className="max-w-2xl">
+              <span className="px-3 py-1 bg-[#E8F5E9] text-[#2E7D32] text-xs font-bold rounded-full uppercase tracking-wider inline-block mb-3">
+                Zero Listing Fees • Sovereign Discovery
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-[#1B4332] leading-tight mb-3">
+                Join the Network of Verified Pangasinan Tourist Establishments
+              </h2>
+              <p className="text-sm text-[#555] leading-relaxed mb-6">
+                Connect directly with travelers visiting local destinations. Whether you offer freshly grilled Dagupan bangus, beachfront stays in Bolinao, or boat rides at Hundred Islands, JuanDerQuest brings respectful foot traffic to your doors.
+              </p>
+
+              <div className="flex flex-wrap items-center gap-4">
+                <button
+                  onClick={() => setIsWizardOpen(true)}
+                  className="px-6 py-3 bg-[#1B4332] hover:bg-[#2D6A4F] text-white font-bold rounded-xl text-sm transition-all shadow-md flex items-center gap-2"
+                >
+                  Start Guided Application <ArrowRight size={16} />
+                </button>
+                <span className="text-xs text-[#777]">Takes less than 3 minutes • Instant draft auto-save</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modern 5-Step Guided Application Modal/Panel */}
+        {isWizardOpen && (
+          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#C9BDA8] shadow-lg mb-8 transition-all">
+            {/* Wizard Header & Progress Bar */}
+            <div className="border-b border-[#E8E4DC] pb-6 mb-6">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <span className="text-xs font-bold text-[#2D6A4F] uppercase tracking-wider">
+                    Step {currentStep} of 5
+                  </span>
+                  <h3 className="text-xl font-bold text-[#1B4332]">
+                    {currentStep === 1 && 'Business Information'}
+                    {currentStep === 2 && 'Location & Geography'}
+                    {currentStep === 3 && 'Contact & Representative'}
+                    {currentStep === 4 && 'Participation Interests'}
+                    {currentStep === 5 && 'Review & Sovereign Declaration'}
+                  </h3>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  {autoSaveStatus === 'saving' && (
+                    <span className="text-xs text-[#888] flex items-center gap-1">
+                      <Save size={12} className="animate-spin" /> Saving draft...
+                    </span>
+                  )}
+                  {autoSaveStatus === 'saved' && (
+                    <span className="text-xs text-[#2D6A4F] flex items-center gap-1 font-medium">
+                      <Check size={12} /> Draft saved
+                    </span>
+                  )}
+                  <button
+                    onClick={() => setIsWizardOpen(false)}
+                    className="text-xs text-[#777] hover:text-[#1B1C1A] px-2 py-1 rounded"
+                  >
+                    Close & Resume Later
+                  </button>
+                </div>
+              </div>
+
+              {/* Progress Steps Indicator */}
+              <div className="grid grid-cols-5 gap-2">
+                {[1, 2, 3, 4, 5].map((s) => (
+                  <div
+                    key={s}
+                    className={`h-2 rounded-full transition-all ${
+                      s <= currentStep ? 'bg-[#2D6A4F]' : 'bg-[#E9E8E4]'
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Error Banner */}
+            {formError && (
+              <div className="mb-6 p-4 bg-[#FEE2E2] border border-[#FECACA] text-[#991B1B] text-xs font-medium rounded-xl flex items-center gap-2">
+                <AlertCircle size={16} /> {formError}
+              </div>
+            )}
+
+            {/* Step 1: Business Information */}
+            {currentStep === 1 && (
+              <div className="space-y-5">
+                <div>
+                  <label className="block text-xs font-bold text-[#333] mb-1">
+                    Official Business Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g., Bonuan Waterfront Bangus Grill"
+                    value={businessName}
+                    onChange={(e) => setBusinessName(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl border border-[#D5C4AC] bg-[#FAF9F5] text-sm focus:outline-none focus:border-[#2D6A4F]"
+                  />
+                  <span className="text-[11px] text-[#777] mt-1 block">
+                    Use your registered business name or local brand known to tourists.
+                  </span>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[#333] mb-1">
+                    Primary Category <span className="text-red-500">*</span>
+                  </label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {categoryList.map((cat) => (
+                      <div
+                        key={cat.id}
+                        onClick={() => setCategory(cat.id)}
+                        className={`p-3 rounded-xl border cursor-pointer transition-all ${
+                          category === cat.id
+                            ? 'border-[#2D6A4F] bg-[#F0FDF4]'
+                            : 'border-[#E0D8CA] bg-[#FAF9F5] hover:border-[#BBB]'
+                        }`}
+                      >
+                        <div className="font-bold text-xs text-[#1B4332]">{cat.label}</div>
+                        <div className="text-[11px] text-[#666] mt-0.5">{cat.description}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Step 2: Location & Geography */}
+            {currentStep === 2 && (
+              <div className="space-y-5">
+                <div>
+                  <label className="block text-xs font-bold text-[#333] mb-1">
+                    Pangasinan Municipality or City <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={municipality}
+                    onChange={(e) => setMunicipality(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl border border-[#D5C4AC] bg-[#FAF9F5] text-sm focus:outline-none focus:border-[#2D6A4F]"
+                  >
+                    {municipalityList.map((m) => (
+                      <option key={m} value={m}>{m}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[#333] mb-1">
+                    Physical Street Address / Landmark (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g., Stall #14 Lucap Wharf Boardwalk, near Hundred Islands Ferry"
+                    value={businessAddress}
+                    onChange={(e) => setBusinessAddress(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl border border-[#D5C4AC] bg-[#FAF9F5] text-sm focus:outline-none focus:border-[#2D6A4F]"
+                  />
+                  <span className="text-[11px] text-[#777] mt-1 block">
+                    Helps travelers find you on foot or via sovereign routing.
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-[#333] mb-1">
+                      Latitude (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g., 16.0425"
+                      value={gpsLat}
+                      onChange={(e) => setGpsLat(e.target.value)}
+                      className="w-full px-4 py-2 rounded-xl border border-[#D5C4AC] bg-[#FAF9F5] text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-[#333] mb-1">
+                      Longitude (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g., 120.3340"
+                      value={gpsLng}
+                      onChange={(e) => setGpsLng(e.target.value)}
+                      className="w-full px-4 py-2 rounded-xl border border-[#D5C4AC] bg-[#FAF9F5] text-xs"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Step 3: Contact & Representative */}
+            {currentStep === 3 && (
+              <div className="space-y-5">
+                <div>
+                  <label className="block text-xs font-bold text-[#333] mb-1">
+                    Owner / Authorized Representative Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g., Maria Elena Santos"
+                    value={contactName}
+                    onChange={(e) => setContactName(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl border border-[#D5C4AC] bg-[#FAF9F5] text-sm focus:outline-none focus:border-[#2D6A4F]"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-[#333] mb-1">
+                      Business Email Address <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="email"
+                      placeholder="e.g., inquiries@islandgrill.ph"
+                      value={contactEmail}
+                      onChange={(e) => setContactEmail(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl border border-[#D5C4AC] bg-[#FAF9F5] text-sm focus:outline-none focus:border-[#2D6A4F]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-[#333] mb-1">
+                      Mobile / Telephone Number <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="tel"
+                      placeholder="e.g., +63 917 123 4567"
+                      value={contactPhone}
+                      onChange={(e) => setContactPhone(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl border border-[#D5C4AC] bg-[#FAF9F5] text-sm focus:outline-none focus:border-[#2D6A4F]"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[#333] mb-1">
+                    Preferred Contact Method
+                  </label>
+                  <div className="flex gap-4">
+                    {(['email', 'phone', 'sms'] as const).map((method) => (
+                      <label key={method} className="flex items-center gap-2 text-xs text-[#444] cursor-pointer">
+                        <input
+                          type="radio"
+                          name="contactMethod"
+                          checked={preferredContactMethod === method}
+                          onChange={() => setPreferredContactMethod(method)}
+                          className="accent-[#2D6A4F]"
+                        />
+                        <span className="capitalize">{method}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Step 4: Participation Interests */}
+            {currentStep === 4 && (
+              <div className="space-y-5">
+                <div>
+                  <label className="block text-xs font-bold text-[#333] mb-2">
+                    How would you like to participate in JuanDerQuest? <span className="text-red-500">*</span>
+                  </label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {goalList.map((g) => {
+                      const isSelected = sponsorshipGoals.includes(g.id);
+                      return (
+                        <div
+                          key={g.id}
+                          onClick={() => toggleGoal(g.id)}
+                          className={`p-3.5 rounded-xl border cursor-pointer transition-all ${
+                            isSelected
+                              ? 'border-[#2D6A4F] bg-[#F0FDF4]'
+                              : 'border-[#E0D8CA] bg-[#FAF9F5] hover:border-[#BBB]'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              readOnly
+                              className="accent-[#2D6A4F]"
+                            />
+                            <span className="font-bold text-xs text-[#1B4332]">{g.label}</span>
+                          </div>
+                          <p className="text-[11px] text-[#666] mt-1 ml-5">{g.description}</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[#333] mb-1">
+                    Special Offers, Delicacies, or Ideas for Travelers (Optional)
+                  </label>
+                  <textarea
+                    rows={3}
+                    placeholder="e.g., We offer free sampling of freshly cooked Calasiao puto for adventurers logging a GPS check-in."
+                    value={proposalDetails}
+                    onChange={(e) => setProposalDetails(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl border border-[#D5C4AC] bg-[#FAF9F5] text-sm focus:outline-none focus:border-[#2D6A4F]"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Step 5: Review & Declaration */}
+            {currentStep === 5 && (
+              <div className="space-y-5">
+                {/* Summary Card */}
+                <div className="p-4 bg-[#FBF9F5] border border-[#E0D8CA] rounded-2xl space-y-3 text-xs">
+                  <div className="flex justify-between border-b border-[#E8E4DC] pb-2">
+                    <span className="text-[#777]">Business:</span>
+                    <strong className="text-[#1B4332]">{businessName} ({category})</strong>
+                  </div>
+                  <div className="flex justify-between border-b border-[#E8E4DC] pb-2">
+                    <span className="text-[#777]">Location:</span>
+                    <span>{municipality}, Pangasinan {businessAddress ? `• ${businessAddress}` : ''}</span>
+                  </div>
+                  <div className="flex justify-between border-b border-[#E8E4DC] pb-2">
+                    <span className="text-[#777]">Contact:</span>
+                    <span>{contactName} ({contactEmail} / {contactPhone})</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-[#777]">Interests:</span>
+                    <span>{sponsorshipGoals.join(', ')}</span>
+                  </div>
+                </div>
+
+                {/* Declaration Checkbox */}
+                <div className="p-4 bg-[#F0FDF4] border border-[#BBF7D0] rounded-xl flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    id="declaration"
+                    checked={agreedDeclaration}
+                    onChange={(e) => setAgreedDeclaration(e.target.checked)}
+                    className="accent-[#2D6A4F] mt-1"
+                  />
+                  <label htmlFor="declaration" className="text-xs text-[#166534] leading-relaxed cursor-pointer">
+                    <strong>Sovereign Tourism Declaration:</strong> I confirm that this establishment operates legally in Pangasinan, and that the submitted information is accurate. I understand that JuanDerQuest provides non-speculative, community-verified traveler discovery without monetary listing fees or upfront token commitments.
+                  </label>
+                </div>
+              </div>
+            )}
+
+            {/* Navigation Buttons */}
+            <div className="flex items-center justify-between border-t border-[#E8E4DC] pt-6 mt-8">
+              {currentStep > 1 ? (
+                <button
+                  type="button"
+                  onClick={prevStep}
+                  className="px-5 py-2.5 rounded-xl border border-[#D5C4AC] bg-white text-xs font-bold text-[#555] hover:bg-[#F5F5F5] flex items-center gap-1.5"
+                >
+                  <ArrowLeft size={14} /> Back
+                </button>
+              ) : <div />}
+
+              {currentStep < 5 ? (
+                <button
+                  type="button"
+                  onClick={nextStep}
+                  className="px-6 py-2.5 rounded-xl bg-[#1B4332] hover:bg-[#2D6A4F] text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm"
+                >
+                  Next Step <ArrowRight size={14} />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSubmitApplication}
+                  disabled={submitting || !agreedDeclaration}
+                  className="px-8 py-3 rounded-xl bg-[#2D6A4F] hover:bg-[#1B4332] disabled:opacity-50 text-white text-xs font-extrabold flex items-center gap-2 transition-all shadow-md"
+                >
+                  {submitting ? 'Submitting Application...' : 'Submit Official Application'}
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Informational Pillars */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+          <div className="p-6 bg-white rounded-2xl border border-[#E0D8CA]">
+            <div className="w-10 h-10 rounded-xl bg-[#E8F5E9] flex items-center justify-center text-[#2E7D32] mb-4">
+              <Building2 size={20} />
+            </div>
+            <h4 className="font-bold text-[#1B4332] text-sm mb-2">Dedicated Merchant Showcase</h4>
+            <p className="text-xs text-[#666] leading-relaxed">
+              Approved merchants receive a dedicated workspace to manage business details, showcase specialty products, and control public contacts.
             </p>
           </div>
 
-          <div className="space-y-2.5">
-            {[
-              {
-                q: 'Who can apply to become an affiliate merchant?',
-                a: 'Any legally operating food establishment, resort, inn, craft artisan, boat tour operator, or tourism enterprise located within the 48 municipalities and cities of Pangasinan.',
-              },
-              {
-                q: 'What does it mean to co-sponsor a quest?',
-                a: 'When you sponsor a quest, your business location becomes an official waypoint or completion checkpoint. Travelers follow GPS directions to your venue to take verified arrival photos or claim quest rewards, guaranteeing foot traffic.',
-              },
-              {
-                q: 'How does the $mJDQ voucher settlement work?',
-                a: 'Travelers earn $mJDQ points by visiting cultural landmarks and completing eco-challenges. In the Merchant Shop, they can redeem these points for voucher tickets (e.g. 10% off meal or free souvenir). You verify the voucher on-site upon presentation.',
-              },
-              {
-                q: 'Is there any fee to join during the Alpha pilot?',
-                a: 'No. Participation during the initial alpha rollout is 100% free for approved local Pangasinan merchants as part of our academic tourism promotion initiative.',
-              },
-            ].map((faq, idx) => {
-              const isOpen = activeFaq === idx;
-              return (
-                <div
-                  key={faq.q}
-                  className="rounded-2xl border border-[var(--color-border-default)] bg-white overflow-hidden shadow-2xs"
-                >
-                  <button
-                    type="button"
-                    onClick={() => setActiveFaq(isOpen ? null : idx)}
-                    className="w-full flex items-center justify-between p-4 sm:p-5 text-left font-bold text-xs sm:text-sm text-[#582F0E] hover:bg-stone-50 transition cursor-pointer"
-                  >
-                    <span className="flex items-center gap-2">
-                      <HelpCircle className="w-4 h-4 text-[#2D6A4F] shrink-0" />
-                      <span>{faq.q}</span>
-                    </span>
-                    <ChevronDown
-                      className={`w-4 h-4 text-gray-400 transition-transform duration-200 shrink-0 ${
-                        isOpen ? 'rotate-180' : ''
-                      }`}
-                    />
-                  </button>
-                  {isOpen && (
-                    <div className="px-5 pb-5 pt-1 text-xs sm:text-sm text-[#514532] leading-relaxed border-t border-stone-100 bg-[#FAF9F5]">
-                      {faq.a}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+          <div className="p-6 bg-white rounded-2xl border border-[#E0D8CA]">
+            <div className="w-10 h-10 rounded-xl bg-[#FEF3C7] flex items-center justify-center text-[#92400E] mb-4">
+              <MapPin size={20} />
+            </div>
+            <h4 className="font-bold text-[#1B4332] text-sm mb-2">Turn-by-Turn Discovery</h4>
+            <p className="text-xs text-[#666] leading-relaxed">
+              Your location is integrated into our sovereign Valhalla routing engine, helping eco-tourists discover your shop along scenic Pangasinan trails.
+            </p>
           </div>
-        </section>
 
-        {/* Footnote on Phase 2 & Governance */}
-        <p className="rounded-2xl border border-[var(--color-border-default)] bg-[var(--color-bg-subtle)] p-4 text-center text-xs leading-relaxed text-[#837560]">
-          JuanDerQuest Merchant Affiliate Hub is an active academic research and tourism promotion initiative
-          in partnership with Universidad de Dagupan. All applications are subject to community and LGU safety
-          guidelines.
-        </p>
-      </div>
-    </Navigation>
+          <div className="p-6 bg-white rounded-2xl border border-[#E0D8CA]">
+            <div className="w-10 h-10 rounded-xl bg-[#DBEAFE] flex items-center justify-center text-[#1E40AF] mb-4">
+              <ShieldCheck size={20} />
+            </div>
+            <h4 className="font-bold text-[#1B4332] text-sm mb-2">Civic Proof & Trust</h4>
+            <p className="text-xs text-[#666] leading-relaxed">
+              All applications are moderated by accredited tourism evaluators to ensure authentic local experiences without spam or paid placement inflation.
+            </p>
+          </div>
+        </div>
+      </main>
+    </div>
   );
 }

@@ -27,8 +27,6 @@ import {
   LayoutDashboard,
   PanelLeft,
   PanelLeftClose,
-  Trophy,
-  Flame,
   ChevronRight,
   ChevronUp,
 } from 'lucide-react';
@@ -593,7 +591,7 @@ export const Navigation: React.FC<{
               <div
                 role="region"
                 aria-label="Notifications panel"
-                className="absolute top-full mt-2.5 right-0 w-80 max-w-[calc(100vw-1.5rem)] bg-white rounded-2xl border border-[var(--color-border-default)] shadow-2xl p-3 z-50 animate-in fade-in zoom-in-95 duration-150"
+                className="absolute top-full mt-2.5 right-0 w-80 max-w-[calc(100vw-1.5rem)] bg-white rounded-2xl border border-[var(--color-border-default)] shadow-2xl p-3 z-50 motion-overlay-enter"
               >
                 <div className="flex items-center justify-between pb-2.5 border-b border-[var(--color-border-default)]">
                   <div className="flex items-center gap-1.5">
@@ -740,7 +738,7 @@ export const Navigation: React.FC<{
                 <div
                   role="menu"
                   aria-orientation="vertical"
-                  className="hidden lg:block absolute top-full mt-2.5 right-0 w-80 max-h-[85vh] overflow-y-auto bg-white rounded-2xl border border-[var(--color-border-default)] shadow-2xl p-2.5 z-50 animate-in fade-in zoom-in-95 duration-150"
+                  className="hidden lg:block absolute top-full mt-2.5 right-0 w-80 max-h-[85vh] overflow-y-auto bg-white rounded-2xl border border-[var(--color-border-default)] shadow-2xl p-2.5 z-50 motion-overlay-enter"
                 >
                   {/* User Identity Header Card */}
                   <Link
@@ -1050,117 +1048,60 @@ export const Navigation: React.FC<{
             </button>
           </div>
 
-          {/* Mabuhay Greeting Card (Top of Drawer - Interactive Expandable Explorer Hub) */}
+          {/* Explorer welcome card */}
           {!isDesktopDrawerCollapsed ? (
-            <div className={`mx-2 mt-2 mb-1.5 rounded-2xl bg-gradient-to-br from-[#1B4332] via-[#2D6A4F] to-[#1E4A38] text-white shadow-sm border border-emerald-500/25 relative overflow-hidden transition-all duration-300 ease-out ${
-              isWelcomeCardExpanded ? 'ring-2 ring-[#FFB703]/30 shadow-md' : 'hover:border-emerald-400/40 hover:shadow-xs'
-            }`}>
-              {/* Dynamic Ambient Glow Orbs */}
-              <div className={`absolute top-0 right-0 w-32 h-32 bg-amber-400/15 rounded-full blur-2xl pointer-events-none transition-all duration-500 ${
-                isWelcomeCardExpanded ? 'scale-125 opacity-100' : 'scale-90 opacity-60'
-              }`} />
-              <div className="absolute -bottom-6 -left-6 w-20 h-20 bg-emerald-400/10 rounded-full blur-xl pointer-events-none" />
-
-              {/* Clickable Card Header / Surface */}
+            <div className="mx-2 mt-2 mb-2 rounded-2xl bg-gradient-to-br from-[#173F31] via-[var(--color-brand-primary)] to-[#245541] text-white border border-white/10 shadow-md relative overflow-hidden">
+              <div className="absolute -top-10 -right-8 w-36 h-36 rounded-full border border-white/10 pointer-events-none" aria-hidden="true" />
+              <div className="absolute -top-3 -right-12 w-36 h-36 rounded-full border border-white/10 pointer-events-none" aria-hidden="true" />
               <button
                 type="button"
                 onClick={() => setIsWelcomeCardExpanded((prev) => !prev)}
-                className="w-full text-left p-3.5 relative z-10 block cursor-pointer group select-none transition-colors"
+                className="w-full text-left p-4 relative z-10 block cursor-pointer group select-none hover:bg-white/5 focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-amber-300 transition-colors"
                 aria-expanded={isWelcomeCardExpanded}
-                aria-label="Toggle Explorer Overview"
+                aria-controls="explorer-welcome-details"
               >
-                <div className="space-y-1.5 min-w-0">
-                  {/* Greeting & Animated Sparkle Pill */}
-                  <div className="flex items-center justify-between gap-1.5">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <div className="w-6 h-6 rounded-lg bg-white/10 flex items-center justify-center shrink-0 border border-white/10 group-hover:bg-[#FFB703]/20 group-hover:border-[#FFB703]/30 transition-colors">
-                        <Sparkles className="w-3.5 h-3.5 text-[#FFB703] group-hover:rotate-12 transition-transform duration-300" />
-                      </div>
-                      <h3 className="text-xs sm:text-[13px] font-black tracking-tight text-white truncate group-hover:text-amber-200 transition">
-                        {user?.displayName ? `Mabuhay, ${user.displayName}!` : 'Mabuhay, Explorer!'}
-                      </h3>
-                    </div>
-
-                    {/* Fun Tap hint chip */}
-                    <span className="text-[9px] font-black uppercase tracking-wider text-amber-300/80 bg-emerald-950/60 border border-emerald-400/30 px-2 py-0.5 rounded-full shrink-0 group-hover:text-amber-200 group-hover:border-amber-300/50 transition">
-                      {isWelcomeCardExpanded ? 'Close' : 'Stats'}
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-amber-200">
+                      <Sparkles className="w-3.5 h-3.5" aria-hidden="true" /> Your explorer space
                     </span>
+                    <h3 className="mt-2 text-base font-extrabold leading-tight break-words">
+                      {user?.displayName ? `Mabuhay, ${user.displayName}!` : 'Mabuhay, Explorer!'}
+                    </h3>
                   </div>
-
-                  {/* Subtitle with Smooth Fade when Expanded */}
-                  <div
-                    className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                      isWelcomeCardExpanded
-                        ? 'max-h-0 opacity-0 pointer-events-none -translate-y-1'
-                        : 'max-h-12 opacity-100 translate-y-0'
-                    }`}
-                  >
-                    <p className="text-[11px] text-emerald-100/90 leading-snug line-clamp-2">
-                      Track your visits, streaks, and voting across all 48 municipalities.
-                    </p>
-                    <p className="text-[10px] text-amber-300/90 font-bold mt-1">
-                      Level {currentLevel} • {wallet ? `${wallet.balanceMjdq.toLocaleString()} mJDQ` : 'Demo Explorer'}
-                    </p>
-                  </div>
+                  <ChevronDown className={`w-4 h-4 shrink-0 text-amber-200 transition-transform duration-200 ${isWelcomeCardExpanded ? 'rotate-180' : ''}`} aria-hidden="true" />
+                </div>
+                <p className="mt-1.5 text-xs leading-relaxed text-emerald-50/85">Your next discovery starts here.</p>
+                <div className="mt-4 flex items-center justify-between gap-2 text-xs font-semibold">
+                  <span className="rounded-full bg-white/15 border border-white/15 px-2.5 py-1">Level {currentLevel}</span>
+                  <span className="text-amber-200">{currentPoints.toLocaleString()} points</span>
+                </div>
+                <div className="mt-2 h-1.5 rounded-full bg-black/25 overflow-hidden" role="progressbar" aria-label={`Progress to level ${currentLevel + 1}`} aria-valuemin={0} aria-valuemax={50} aria-valuenow={currentPoints % 50}>
+                  <div className="h-full rounded-full bg-amber-300 transition-[width] duration-500" style={{ width: `${((currentPoints % 50) / 50) * 100}%` }} />
+                </div>
+                <div className="mt-2 flex items-center justify-between text-[11px] text-emerald-50/80">
+                  <span>{50 - (currentPoints % 50)} points to next level</span>
+                  <span className="text-amber-200">{isWelcomeCardExpanded ? 'Hide details' : 'See details'}</span>
                 </div>
               </button>
-
-              {/* Animated Expansion Container (Smooth CSS Grid Transition) */}
               <div
-                className={`grid transition-all duration-300 ease-in-out ${
+                id="explorer-welcome-details"
+                aria-hidden={!isWelcomeCardExpanded}
+                className={`grid transition-[grid-template-rows,opacity] duration-300 ease-out ${
                   isWelcomeCardExpanded ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0 pointer-events-none'
                 }`}
               >
                 <div className="overflow-hidden">
-                  <div className="px-3.5 pb-3.5 pt-1 border-t border-white/15 space-y-3 relative z-10 animate-in fade-in slide-in-from-top-1 duration-200">
-                    {/* Explorer Tier & Round Streak Banner */}
-                    <div className="flex items-center justify-between text-xs pt-1">
-                      <div className="flex items-center gap-1.5 text-amber-300 font-extrabold">
-                        <Trophy className="w-3.5 h-3.5 text-[#FFB703]" />
-                        <span>Level {currentLevel} Explorer</span>
-                      </div>
-
-                      <div className="flex items-center gap-1 bg-amber-500/25 px-2.5 py-0.5 rounded-full border border-amber-400/40 text-[10px] font-black text-amber-200 shadow-2xs">
-                        <Flame className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
-                        <span>{drawerEngagement?.streak?.current ?? 1} Round Streak</span>
-                      </div>
+                  <div className="relative z-10 border-t border-white/15 px-4 py-3 text-xs">
+                    <div className="flex items-center justify-between gap-2 py-1">
+                      <span className="text-emerald-50/80">Verified visits</span>
+                      <span className="font-bold">{drawerEngagement?.impact?.verified_visits ?? 'Unavailable'}</span>
                     </div>
-
-                    {/* Level Progress Bar */}
-                    <div className="space-y-1">
-                      <div className="flex items-center justify-between text-[10px] text-emerald-100 font-semibold">
-                        <span>XP to Level {currentLevel + 1}</span>
-                        <span className="font-mono text-amber-300 font-bold">
-                          {currentPoints % 50} / 50 XP ({Math.min(100, Math.round(((currentPoints % 50) / 50) * 100))}%)
-                        </span>
-                      </div>
-                      <div className="w-full bg-black/25 h-2 rounded-full overflow-hidden p-0.5 border border-white/10">
-                        <div
-                          className="bg-gradient-to-r from-[#FFB703] to-[#F59E0B] h-full rounded-full transition-all duration-500 shadow-2xs"
-                          style={{ width: `${Math.max(6, Math.min(100, Math.round(((currentPoints % 50) / 50) * 100)))}%` }}
-                        />
-                      </div>
+                    <div className="flex items-center justify-between gap-2 py-1">
+                      <span className="text-emerald-50/80">Voting streak</span>
+                      <span className="font-bold">{drawerEngagement?.streak?.current != null ? `${drawerEngagement.streak.current} rounds` : 'Unavailable'}</span>
                     </div>
-
-                    {/* Fun 3-Grid Explorer Metrics */}
-                    <div className="grid grid-cols-3 gap-1.5 text-center pt-0.5">
-                      <div className="p-2 rounded-xl bg-white/10 backdrop-blur-xs border border-white/10 hover:bg-white/15 transition">
-                        <span className="text-sm font-black text-white block leading-tight">{currentPoints}</span>
-                        <span className="text-[8px] font-black text-emerald-200 uppercase tracking-wider">Total XP</span>
-                      </div>
-                      <div className="p-2 rounded-xl bg-white/10 backdrop-blur-xs border border-white/10 hover:bg-white/15 transition">
-                        <span className="text-sm font-black text-amber-300 block leading-tight">
-                          {drawerEngagement?.impact?.verified_visits ?? 0}
-                        </span>
-                        <span className="text-[8px] font-black text-emerald-200 uppercase tracking-wider">Visits</span>
-                      </div>
-                      <div className="p-2 rounded-xl bg-white/10 backdrop-blur-xs border border-white/10 hover:bg-white/15 transition">
-                        <span className="text-sm font-black text-white block leading-tight">
-                          {drawerEngagement?.impact?.municipalities ?? 1}/48
-                        </span>
-                        <span className="text-[8px] font-black text-emerald-200 uppercase tracking-wider">LGUs</span>
-                      </div>
-                    </div>
+                    <Link href="/profile" tabIndex={isWelcomeCardExpanded ? 0 : -1} className="mt-3 inline-flex min-h-10 w-full items-center justify-center rounded-xl bg-white px-3 py-2 font-bold text-[var(--color-brand-primary)] hover:bg-amber-50 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300">View your passport <ChevronRight className="ml-1 h-4 w-4" aria-hidden="true" /></Link>
                   </div>
                 </div>
               </div>
@@ -1290,16 +1231,17 @@ export const Navigation: React.FC<{
           {/* Main Content Area with Skip Link Target */}
           {children && (
             <main
+              key={pathname}
               id="main-content"
               tabIndex={-1}
               className={
                 fullBleed
                   ? 'flex-none min-h-0 w-full relative h-[calc(100dvh-64px)] max-h-[calc(100dvh-64px)] overflow-hidden flex flex-col focus:outline-none'
                   : theater
-                  ? 'flex-1 w-full min-h-0 pb-20 lg:pb-12 focus:outline-none'
+                  ? 'flex-1 w-full min-h-0 pb-20 lg:pb-12 focus:outline-none motion-page-enter'
                   : isExplore
-                  ? 'w-full flex-1 min-h-0 px-2 sm:px-3 py-2 lg:flex-none lg:h-[calc(100dvh-64px)] lg:max-h-[calc(100dvh-64px)] lg:overflow-hidden focus:outline-none'
-                  : 'flex-1 w-full max-w-7xl 2xl:max-w-[1560px] 3xl:max-w-[1720px] mx-auto px-3 sm:px-6 lg:px-8 py-5 pb-20 lg:pb-10 focus:outline-none'
+                  ? 'w-full flex-1 min-h-0 px-2 sm:px-3 py-2 lg:flex-none lg:h-[calc(100dvh-64px)] lg:max-h-[calc(100dvh-64px)] lg:overflow-hidden focus:outline-none motion-page-enter'
+                  : 'flex-1 w-full max-w-7xl 2xl:max-w-[1560px] 3xl:max-w-[1720px] mx-auto px-3 sm:px-6 lg:px-8 py-5 pb-20 lg:pb-10 focus:outline-none motion-page-enter'
               }
             >
               {children}
