@@ -330,7 +330,7 @@ export function SpotCommentSection({ spotId, spotName }: SpotCommentSectionProps
       </div>
 
       {/* Modern Comment Composer */}
-      <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-[#E3DFD5] p-3 space-y-2.5 shadow-2xs focus-within:border-[#2D6A4F] transition-all">
+      <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-[#E8E5DF] p-3.5 space-y-2.5 shadow-2xs focus-within:border-[#2D6A4F] transition-all">
         {/* User Identity Preview & Input Area */}
         <div className="flex items-start gap-2.5">
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#2D6A4F] to-[#1B4332] text-[10px] font-black text-white shadow-2xs overflow-hidden mt-0.5">
@@ -579,7 +579,7 @@ export function SpotCommentSection({ spotId, spotName }: SpotCommentSectionProps
           </p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="divide-y divide-[#EFECE6] border-t border-[#EFECE6] pt-1">
           {comments.map((comment) => {
             const isLiked = user?.id ? comment.helpful_user_ids.includes(user.id) : false;
             const initials = comment.author_name
@@ -592,7 +592,7 @@ export function SpotCommentSection({ spotId, spotName }: SpotCommentSectionProps
             return (
               <article
                 key={comment.id}
-                className="bg-white rounded-2xl border border-[#E3DFD5] p-3.5 space-y-2.5 shadow-2xs hover:border-[#2D6A4F]/30 transition"
+                className="py-4 space-y-2.5 transition"
               >
                 {/* Comment Header: Author & Time */}
                 <div className="flex items-center justify-between gap-2">
@@ -668,7 +668,7 @@ export function SpotCommentSection({ spotId, spotName }: SpotCommentSectionProps
                 )}
 
                 {/* Comment Footer: Like Action */}
-                <div className="flex items-center justify-between pt-1 border-t border-stone-100 pl-9">
+                <div className="flex items-center justify-between pt-1 pl-9">
                   <span className="text-[10px] text-stone-400">Pangasinan Community</span>
 
                   <button

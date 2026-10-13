@@ -271,10 +271,6 @@ export const SpotDetailClient: React.FC<SpotDetailClientProps> = ({ slug }) => {
     );
   }
 
-  const trackDirections = () =>
-    api.post(`/spots/${spot.id}/interactions`, { type: 'directions' }).catch(() => {});
-  const navigateUrl = `/navigate?name=${encodeURIComponent(spot.name)}&lat=${spot.gpsLat}&lng=${spot.gpsLng}&address=${encodeURIComponent(spot.address)}`;
-
   return (
     <Navigation theater>
       <ErrorBoundary fallbackTitle="Unable to load Destination Spot">
@@ -507,35 +503,26 @@ export const SpotDetailClient: React.FC<SpotDetailClientProps> = ({ slug }) => {
                 </div>
               </div>
 
-              {/* Primary Navigation & Action Bar */}
+              {/* Action & Engagement Bar */}
               <div className="pt-4 border-t border-[#E8E5DE] flex flex-wrap items-center justify-between gap-3">
-                <div className="flex flex-wrap items-center gap-2.5 flex-1 min-w-[280px]">
-                  <Link
-                    href={navigateUrl}
-                    onClick={trackDirections}
-                    className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-[#2D6A4F] hover:bg-[#1B4332] text-white text-xs sm:text-sm font-extrabold shadow-sm transition active:scale-95 cursor-pointer min-h-[48px]"
-                  >
-                    <Compass className="w-4 h-4 text-[#FFB703]" />
-                    <span>Navigate with Valhalla</span>
-                  </Link>
-
-                  {spot.questId ? (
+                <div className="flex flex-wrap items-center gap-2.5 flex-1 min-w-[200px]">
+                  {spot.questId && (
                     <Link
                       href={appRoutes.quest(spot.questId)}
-                      className="btn-tactile btn-sheen inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl bg-[#FFB703] hover:bg-[#F59E0B] text-[#582F0E] text-xs sm:text-sm font-extrabold shadow-sm transition cursor-pointer min-h-[48px]"
+                      className="btn-tactile btn-sheen inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#FFB703] hover:bg-[#F59E0B] text-[#582F0E] text-xs sm:text-sm font-extrabold shadow-sm transition cursor-pointer min-h-[44px]"
                     >
                       <Trophy className="w-4 h-4 text-[#582F0E]" />
                       <span>Play Quest Trail</span>
                     </Link>
-                  ) : (
-                    <Link
-                      href={`/map?lat=${spot.gpsLat}&lng=${spot.gpsLng}&name=${encodeURIComponent(spot.name)}&spot=${spot.id}`}
-                      className="btn-tactile inline-flex items-center justify-center gap-1.5 px-4 py-3.5 rounded-xl bg-[#FAF9F5] hover:bg-white text-[#582F0E] border border-[#E3DFD5] text-xs font-bold transition cursor-pointer min-h-[48px]"
-                    >
-                      <MapPin className="w-4 h-4 text-[#2D6A4F]" />
-                      <span>View on Map</span>
-                    </Link>
                   )}
+
+                  <Link
+                    href={`/map?lat=${spot.gpsLat}&lng=${spot.gpsLng}&name=${encodeURIComponent(spot.name)}&spot=${spot.id}`}
+                    className="btn-tactile inline-flex items-center justify-center gap-1.5 px-4 py-3 rounded-xl bg-[#FAF9F5] hover:bg-white text-[#582F0E] border border-[#E3DFD5] text-xs font-bold transition cursor-pointer min-h-[44px]"
+                  >
+                    <MapPin className="w-4 h-4 text-[#2D6A4F]" />
+                    <span>View on Map</span>
+                  </Link>
                 </div>
 
                 {/* Engagement Buttons */}
@@ -629,7 +616,7 @@ export const SpotDetailClient: React.FC<SpotDetailClientProps> = ({ slug }) => {
                 </section>
 
                 {/* Community Traveler Notes & Tips Forum */}
-                <section className="bg-white p-6 sm:p-8 rounded-2xl sm:rounded-3xl border border-[#E3DFD5] shadow-xs space-y-5">
+                <section className="space-y-4 pt-2">
                   <SpotCommentSection spotId={spot.id} spotName={spot.name} />
                 </section>
               </div>
