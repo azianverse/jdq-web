@@ -395,9 +395,9 @@ export default function ExplorePage() {
                         )}
 
                         {/* Meta Header */}
-                        <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-[var(--color-text-muted)] leading-none">
+                        <div className="flex flex-wrap items-center gap-1.5 text-[13px] text-[var(--color-text-muted)] leading-none">
                           <span className="font-bold text-[var(--color-brand-primary)] flex items-center gap-1">
-                            <MapPin className="w-3 h-3" />
+                            <MapPin className="w-4 h-4" />
                             {spot.municipality}
                           </span>
                           <span>•</span>
@@ -406,15 +406,15 @@ export default function ExplorePage() {
                             <UserNametag
                               displayName={displayAuthorName}
                               badges={getAuthorBadges(spot.id, displayAuthorName, user ?? undefined)}
-                              size="sm"
+                              size="md"
                             />
                           </span>
 
                           {/* Provenance Badge & Report */}
                           <div className="ml-auto flex items-center gap-1.5 flex-wrap">
                             {spot.trustLevel === 'lgu_verified' && (
-                              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 font-bold text-[9px] border border-blue-200">
-                                <ShieldCheck className="w-2.5 h-2.5" />
+                              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 font-bold text-[11px] border border-blue-200">
+                                <ShieldCheck className="w-3 h-3" />
                                 <span>LGU Verified</span>
                               </span>
                             )}
@@ -427,7 +427,7 @@ export default function ExplorePage() {
                               title="Report inaccurate info, hazard, or inappropriate post"
                               aria-label={`Report post for ${spot.name}`}
                             >
-                              <Flag className="w-3 h-3" />
+                              <Flag className="w-5 h-5" />
                             </button>
                           </div>
                         </div>
@@ -455,10 +455,10 @@ export default function ExplorePage() {
                           {spot.questId && (
                             <Link
                               href={appRoutes.quest(spot.questId)}
-                              className="shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 hover:bg-amber-100 text-amber-900 font-bold text-[9px] border border-amber-200 shadow-2xs transition"
+                              className="shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 hover:bg-amber-100 text-amber-900 font-bold text-[11px] border border-amber-200 shadow-2xs transition"
                               title="Active Eco-Quest available for this destination"
                             >
-                              <Trophy className="w-2.5 h-2.5 text-amber-600 shrink-0" />
+                              <Trophy className="w-3 h-3 text-amber-600 shrink-0" />
                               <span>Eco-Quest</span>
                             </Link>
                           )}
@@ -529,7 +529,7 @@ export default function ExplorePage() {
                           <DestinationBadgeList
                             badges={getSampleDestinationBadges(spot.id, spot.category)}
                             maxDisplay={3}
-                            size="xs"
+                            size="sm"
                             iconOnly={true}
                           />
                         </div>
