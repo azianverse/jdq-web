@@ -156,10 +156,10 @@ export default function ExplorePage() {
   const exploreSidePanel = (
     <div className="space-y-4">
       {/* Spotlight Card */}
-      <HiddenGemHighlights actorId={user?.id} />
+      <HiddenGemHighlights actorId={user?.id} className="bg-transparent border-0 p-3 space-y-2 min-w-0" />
 
       {/* JuanChoice Spotlight Rail */}
-      <JuanChoiceRail />
+      <JuanChoiceRail className="bg-transparent border-0 p-3 shadow-none space-y-3" />
 
       {/* Community Scouts Discovery */}
       <div className="p-3 space-y-3">
@@ -551,20 +551,20 @@ export default function ExplorePage() {
             className="hidden lg:block lg:order-1 explore-scroll space-y-3"
           >
             {/* Quick Portal Shortcuts */}
-            <div className="bg-transparent p-3 space-y-3">
-              <div className="flex items-center justify-between pb-2 border-b border-[#E8E5DE]">
+            <div className="bg-transparent py-2 px-1 space-y-2">
+              <div className="flex items-center justify-between pb-1.5 border-b border-[#E8E5DE] px-1">
                 <h3 className="text-xs font-black text-[#582F0E] uppercase tracking-wider">Quick Portals</h3>
                 <span className="text-[10px] font-bold text-[#837560]">Hub</span>
               </div>
 
-              <div className="space-y-1.5 text-xs">
+              <div className="space-y-1 text-xs">
                 <Link
                   href="/quests"
-                  className="flex items-center justify-between p-2.5 rounded-xl bg-[#FAF9F5] hover:bg-white hover:border-[#2D6A4F] transition group min-h-[44px]"
+                  className="flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-stone-100 transition group min-h-[38px]"
                 >
-                  <div className="flex items-center gap-2.5 font-bold text-[#2C221E]">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-100/80 text-[#B45309]">
-                      <Zap className="w-3.5 h-3.5 fill-[#FFB703] text-[#B45309]" />
+                  <div className="flex items-center gap-2 font-bold text-[#2C221E]">
+                    <div className="flex h-6 w-6 items-center justify-center rounded-md bg-amber-100/80 text-[#B45309]">
+                      <Zap className="w-3 h-3 fill-[#FFB703] text-[#B45309]" />
                     </div>
                     <span>Quests &amp; Trails</span>
                   </div>
@@ -575,26 +575,26 @@ export default function ExplorePage() {
 
                 <Link
                   href="/saved"
-                  className="flex items-center justify-between p-2.5 rounded-xl bg-amber-50/70 hover:bg-amber-50 transition group min-h-[44px]"
+                  className="flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-amber-50/70 transition group min-h-[38px]"
                 >
-                  <div className="flex items-center gap-2.5 font-bold text-[#2C221E]">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-200/70 text-[#7D5800]">
-                      <Bookmark className="w-3.5 h-3.5 fill-current text-[#B45309]" />
+                  <div className="flex items-center gap-2 font-bold text-[#2C221E]">
+                    <div className="flex h-6 w-6 items-center justify-center rounded-md bg-amber-200/70 text-[#7D5800]">
+                      <Bookmark className="w-3 h-3 fill-current text-[#B45309]" />
                     </div>
                     <span>Saved</span>
                   </div>
-                  <span className="rounded-full bg-amber-200/90 px-2 py-0.5 text-[10px] font-black text-[#582F0E]">
+                  <span className="rounded-full bg-amber-200/90 px-1.5 py-0.2 text-[10px] font-black text-[#582F0E]">
                     {savedLibrary.spots.length + savedLibrary.quests.length}
                   </span>
                 </Link>
 
                 <Link
                   href="/choice"
-                  className="flex items-center justify-between p-2.5 rounded-xl bg-[#FAF9F5] hover:bg-white transition group min-h-[44px]"
+                  className="flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-stone-100 transition group min-h-[38px]"
                 >
-                  <div className="flex items-center gap-2.5 font-bold text-[#2C221E]">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-100/70 text-[#7D5800]">
-                      <Trophy className="w-3.5 h-3.5 text-[#B45309]" />
+                  <div className="flex items-center gap-2 font-bold text-[#2C221E]">
+                    <div className="flex h-6 w-6 items-center justify-center rounded-md bg-amber-100/70 text-[#7D5800]">
+                      <Trophy className="w-3 h-3 text-[#B45309]" />
                     </div>
                     <span>JuanChoice</span>
                   </div>
@@ -605,11 +605,11 @@ export default function ExplorePage() {
 
                 <Link
                   href="/leaderboard"
-                  className="flex items-center justify-between p-2.5 rounded-xl bg-[#FAF9F5] hover:bg-white transition group min-h-[44px]"
+                  className="flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-stone-100 transition group min-h-[38px]"
                 >
-                  <div className="flex items-center gap-2.5 font-bold text-[#2C221E]">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-stone-100 text-[#582F0E]">
-                      <Award className="w-3.5 h-3.5 text-[#B45309]" />
+                  <div className="flex items-center gap-2 font-bold text-[#2C221E]">
+                    <div className="flex h-6 w-6 items-center justify-center rounded-md bg-stone-100 text-[#582F0E]">
+                      <Award className="w-3 h-3 text-[#B45309]" />
                     </div>
                     <span>Leaderboard</span>
                   </div>
@@ -620,11 +620,11 @@ export default function ExplorePage() {
 
                 <Link
                   href="/shop"
-                  className="flex items-center justify-between p-2.5 rounded-xl bg-[#FAF9F5] hover:bg-white transition group min-h-[44px]"
+                  className="flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-stone-100 transition group min-h-[38px]"
                 >
-                  <div className="flex items-center gap-2.5 font-bold text-[#2C221E]">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-100 text-[#2D6A4F]">
-                      <Tag className="w-3.5 h-3.5" />
+                  <div className="flex items-center gap-2 font-bold text-[#2C221E]">
+                    <div className="flex h-6 w-6 items-center justify-center rounded-md bg-emerald-100 text-[#2D6A4F]">
+                      <Tag className="w-3 h-3" />
                     </div>
                     <span>Vouchers</span>
                   </div>
@@ -635,11 +635,11 @@ export default function ExplorePage() {
 
                 <Link
                   href="/about"
-                  className="flex items-center justify-between p-2.5 rounded-xl bg-[#FAF9F5] hover:bg-white transition group min-h-[44px]"
+                  className="flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-stone-100 transition group min-h-[38px]"
                 >
-                  <div className="flex items-center gap-2.5 font-bold text-[#2C221E]">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-100 text-blue-700">
-                      <ShieldCheck className="w-3.5 h-3.5" />
+                  <div className="flex items-center gap-2 font-bold text-[#2C221E]">
+                    <div className="flex h-6 w-6 items-center justify-center rounded-md bg-blue-100 text-blue-700">
+                      <ShieldCheck className="w-3 h-3" />
                     </div>
                     <span>About JuanDerQuest</span>
                   </div>
@@ -774,9 +774,9 @@ export default function ExplorePage() {
             className="hidden lg:block lg:order-3 explore-scroll space-y-3"
           >
             {/* Spotlight Card: Shows distinct spot, not identical duplicate of hero spot */}
-            <HiddenGemHighlights actorId={user?.id} />
+            <HiddenGemHighlights actorId={user?.id} className="bg-transparent border-0 p-3 space-y-2 min-w-0" />
 
-            <JuanChoiceRail />
+            <JuanChoiceRail className="bg-transparent border-0 p-3 shadow-none space-y-3" />
           </aside>
         </div>
       </div>

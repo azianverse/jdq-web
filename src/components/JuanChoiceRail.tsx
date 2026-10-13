@@ -8,7 +8,7 @@ import { isJuanChoiceEnvironmentTrusted } from '@/lib/juanchoice-presentation';
 
 const presentationBuild = process.env.NEXT_PUBLIC_JDQ_PRESENTATION_MODE === 'true';
 
-export function JuanChoiceRail() {
+export function JuanChoiceRail({ className }: { className?: string } = {}) {
   const [detail, setDetail] = useState<JuanChoiceDetail | null>(null);
   const [status, setStatus] = useState<'loading' | 'ready' | 'empty' | 'disabled' | 'timeout' | 'rate-limited' | 'network' | 'unavailable'>('loading');
   useEffect(() => {
@@ -41,7 +41,7 @@ export function JuanChoiceRail() {
     const timer = window.setInterval(() => { if (document.visibilityState === 'visible') void load(); }, 30000);
     return () => { controller.abort(); window.clearInterval(timer); };
   }, []);
-  return <section className="rounded-2xl border border-[#E3DFD5] bg-white p-4 shadow-xs space-y-3" aria-label="JuanChoice community spotlight">
+  return <section className={className ?? "rounded-2xl border border-[#E3DFD5] bg-white p-4 shadow-xs space-y-3"} aria-label="JuanChoice community spotlight">
     {presentationBuild && <p className="rounded-lg bg-amber-100 p-2 text-xs font-bold text-amber-950">Presentation demo: these votes and standings are not official.</p>}
     <p className="text-[10px] font-black uppercase tracking-wider text-[#B45309]">JuanChoice · free community vote</p>
     {status === 'loading' ? <p role="status" className="text-xs text-[#514532]">Checking for a community vote...</p>

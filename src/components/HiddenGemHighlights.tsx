@@ -7,7 +7,7 @@ import { appRoutes } from '@/lib/routes';
 import { DestinationMedia } from './DestinationMedia';
 
 type Highlight = { id: string; name: string; municipality: string; image_url?: string; reason: string; crowd_status: string };
-export function HiddenGemHighlights({ actorId }: { actorId?: string }) {
+export function HiddenGemHighlights({ actorId, className }: { actorId?: string; className?: string }) {
   const [result, setResult] = useState<{ actorId?: string; retry: number; items: Highlight[]; failed: boolean } | null>(null);
   const [retry, setRetry] = useState(0);
   useEffect(() => {
@@ -21,7 +21,7 @@ export function HiddenGemHighlights({ actorId }: { actorId?: string }) {
     return () => controller.abort();
   }, [actorId, retry]);
   const current = result?.actorId === actorId && result?.retry === retry ? result : null;
-  return <section aria-label="Hidden Gem" className="rounded-2xl border border-[var(--color-border-default)] bg-white p-4 min-w-0">
+  return <section aria-label="Hidden Gem" className={className ?? "rounded-2xl border border-[var(--color-border-default)] bg-white p-4 min-w-0"}>
     <h2 className="font-bold text-lg">Hidden Gem</h2>
     <p className="text-xs text-[var(--color-text-muted)]">Recommended for you · Not sponsored</p>
     {!current ? <p role="status">Finding discovery picks…</p> : current.failed ?
