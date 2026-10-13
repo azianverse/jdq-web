@@ -379,6 +379,15 @@ export default function ExplorePage() {
                     >
                       {/* Compact Post Header & Caption Area */}
                       <div className="px-4 pt-3.5 pb-2.5 sm:px-5 sm:pt-4 sm:pb-3 space-y-2">
+                        {isFeaturedHero && (
+                          <div className="flex flex-wrap items-center gap-2 border-b border-amber-100 pb-2">
+                            <span className="inline-flex items-center gap-1.5 rounded-md bg-amber-100 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-[var(--color-brand-primary)]">
+                              <Sparkles className="h-3 w-3 text-[#FFB703]" />
+                              Featured Destination
+                            </span>
+                          </div>
+                        )}
+
                         {/* Meta Header */}
                         <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-[var(--color-text-muted)] leading-none">
                           <span className="font-bold text-[var(--color-brand-primary)] flex items-center gap-1">
