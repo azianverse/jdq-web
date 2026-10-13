@@ -309,9 +309,15 @@ export function DashboardClient() {
           </section>
 
           {/* ======================================================== */}
-          {/* 2. PROMINENT MULTI-FUNCTIONAL EXPEDITION CALENDAR PANEL */}
+          {/* 2. PROMINENT COMPRESSED EXPEDITION CALENDAR WITH HIDDEN GEM */}
           {/* ======================================================== */}
-          <DashboardCalendar />
+          <DashboardCalendar
+            rightSlot={
+              <HiddenGemHighlights
+                className="rounded-2xl border border-[#E3DFD5] bg-[#FAF9F5]/70 p-4 shadow-2xs min-w-0"
+              />
+            }
+          />
 
           {/* ======================================================== */}
           {/* 3. MAIN 2-COLUMN DASHBOARD GRID */}
@@ -418,11 +424,8 @@ export function DashboardClient() {
               </section>
             </div>
 
-            {/* Right 4-Column Area: Highlights, Voting Status & Recent Activities */}
+            {/* Right 4-Column Area: Voting Status & Recent Activities */}
             <div className="lg:col-span-4 space-y-6">
-              {/* Hidden Gems Highlights Card */}
-              <HiddenGemHighlights className="rounded-3xl border border-[#E3DFD5] bg-white p-5 sm:p-6 shadow-xs min-w-0" />
-
               {/* Voting Availability Card */}
               <div className="bg-white rounded-3xl border border-[#E3DFD5] p-5 sm:p-6 shadow-xs space-y-4">
                 <div className="flex items-center justify-between pb-3 border-b border-[#F2EFE9]">

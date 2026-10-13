@@ -206,7 +206,11 @@ const CATEGORY_STYLES: Record<
   },
 };
 
-export function DashboardCalendar() {
+export function DashboardCalendar({
+  rightSlot,
+}: {
+  rightSlot?: React.ReactNode;
+}) {
   // Current view date (Default October 2026)
   const [viewDate, setViewDate] = useState(() => new Date(2026, 9, 13)); // Oct 13, 2026
   const [selectedDate, setSelectedDate] = useState<string>('2026-10-18');
@@ -268,44 +272,46 @@ export function DashboardCalendar() {
 
   return (
     <section className="bg-white rounded-3xl border border-[#E3DFD5] shadow-xs overflow-hidden">
-      {/* Top Banner / Header */}
-      <div className="bg-gradient-to-r from-[#1B4332] to-[#2D6A4F] text-white p-5 sm:p-6 lg:p-7 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-amber-400/20 border border-amber-400/30 flex items-center justify-center">
-              <CalendarIcon className="w-4 h-4 text-[#FFB703]" />
-            </div>
-            <span className="text-[11px] font-black uppercase tracking-wider text-amber-300">
-              Pangasinan Tourism &amp; Community Calendar
-            </span>
+      {/* Top Banner / Header (Compressed, Clean & Modern) */}
+      <div className="bg-gradient-to-r from-[#1B4332] via-[#2D6A4F] to-[#1E4A38] text-white px-5 py-4 sm:px-6 sm:py-4.5 flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-amber-400/20 border border-amber-400/30 flex items-center justify-center shrink-0">
+            <CalendarIcon className="w-4 h-4 text-[#FFB703]" />
           </div>
-          <h2 className="text-xl sm:text-2xl font-black text-white">
-            Expedition &amp; Festival Schedule
-          </h2>
-          <p className="text-xs text-emerald-100/90 max-w-xl">
-            Live itinerary covering cultural festivals, active Eco-Quests, voting round deadlines, and weekend community markets.
-          </p>
+          <div>
+            <div className="flex items-center gap-2">
+              <h2 className="text-base sm:text-lg font-black text-white leading-tight">
+                Expedition &amp; Festival Calendar
+              </h2>
+              <span className="hidden sm:inline-block text-[10px] font-black uppercase tracking-wider text-amber-300 bg-emerald-950/40 px-2 py-0.5 rounded-full border border-emerald-500/30">
+                Pangasinan Live
+              </span>
+            </div>
+            <p className="text-[11px] text-emerald-100/80 leading-tight">
+              Provincial festivals, Eco-Quest bounties, voting deadlines, and cultural expos.
+            </p>
+          </div>
         </div>
 
-        {/* Category Filter Pills */}
+        {/* Category Filter Pills (Compact) */}
         <div className="flex items-center gap-1.5 flex-wrap self-start md:self-center">
           <button
             type="button"
             onClick={() => setSelectedCategory('all')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+            className={`px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${
               selectedCategory === 'all'
-                ? 'bg-[#FFB703] text-[#582F0E] shadow-2xs'
+                ? 'bg-[#FFB703] text-[#582F0E] shadow-2xs font-black'
                 : 'bg-white/10 text-white hover:bg-white/20'
             }`}
           >
-            All Events
+            All
           </button>
           <button
             type="button"
             onClick={() => setSelectedCategory('festival')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+            className={`px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${
               selectedCategory === 'festival'
-                ? 'bg-[#FFB703] text-[#582F0E] shadow-2xs'
+                ? 'bg-[#FFB703] text-[#582F0E] shadow-2xs font-black'
                 : 'bg-white/10 text-white hover:bg-white/20'
             }`}
           >
@@ -314,9 +320,9 @@ export function DashboardCalendar() {
           <button
             type="button"
             onClick={() => setSelectedCategory('eco_quest')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+            className={`px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${
               selectedCategory === 'eco_quest'
-                ? 'bg-[#FFB703] text-[#582F0E] shadow-2xs'
+                ? 'bg-[#FFB703] text-[#582F0E] shadow-2xs font-black'
                 : 'bg-white/10 text-white hover:bg-white/20'
             }`}
           >
@@ -325,9 +331,9 @@ export function DashboardCalendar() {
           <button
             type="button"
             onClick={() => setSelectedCategory('dao_voting')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+            className={`px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${
               selectedCategory === 'dao_voting'
-                ? 'bg-[#FFB703] text-[#582F0E] shadow-2xs'
+                ? 'bg-[#FFB703] text-[#582F0E] shadow-2xs font-black'
                 : 'bg-white/10 text-white hover:bg-white/20'
             }`}
           >
@@ -336,14 +342,14 @@ export function DashboardCalendar() {
         </div>
       </div>
 
-      {/* Main Calendar Body: 2-Column (Calendar Matrix + Detailed Event Feed) */}
-      <div className="p-5 sm:p-6 lg:p-7 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Left 7-Cols: Interactive Month Matrix */}
-        <div className="lg:col-span-7 space-y-4">
+      {/* Main Calendar Body: Compressed Grid with Optional Right Slot */}
+      <div className="p-4 sm:p-5 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Left Column: Interactive Month Matrix (Smartly compressed day tiles) */}
+        <div className={rightSlot ? 'lg:col-span-7 space-y-3' : 'lg:col-span-7 space-y-3'}>
           {/* Month Controller */}
-          <div className="flex items-center justify-between pb-2 border-b border-[#F2EFE9]">
+          <div className="flex items-center justify-between pb-1.5 border-b border-[#F2EFE9]">
             <div className="flex items-center gap-2">
-              <span className="text-base sm:text-lg font-black text-[#2C221E]">
+              <span className="text-sm sm:text-base font-black text-[#2C221E]">
                 {monthName} {year}
               </span>
               <button
@@ -359,7 +365,7 @@ export function DashboardCalendar() {
               <button
                 type="button"
                 onClick={prevMonth}
-                className="p-1.5 rounded-xl text-stone-600 hover:bg-stone-100 hover:text-stone-900 transition cursor-pointer"
+                className="p-1 rounded-lg text-stone-600 hover:bg-stone-100 hover:text-stone-900 transition cursor-pointer"
                 aria-label="Previous month"
               >
                 <ChevronLeft className="w-4 h-4" />
@@ -367,7 +373,7 @@ export function DashboardCalendar() {
               <button
                 type="button"
                 onClick={nextMonth}
-                className="p-1.5 rounded-xl text-stone-600 hover:bg-stone-100 hover:text-stone-900 transition cursor-pointer"
+                className="p-1 rounded-lg text-stone-600 hover:bg-stone-100 hover:text-stone-900 transition cursor-pointer"
                 aria-label="Next month"
               >
                 <ChevronRight className="w-4 h-4" />
@@ -376,7 +382,7 @@ export function DashboardCalendar() {
           </div>
 
           {/* Weekday Labels */}
-          <div className="grid grid-cols-7 gap-1 text-center text-[11px] font-black uppercase text-[#837560] py-1">
+          <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-black uppercase text-[#837560] py-0.5">
             <span>Sun</span>
             <span>Mon</span>
             <span>Tue</span>
@@ -386,11 +392,11 @@ export function DashboardCalendar() {
             <span>Sat</span>
           </div>
 
-          {/* Day Grid */}
+          {/* Compressed Day Grid */}
           <div className="grid grid-cols-7 gap-1 sm:gap-1.5">
             {/* Blank leading days */}
             {Array.from({ length: firstDayOfWeek }).map((_, idx) => (
-              <div key={`blank-${idx}`} className="h-12 sm:h-16 rounded-xl bg-stone-50/50" />
+              <div key={`blank-${idx}`} className="h-9 sm:h-11 rounded-lg bg-stone-50/50" />
             ))}
 
             {/* Days in current month */}
@@ -406,11 +412,11 @@ export function DashboardCalendar() {
                   key={dateStr}
                   type="button"
                   onClick={() => setSelectedDate(dateStr)}
-                  className={`relative h-12 sm:h-16 p-1.5 rounded-xl text-left border transition flex flex-col justify-between cursor-pointer select-none ${
+                  className={`relative h-9 sm:h-11 p-1 rounded-lg text-left border transition flex flex-col justify-between cursor-pointer select-none ${
                     isSelected
                       ? 'bg-emerald-50/90 border-[#2D6A4F] ring-2 ring-[#2D6A4F]/20 shadow-xs'
                       : isToday
-                      ? 'bg-amber-50/60 border-amber-300'
+                      ? 'bg-amber-50/70 border-amber-300'
                       : events.length > 0
                       ? 'bg-white border-[#E3DFD5] hover:border-[#2D6A4F]/40'
                       : 'bg-white/80 border-[#F0ECE1] hover:bg-stone-50 text-stone-600'
@@ -418,7 +424,7 @@ export function DashboardCalendar() {
                 >
                   <div className="flex items-center justify-between">
                     <span
-                      className={`text-xs font-bold leading-none ${
+                      className={`text-[11px] font-bold leading-none ${
                         isSelected
                           ? 'text-[#2D6A4F] font-black'
                           : isToday
@@ -433,7 +439,7 @@ export function DashboardCalendar() {
                     )}
                   </div>
 
-                  {/* Event indicators dots/chips */}
+                  {/* Compact Event indicators dots/chips */}
                   {events.length > 0 && (
                     <div className="flex items-center gap-1 flex-wrap overflow-hidden">
                       {events.slice(0, 3).map((ev) => {
@@ -441,13 +447,13 @@ export function DashboardCalendar() {
                         return (
                           <span
                             key={ev.id}
-                            className={`w-2 h-2 rounded-full ${style.dot} shrink-0`}
+                            className={`w-1.5 h-1.5 rounded-full ${style.dot} shrink-0`}
                             title={`${ev.title} (${style.label})`}
                           />
                         );
                       })}
                       {events.length > 3 && (
-                        <span className="text-[9px] font-black text-[#837560] leading-none">
+                        <span className="text-[8px] font-black text-[#837560] leading-none">
                           +{events.length - 3}
                         </span>
                       )}
@@ -458,103 +464,153 @@ export function DashboardCalendar() {
             })}
           </div>
 
-          {/* Quick Category Legend */}
-          <div className="flex items-center gap-3 pt-2 text-[11px] text-[#837560] flex-wrap border-t border-[#F2EFE9]">
-            <span className="font-bold text-[#582F0E]">Legend:</span>
-            {Object.entries(CATEGORY_STYLES).map(([key, style]) => (
-              <div key={key} className="flex items-center gap-1.5">
-                <span className={`w-2 h-2 rounded-full ${style.dot}`} />
-                <span>{style.label}</span>
-              </div>
-            ))}
+          {/* Compact Category Legend & Selected Day Schedule preview */}
+          <div className="flex items-center justify-between gap-2 pt-2 text-[10px] text-[#837560] flex-wrap border-t border-[#F2EFE9]">
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <span className="font-bold text-[#582F0E]">Legend:</span>
+              {Object.entries(CATEGORY_STYLES).map(([key, style]) => (
+                <div key={key} className="flex items-center gap-1">
+                  <span className={`w-1.5 h-1.5 rounded-full ${style.dot}`} />
+                  <span>{style.label}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="font-bold text-[#2D6A4F]">
+              {new Date(selectedDate).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+              })}: {activeEvents.length} {activeEvents.length === 1 ? 'event' : 'events'}
+            </div>
           </div>
         </div>
 
-        {/* Right 5-Cols: Selected Day Detail Feed */}
-        <div className="lg:col-span-5 space-y-4">
-          <div className="flex items-center justify-between pb-2 border-b border-[#F2EFE9]">
-            <div>
-              <span className="text-[10px] font-black uppercase text-[#837560] block tracking-wider">
-                Selected Schedule
-              </span>
-              <h3 className="text-base font-black text-[#2C221E]">
-                {new Date(selectedDate).toLocaleDateString('en-US', {
-                  weekday: 'short',
-                  month: 'short',
-                  day: 'numeric',
-                  year: 'numeric',
-                })}
-              </h3>
-            </div>
-            <span className="px-2 py-0.5 rounded-full bg-stone-100 text-[#582F0E] text-[10px] font-black">
-              {activeEvents.length} {activeEvents.length === 1 ? 'Activity' : 'Activities'}
-            </span>
-          </div>
+        {/* Right Column: Custom Right Slot (Hidden Gem) OR Selected Day Detail Feed */}
+        <div className="lg:col-span-5 space-y-3">
+          {rightSlot ? (
+            <div className="space-y-3">
+              {/* Mounted Right Slot (Hidden Gem) */}
+              {rightSlot}
 
-          {activeEvents.length === 0 ? (
-            <div className="p-8 text-center rounded-2xl bg-[#FAF9F5] border border-[#E3DFD5] space-y-2">
-              <CalendarIcon className="w-8 h-8 text-stone-300 mx-auto" />
-              <p className="text-xs font-bold text-[#582F0E]">No scheduled activities for this date</p>
-              <p className="text-[11px] text-[#837560]">
-                Explore other dates on the calendar or jump into our open Pangasinan destinations.
-              </p>
-              <button
-                type="button"
-                onClick={() => setSelectedDate('2026-10-18')}
-                className="mt-2 text-xs font-black text-[#2D6A4F] hover:underline cursor-pointer"
-              >
-                Check Dagupan Bangus Festival (Oct 18) ↗
-              </button>
+              {/* Collapsed/Concise Active Event Snippet below the slot */}
+              {activeEvents.length > 0 && (
+                <div className="p-3 rounded-2xl bg-[#FAF9F5] border border-[#E3DFD5] space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-black text-[#582F0E]">
+                      {new Date(selectedDate).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                      })} Highlight
+                    </span>
+                    <span className="text-[10px] text-[var(--color-brand-primary)] font-bold">
+                      {activeEvents[0].badge || activeEvents[0].municipality}
+                    </span>
+                  </div>
+                  <h4 className="text-xs font-bold text-[#2C221E] leading-snug truncate">
+                    {activeEvents[0].title}
+                  </h4>
+                  <p className="text-[11px] text-[#514532] line-clamp-2 leading-relaxed">
+                    {activeEvents[0].description}
+                  </p>
+                  {activeEvents[0].actionUrl && (
+                    <Link
+                      href={activeEvents[0].actionUrl}
+                      className="inline-flex items-center gap-1 text-[11px] font-bold text-[#2D6A4F] hover:underline"
+                    >
+                      <span>{activeEvents[0].actionLabel || 'Details'}</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </Link>
+                  )}
+                </div>
+              )}
             </div>
           ) : (
-            <div className="space-y-3 max-h-[380px] overflow-y-auto pr-1">
-              {activeEvents.map((ev) => {
-                const style = CATEGORY_STYLES[ev.category];
-                return (
-                  <article
-                    key={ev.id}
-                    className={`p-4 rounded-2xl border ${style.border} ${style.bg} space-y-2.5 transition shadow-2xs hover:shadow-xs`}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between pb-1.5 border-b border-[#F2EFE9]">
+                <div>
+                  <span className="text-[10px] font-black uppercase text-[#837560] block tracking-wider">
+                    Selected Schedule
+                  </span>
+                  <h3 className="text-sm sm:text-base font-black text-[#2C221E]">
+                    {new Date(selectedDate).toLocaleDateString('en-US', {
+                      weekday: 'short',
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric',
+                    })}
+                  </h3>
+                </div>
+                <span className="px-2 py-0.5 rounded-full bg-stone-100 text-[#582F0E] text-[10px] font-black">
+                  {activeEvents.length} {activeEvents.length === 1 ? 'Activity' : 'Activities'}
+                </span>
+              </div>
+
+              {activeEvents.length === 0 ? (
+                <div className="p-6 text-center rounded-2xl bg-[#FAF9F5] border border-[#E3DFD5] space-y-1.5">
+                  <CalendarIcon className="w-7 h-7 text-stone-300 mx-auto" />
+                  <p className="text-xs font-bold text-[#582F0E]">No scheduled activities for this date</p>
+                  <p className="text-[10px] text-[#837560]">
+                    Explore other dates on the calendar or jump into our open Pangasinan destinations.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedDate('2026-10-18')}
+                    className="mt-1 text-xs font-black text-[#2D6A4F] hover:underline cursor-pointer"
                   >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="space-y-0.5">
-                        <span
-                          className={`inline-block text-[9px] font-black uppercase px-2 py-0.5 rounded-md ${style.text} bg-white/70 border ${style.border}`}
-                        >
-                          {ev.badge || style.label}
-                        </span>
-                        <h4 className="text-xs sm:text-sm font-black text-[#2C221E] leading-snug">
-                          {ev.title}
-                        </h4>
-                      </div>
+                    Check Dagupan Bangus Festival (Oct 18) ↗
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-2.5 max-h-[290px] overflow-y-auto pr-1">
+                  {activeEvents.map((ev) => {
+                    const style = CATEGORY_STYLES[ev.category];
+                    return (
+                      <article
+                        key={ev.id}
+                        className={`p-3 rounded-xl border ${style.border} ${style.bg} space-y-1.5 transition shadow-2xs`}
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="space-y-0.5">
+                            <span
+                              className={`inline-block text-[9px] font-black uppercase px-2 py-0.5 rounded-md ${style.text} bg-white/70 border ${style.border}`}
+                            >
+                              {ev.badge || style.label}
+                            </span>
+                            <h4 className="text-xs font-black text-[#2C221E] leading-snug">
+                              {ev.title}
+                            </h4>
+                          </div>
 
-                      <div className="flex items-center gap-1 text-[10px] font-bold text-[#837560] shrink-0">
-                        <MapPin className="w-3 h-3 text-[#2D6A4F]" />
-                        <span>{ev.municipality}</span>
-                      </div>
-                    </div>
+                          <div className="flex items-center gap-1 text-[10px] font-bold text-[#837560] shrink-0">
+                            <MapPin className="w-3 h-3 text-[#2D6A4F]" />
+                            <span>{ev.municipality}</span>
+                          </div>
+                        </div>
 
-                    <p className="text-xs text-[#514532] leading-relaxed">
-                      {ev.description}
-                    </p>
+                        <p className="text-[11px] text-[#514532] leading-relaxed">
+                          {ev.description}
+                        </p>
 
-                    {ev.actionUrl && (
-                      <div className="pt-2 border-t border-black/5 flex items-center justify-between">
-                        <span className="text-[10px] text-[#837560] font-mono">
-                          {ev.endDate ? `${ev.date} to ${ev.endDate}` : ev.date}
-                        </span>
+                        {ev.actionUrl && (
+                          <div className="pt-1.5 border-t border-black/5 flex items-center justify-between">
+                            <span className="text-[9px] text-[#837560] font-mono">
+                              {ev.endDate ? `${ev.date} to ${ev.endDate}` : ev.date}
+                            </span>
 
-                        <Link
-                          href={ev.actionUrl}
-                          className="inline-flex items-center gap-1 text-xs font-black text-[#2D6A4F] hover:underline"
-                        >
-                          <span>{ev.actionLabel || 'View Activity'}</span>
-                          <ExternalLink className="w-3 h-3" />
-                        </Link>
-                      </div>
-                    )}
-                  </article>
-                );
-              })}
+                            <Link
+                              href={ev.actionUrl}
+                              className="inline-flex items-center gap-1 text-[11px] font-black text-[#2D6A4F] hover:underline"
+                            >
+                              <span>{ev.actionLabel || 'View Activity'}</span>
+                              <ExternalLink className="w-3 h-3" />
+                            </Link>
+                          </div>
+                        )}
+                      </article>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
         </div>
