@@ -455,10 +455,10 @@ export default function ExplorePage() {
                           {spot.questId && (
                             <Link
                               href={appRoutes.quest(spot.questId)}
-                              className="shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 hover:bg-amber-100 text-amber-900 font-bold text-[9px] border border-amber-200 shadow-2xs transition"
+                              className="shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 hover:bg-amber-100 text-amber-900 font-bold text-[11px] border border-amber-200 shadow-2xs transition"
                               title="Active Eco-Quest available for this destination"
                             >
-                              <Trophy className="w-2.5 h-2.5 text-amber-600 shrink-0" />
+                              <Trophy className="w-3 h-3 text-amber-600 shrink-0" />
                               <span>Eco-Quest</span>
                             </Link>
                           )}
