@@ -282,17 +282,17 @@ export default function ExplorePage() {
   return (
     <Navigation sidePanel={exploreSidePanel} sidePanelTitle="Explorer Highlights">
       <div className="space-y-4 lg:space-y-0 lg:h-full lg:max-h-full lg:min-h-0">
-        {/* Structured 3-Column Post Stream (Desktop: Left shortcuts, Center feed, Right spotlight/leaderboard)
-            Mobile: Center feed leads first with order-1, shortcuts follow with order-2, right rail with order-3 */}
+        {/* Structured 2-Column Post Stream (Desktop: Feed main, Right spotlight & scouts)
+            Mobile: Single column feed leads first */}
         <div className="explore-columns grid grid-cols-1 gap-3 items-start lg:items-stretch lg:h-full lg:max-h-full lg:min-h-0">
           
-          {/* Main Feed Column - ORDER 1 on Mobile, ORDER 2 on Desktop */}
+          {/* Main Feed Column */}
           <div
             role="region"
             aria-label="Destination feed"
             ref={feedRef}
             tabIndex={0}
-            className="order-1 lg:order-2 explore-scroll space-y-4 min-w-0"
+            className="order-1 lg:order-1 explore-scroll space-y-4 min-w-0"
           >
             {/* Quick Share / Post Bar */}
             <div className="bg-white rounded-2xl p-4 border border-[var(--color-border-default)] shadow-xs flex items-center gap-3">
@@ -549,154 +549,19 @@ export default function ExplorePage() {
             )}
           </div>
 
-          {/* Left Actions & Discovery Column - Desktop Only (Mobile uses top hamburger drawer) */}
+          {/* Right Column: Community Scouts, Destination Spotlight & Preview Standings */}
           <aside
-            aria-label="Explore shortcuts"
+            aria-label="Destination recommendations"
             tabIndex={0}
-            className="hidden lg:block lg:order-1 explore-scroll space-y-3"
+            className="hidden lg:block lg:order-2 explore-scroll space-y-3"
           >
-            {/* Quick Portal Shortcuts */}
-            <div className="bg-transparent py-2 px-1 space-y-2">
-              <div className="flex items-center justify-between pb-1.5 border-b border-[#E8E5DE] px-1">
-                <h3 className="text-xs font-black text-[#582F0E] uppercase tracking-wider">Quick Portals</h3>
-                <span className="text-[10px] font-bold text-[#837560]">Hub</span>
-              </div>
+            {/* Spotlight Card: Shows distinct spot, not identical duplicate of hero spot */}
+            <HiddenGemHighlights actorId={user?.id} className="bg-transparent border-0 p-3 space-y-2 min-w-0" />
 
-              <div className="space-y-1 text-xs">
-                <Link
-                  href="/quests"
-                  className="flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-stone-100 transition group min-h-[38px]"
-                >
-                  <div className="flex items-center gap-2 font-bold text-[#2C221E]">
-                    <div className="flex h-6 w-6 items-center justify-center rounded-md bg-amber-100/80 text-[#B45309]">
-                      <Zap className="w-3 h-3 fill-[#FFB703] text-[#B45309]" />
-                    </div>
-                    <span>Quests &amp; Trails</span>
-                  </div>
-                  <span className="text-[10px] text-[#2D6A4F] font-bold group-hover:translate-x-0.5 transition-transform">
-                    Bounties →
-                  </span>
-                </Link>
-
-                <Link
-                  href="/saved"
-                  className="flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-amber-50/70 transition group min-h-[38px]"
-                >
-                  <div className="flex items-center gap-2 font-bold text-[#2C221E]">
-                    <div className="flex h-6 w-6 items-center justify-center rounded-md bg-amber-200/70 text-[#7D5800]">
-                      <Bookmark className="w-3 h-3 fill-current text-[#B45309]" />
-                    </div>
-                    <span>Saved</span>
-                  </div>
-                  <span className="rounded-full bg-amber-200/90 px-1.5 py-0.2 text-[10px] font-black text-[#582F0E]">
-                    {savedLibrary.spots.length + savedLibrary.quests.length}
-                  </span>
-                </Link>
-
-                <Link
-                  href="/choice"
-                  className="flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-stone-100 transition group min-h-[38px]"
-                >
-                  <div className="flex items-center gap-2 font-bold text-[#2C221E]">
-                    <div className="flex h-6 w-6 items-center justify-center rounded-md bg-amber-100/70 text-[#7D5800]">
-                      <Trophy className="w-3 h-3 text-[#B45309]" />
-                    </div>
-                    <span>JuanChoice</span>
-                  </div>
-                  <span className="text-[10px] text-[#7D5800] font-bold group-hover:translate-x-0.5 transition-transform">
-                    Free vote →
-                  </span>
-                </Link>
-
-                <Link
-                  href="/leaderboard"
-                  className="flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-stone-100 transition group min-h-[38px]"
-                >
-                  <div className="flex items-center gap-2 font-bold text-[#2C221E]">
-                    <div className="flex h-6 w-6 items-center justify-center rounded-md bg-stone-100 text-[#582F0E]">
-                      <Award className="w-3 h-3 text-[#B45309]" />
-                    </div>
-                    <span>Leaderboard</span>
-                  </div>
-                  <span className="text-[10px] text-[#582F0E] font-bold group-hover:translate-x-0.5 transition-transform">
-                    Sample →
-                  </span>
-                </Link>
-
-                <Link
-                  href="/shop"
-                  className="flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-stone-100 transition group min-h-[38px]"
-                >
-                  <div className="flex items-center gap-2 font-bold text-[#2C221E]">
-                    <div className="flex h-6 w-6 items-center justify-center rounded-md bg-emerald-100 text-[#2D6A4F]">
-                      <Tag className="w-3 h-3" />
-                    </div>
-                    <span>Vouchers</span>
-                  </div>
-                  <span className="text-[10px] text-[#2D6A4F] font-bold group-hover:translate-x-0.5 transition-transform">
-                    Shop →
-                  </span>
-                </Link>
-
-                <Link
-                  href="/about"
-                  className="flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-stone-100 transition group min-h-[38px]"
-                >
-                  <div className="flex items-center gap-2 font-bold text-[#2C221E]">
-                    <div className="flex h-6 w-6 items-center justify-center rounded-md bg-blue-100 text-blue-700">
-                      <ShieldCheck className="w-3 h-3" />
-                    </div>
-                    <span>About JuanDerQuest</span>
-                  </div>
-                  <span className="text-[10px] text-gray-500 font-bold group-hover:translate-x-0.5 transition-transform">
-                    Story →
-                  </span>
-                </Link>
-              </div>
-            </div>
-
-            {/* Saved Places Continuation Block */}
-            {savedSpotHighlights.length > 0 && (
-              <div className="p-3 space-y-2.5">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <span className="text-[9px] font-black uppercase tracking-wider text-[#B45309]">
-                      Itinerary Planning
-                    </span>
-                    <h4 className="text-xs font-black text-[#582F0E]">Saved</h4>
-                  </div>
-                  <Link href="/saved" className="text-[10px] font-bold text-[#2D6A4F] hover:underline">
-                    Library ({savedLibrary.spots.length}) →
-                  </Link>
-                </div>
-
-                <div className="space-y-1.5 pt-1">
-                  {savedSpotHighlights.map((spot) => (
-                    <Link
-                      key={spot.id}
-                      href={appRoutes.spot(spot.id)}
-                      className="flex items-center gap-2.5 rounded-xl bg-white/90 p-2 text-xs transition hover:shadow-2xs group"
-                    >
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-100/70 text-[#B45309]">
-                        <Bookmark className="h-4 w-4 fill-current text-[#B45309]" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-xs font-black text-[#2C221E] group-hover:text-[#2D6A4F] transition">
-                          {spot.name}
-                        </p>
-                        <p className="flex items-center gap-1 text-[10px] text-[#837560]">
-                          <MapPin className="h-2.5 w-2.5 text-[#2D6A4F]" />
-                          {spot.municipality}
-                        </p>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
+            <JuanChoiceRail className="bg-transparent border-0 p-3 shadow-none space-y-3" />
 
             {/* Community Scouts Discovery (Real Public Profiles) */}
-            <div className="p-3 space-y-3">
+            <div className="p-3 space-y-3 rounded-2xl bg-white border border-[var(--color-border-default)] shadow-xs">
               <div className="flex items-center justify-between pb-2 border-b border-[#E8E5DE]">
                 <div>
                   <h3 className="text-xs font-black text-[#582F0E] uppercase tracking-wider">
@@ -721,7 +586,7 @@ export default function ExplorePage() {
                 </div>
               ) : (
                 <div className="space-y-1.5">
-                  {scouts.map((profile) => {
+                  {scouts.slice(0, 5).map((profile) => {
                     const initials = profile.display_name
                       .split(' ')
                       .filter(Boolean)
@@ -733,10 +598,10 @@ export default function ExplorePage() {
                       <Link
                         key={profile.id}
                         href={travelerProfileHref(profile.id)}
-                        className="flex items-center justify-between gap-2.5 rounded-xl p-2.5 hover:bg-[#FAF9F5] transition group min-h-[44px]"
+                        className="flex items-center justify-between gap-2.5 rounded-xl p-2 hover:bg-[#FAF9F5] transition group min-h-[40px]"
                       >
                         <div className="flex items-center gap-2.5 min-w-0">
-                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#2D6A4F] to-[#1B4332] text-[11px] font-black text-white shadow-2xs group-hover:ring-2 group-hover:ring-[#FFB703]/50 transition overflow-hidden">
+                          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#2D6A4F] to-[#1B4332] text-[10px] font-black text-white shadow-2xs group-hover:ring-2 group-hover:ring-[#FFB703]/50 transition overflow-hidden">
                             {profile.avatar_url ? (
                               <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
                             ) : (
@@ -744,7 +609,7 @@ export default function ExplorePage() {
                             )}
                           </span>
                           <div className="min-w-0">
-                            <div className="flex items-center gap-1.5 flex-wrap">
+                            <div className="flex items-center gap-1 flex-wrap">
                               <span className="truncate text-xs font-bold text-[#2C221E] group-hover:text-[#2D6A4F] transition">
                                 {profile.display_name}
                               </span>
@@ -753,7 +618,6 @@ export default function ExplorePage() {
                                 size="xs"
                                 enablePreviewModal={false}
                               />
-                              {profile.is_test && <span className="shrink-0 rounded bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold text-amber-900">Fictional</span>}
                             </div>
                             <span className="block truncate text-[10px] text-[#837560]">
                               {profile.handle ? `@${profile.handle} · ` : ''}
@@ -770,18 +634,6 @@ export default function ExplorePage() {
                 </div>
               )}
             </div>
-          </aside>
-
-          {/* Right Column: Destination Spotlight & Preview Standings - Desktop Only (Mobile uses top hamburger drawer) */}
-          <aside
-            aria-label="Destination recommendations"
-            tabIndex={0}
-            className="hidden lg:block lg:order-3 explore-scroll space-y-3"
-          >
-            {/* Spotlight Card: Shows distinct spot, not identical duplicate of hero spot */}
-            <HiddenGemHighlights actorId={user?.id} className="bg-transparent border-0 p-3 space-y-2 min-w-0" />
-
-            <JuanChoiceRail className="bg-transparent border-0 p-3 shadow-none space-y-3" />
           </aside>
         </div>
       </div>

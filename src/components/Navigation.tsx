@@ -25,6 +25,8 @@ import {
   Smartphone,
   Store,
   LayoutDashboard,
+  PanelLeft,
+  PanelLeftClose,
 } from 'lucide-react';
 import { Footer } from '@/components/Footer';
 import { SearchSuggestionsDropdown } from '@/components/SearchSuggestionsDropdown';
@@ -95,6 +97,7 @@ export const Navigation: React.FC<{
     user?.role === 'admin' ? (token ? adminHandoffUrl(token) : 'https://admin.juanderquest.app') : null;
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
+  const [isDesktopDrawerCollapsed, setIsDesktopDrawerCollapsed] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
@@ -126,7 +129,7 @@ export const Navigation: React.FC<{
   const profileMenuRef = useRef<HTMLDivElement>(null);
   const notificationsRef = useRef<HTMLDivElement>(null);
 
-  // Hydrate read notifications from localStorage
+  // Hydrate read notifications and desktop drawer preference from localStorage
   useEffect(() => {
     try {
       const stored = localStorage.getItem('juanderquest_read_notif_ids');
@@ -135,6 +138,10 @@ export const Navigation: React.FC<{
         setNotifications((prev) =>
           prev.map((item) => (readIds.has(item.id) ? { ...item, read: true } : item))
         );
+      }
+      const storedNavCollapse = localStorage.getItem('juanderquest_nav_collapsed');
+      if (storedNavCollapse !== null) {
+        setIsDesktopDrawerCollapsed(storedNavCollapse === 'true');
       }
     } catch {
       // ignore localStorage parse errors
@@ -444,126 +451,85 @@ export const Navigation: React.FC<{
           </Link>
         </div>
 
-        {/* Spacious, Seamless Icon Navigation Bar with Extending Search Pill (Desktop) */}
-        <nav
-          aria-label="Main Navigation"
-          className="hidden lg:flex flex-1 items-center justify-center gap-1 xl:gap-2 px-2 min-w-0 max-w-3xl"
-        >
-          {navItems.slice(0, 5).map((item) => {
-            const Icon = item.icon;
-            const isActive =
-              pathname === item.href || (item.href !== '/explore' && pathname.startsWith(`${item.href}/`));
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                title={item.label}
-                aria-label={item.label}
-                aria-current={isActive ? 'page' : undefined}
-                className={`relative flex items-center justify-center w-12 xl:w-16 h-11 rounded-xl transition-all duration-200 cursor-pointer select-none ${
-                  isActive
-                    ? 'bg-[var(--color-brand-primary)] text-white shadow-xs scale-105'
-                    : 'text-[var(--color-text-muted)] hover:text-[var(--color-brand-primary)] hover:bg-[var(--color-bg-subtle)] active:scale-95'
-                }`}
-              >
-                <Icon
-                  className={`w-5 h-5 shrink-0 transition-transform duration-200 ${
-                    isActive ? 'text-[var(--color-brand-accent)]' : ''
-                  }`}
-                />
-                {item.badge && (
-                  <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[var(--color-brand-accent)] border-2 border-white shadow-xs" />
-                )}
-              </Link>
-            );
-          })}
-
-          {/* Smart Global Search Bar (Desktop) */}
-          <div ref={desktopSearchContainerRef} className="relative flex items-center ml-2">
-            <div
-              className={`relative flex items-center transition-all duration-300 ease-out ${
-                isSearchOpen
-                  ? 'w-72 lg:w-88 xl:w-96'
-                  : 'w-52 lg:w-64 xl:w-72'
-              }`}
-            >
-              <PixelSearchIcon
-                className="w-4 h-4 absolute left-3.5 pointer-events-none select-none transition-transform duration-200"
-                size={18}
-              />
-              <input
-                ref={searchInputRef}
-                type="text"
-                value={searchQuery}
-                onFocus={() => {
-                  if (!isSearchOpen) handleOpenSearch();
-                }}
-                onChange={(e) => {
-                  if (!isSearchOpen) setIsSearchOpen(true);
-                  handleQueryChange(e.target.value);
-                }}
-                onKeyDown={handleSearchKeyDown}
-                placeholder="Search Pangasinan, areas, spots..."
-                aria-label="Search destinations, areas, or scouts"
-                className={`w-full h-10 rounded-full pl-10 pr-14 text-xs font-medium outline-none transition-all duration-200 ${
-                  isSearchOpen
-                    ? 'bg-white border-2 border-[#2D6A4F] text-[#2B2319] shadow-sm ring-4 ring-[#2D6A4F]/10'
-                    : 'bg-[#FAF9F5] hover:bg-white border border-[#E3DFD5] hover:border-[#2D6A4F]/50 text-[#6B5E4C] placeholder:text-[#837560]/70 shadow-2xs hover:shadow-xs'
-                }`}
-              />
-
-              {/* Action badges: Clear / Close / Ctrl+K badge */}
-              <div className="absolute right-2.5 flex items-center gap-1">
-                {searchQuery ? (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      handleQueryChange('');
-                      searchInputRef.current?.focus();
-                    }}
-                    className="w-5 h-5 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-500 hover:text-stone-800 flex items-center justify-center cursor-pointer transition"
-                    title="Clear query"
-                    aria-label="Clear search query"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                ) : !isSearchOpen ? (
-                  <kbd className="hidden xl:inline-block text-[9px] font-mono px-1.5 py-0.5 rounded bg-stone-200/70 text-stone-600 font-bold pointer-events-none">
-                    Ctrl+K
-                  </kbd>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={handleCloseSearch}
-                    className="w-5 h-5 rounded-full hover:bg-stone-100 text-stone-400 hover:text-stone-700 flex items-center justify-center cursor-pointer transition"
-                    title="Close search (ESC)"
-                    aria-label="Close search"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* Suggestions Dropdown (Desktop) */}
-            <SearchSuggestionsDropdown
-              isOpen={isSearchOpen}
-              onClose={handleCloseSearch}
-              query={searchQuery}
-              setQuery={setSearchQuery}
-              selectedIndex={selectedIndex}
-              setSelectedIndex={setSelectedIndex}
-              flatItems={flatItems}
-              matchedAreas={matchedAreas}
-              groups={groups}
-              loading={loading}
-              error={error}
-              onRetry={() => executeSearch(searchQuery)}
-              onSelectChip={handleSelectChip}
-              className="absolute top-full mt-2.5 right-0 w-[460px] lg:w-[480px] max-w-[calc(100vw-2rem)]"
+        {/* Smart Global Search Bar (Desktop - Prominent and Clean) */}
+        <div ref={desktopSearchContainerRef} className="hidden lg:flex flex-1 max-w-xl mx-4 relative items-center">
+          <div className="relative w-full flex items-center">
+            <PixelSearchIcon
+              className="w-4 h-4 absolute left-3.5 pointer-events-none select-none text-[#837560]"
+              size={18}
             />
+            <input
+              ref={searchInputRef}
+              type="text"
+              value={searchQuery}
+              onFocus={() => {
+                if (!isSearchOpen) handleOpenSearch();
+              }}
+              onChange={(e) => {
+                if (!isSearchOpen) setIsSearchOpen(true);
+                handleQueryChange(e.target.value);
+              }}
+              onKeyDown={handleSearchKeyDown}
+              placeholder="Search Pangasinan, destinations, tags, @scouts... (Ctrl+K)"
+              aria-label="Search destinations, areas, or scouts"
+              className={`w-full h-10 rounded-xl pl-10 pr-14 text-xs font-medium outline-none transition-all duration-200 ${
+                isSearchOpen
+                  ? 'bg-white border-2 border-[#2D6A4F] text-[#2B2319] shadow-sm ring-4 ring-[#2D6A4F]/10'
+                  : 'bg-[#FAF9F5] hover:bg-white border border-[#E3DFD5] hover:border-[#2D6A4F]/50 text-[#6B5E4C] placeholder:text-[#837560]/70 shadow-2xs hover:shadow-xs'
+              }`}
+            />
+
+            {/* Action badges: Clear / Close / Ctrl+K badge */}
+            <div className="absolute right-2.5 flex items-center gap-1">
+              {searchQuery ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleQueryChange('');
+                    searchInputRef.current?.focus();
+                  }}
+                  className="w-5 h-5 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-500 hover:text-stone-800 flex items-center justify-center cursor-pointer transition"
+                  title="Clear query"
+                  aria-label="Clear search query"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              ) : !isSearchOpen ? (
+                <kbd className="hidden xl:inline-block text-[9px] font-mono px-1.5 py-0.5 rounded bg-stone-200/70 text-stone-600 font-bold pointer-events-none">
+                  Ctrl+K
+                </kbd>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleCloseSearch}
+                  className="w-5 h-5 rounded-full hover:bg-stone-100 text-stone-400 hover:text-stone-700 flex items-center justify-center cursor-pointer transition"
+                  title="Close search (ESC)"
+                  aria-label="Close search"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
           </div>
-        </nav>
+
+          {/* Suggestions Dropdown (Desktop) */}
+          <SearchSuggestionsDropdown
+            isOpen={isSearchOpen}
+            onClose={handleCloseSearch}
+            query={searchQuery}
+            setQuery={setSearchQuery}
+            selectedIndex={selectedIndex}
+            setSelectedIndex={setSelectedIndex}
+            flatItems={flatItems}
+            matchedAreas={matchedAreas}
+            groups={groups}
+            loading={loading}
+            error={error}
+            onRetry={() => executeSearch(searchQuery)}
+            onSelectChip={handleSelectChip}
+            className="absolute top-full mt-2 left-0 right-0 max-w-full"
+          />
+        </div>
 
         {/* User Pill, Wallet & Right Actions */}
         <div className="flex items-center gap-1.5 sm:gap-2">
@@ -1021,27 +987,177 @@ export const Navigation: React.FC<{
 
       {logoutError && <p role="alert" className="z-40 bg-red-50 px-4 py-2 text-center text-sm text-red-800">{logoutError}</p>}
 
-      {/* Main Content Area with Skip Link Target */}
-      {children && (
-        <main
-          id="main-content"
-          tabIndex={-1}
-          className={
-            fullBleed
-              ? 'flex-none min-h-0 w-full relative h-[calc(100dvh-64px)] max-h-[calc(100dvh-64px)] overflow-hidden flex flex-col focus:outline-none'
-              : theater
-              ? 'flex-1 w-full min-h-0 pb-20 lg:pb-12 focus:outline-none'
-              : isExplore
-              ? 'w-full flex-1 min-h-0 px-2 sm:px-3 py-2 lg:flex-none lg:h-[calc(100dvh-64px)] lg:max-h-[calc(100dvh-64px)] lg:overflow-hidden focus:outline-none'
-              : 'flex-1 w-full max-w-7xl 2xl:max-w-[1560px] 3xl:max-w-[1720px] mx-auto px-3 sm:px-6 lg:px-8 py-5 pb-20 lg:pb-10 focus:outline-none'
-          }
+      {/* Desktop Main Layout with Persistent Left Drawer Navigation */}
+      <div className="flex-1 flex min-h-0 w-full relative">
+        {/* Persistent Desktop Left Navigation Drawer */}
+        <aside
+          aria-label="Sidebar Navigation"
+          className={`hidden lg:flex flex-col shrink-0 border-r border-[var(--color-border-default)] bg-white/95 backdrop-blur-md sticky top-16 h-[calc(100dvh-64px)] z-30 transition-all duration-300 ease-in-out select-none ${
+            isDesktopDrawerCollapsed ? 'w-[72px]' : 'w-64 xl:w-72'
+          }`}
         >
-          {children}
-        </main>
-      )}
+          {/* Collapse / Expand Toggle Header */}
+          <div className="h-12 px-3 border-b border-[var(--color-border-default)]/60 flex items-center justify-between shrink-0">
+            {!isDesktopDrawerCollapsed ? (
+              <span className="text-[11px] font-black uppercase tracking-wider text-[var(--color-brand-brown)] px-1">
+                Navigation
+              </span>
+            ) : (
+              <span className="w-full text-center text-[10px] font-black uppercase tracking-wider text-[var(--color-text-muted)]">
+                JDQ
+              </span>
+            )}
+            <button
+              type="button"
+              onClick={() => {
+                setIsDesktopDrawerCollapsed((prev) => {
+                  const next = !prev;
+                  try {
+                    localStorage.setItem('juanderquest_nav_collapsed', String(next));
+                  } catch {}
+                  return next;
+                });
+              }}
+              title={isDesktopDrawerCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              aria-label={isDesktopDrawerCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              className="p-1.5 rounded-lg text-stone-500 hover:text-[var(--color-brand-primary)] hover:bg-[var(--color-bg-subtle)] transition cursor-pointer"
+            >
+              {isDesktopDrawerCollapsed ? (
+                <PanelLeft className="w-4 h-4" />
+              ) : (
+                <PanelLeftClose className="w-4 h-4" />
+              )}
+            </button>
+          </div>
 
-      {/* Global Footer (Rendered on standard non-fullscreen views) */}
-      {!fullBleed && !isExplore && <Footer />}
+          {/* Navigation Links Scrollable Area */}
+          <div className="flex-1 overflow-y-auto px-2 py-3 space-y-1 scrollbar-thin">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive =
+                item.href === '/dashboard'
+                  ? pathname === '/dashboard' || pathname === '/'
+                  : pathname === item.href || (item.href !== '/explore' && pathname.startsWith(`${item.href}/`));
+
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  title={isDesktopDrawerCollapsed ? item.label : undefined}
+                  aria-label={item.label}
+                  aria-current={isActive ? 'page' : undefined}
+                  className={`group relative flex items-center rounded-xl transition-all duration-150 cursor-pointer ${
+                    isDesktopDrawerCollapsed
+                      ? 'justify-center h-11 w-full'
+                      : 'px-3 py-2.5 gap-3'
+                  } ${
+                    isActive
+                      ? 'bg-[var(--color-brand-primary)] text-white shadow-xs font-bold'
+                      : 'text-[var(--color-text-secondary)] hover:text-[var(--color-brand-primary)] hover:bg-[var(--color-bg-subtle)] font-medium'
+                  }`}
+                >
+                  <Icon
+                    className={`shrink-0 transition-transform duration-200 group-hover:scale-110 ${
+                      isDesktopDrawerCollapsed ? 'w-5 h-5' : 'w-4 h-4'
+                    } ${
+                      isActive ? 'text-[var(--color-brand-accent)]' : 'text-stone-500 group-hover:text-[var(--color-brand-primary)]'
+                    }`}
+                  />
+
+                  {!isDesktopDrawerCollapsed && (
+                    <div className="flex-1 min-w-0 flex items-center justify-between gap-1.5">
+                      <span className="text-xs truncate">{item.label}</span>
+                      {item.flair && (
+                        <span
+                          className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded-md shrink-0 ${
+                            isActive
+                              ? 'bg-white/20 text-white'
+                              : 'bg-[var(--color-bg-subtle)] text-[var(--color-brand-brown)] border border-[var(--color-border-default)]'
+                          }`}
+                        >
+                          {item.flair}
+                        </span>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Active Indicator Strip when collapsed */}
+                  {isDesktopDrawerCollapsed && isActive && (
+                    <span className="absolute left-1 top-2.5 bottom-2.5 w-1 rounded-full bg-[var(--color-brand-accent)]" />
+                  )}
+                </Link>
+              );
+            })}
+          </div>
+
+          {/* Drawer Footer / Quick Profile Snippet */}
+          <div className="p-2 border-t border-[var(--color-border-default)]/60 bg-[var(--color-bg-subtle)]/40 shrink-0">
+            {user ? (
+              <Link
+                href={userProfileHref}
+                className={`flex items-center rounded-xl hover:bg-white p-1.5 transition group ${
+                  isDesktopDrawerCollapsed ? 'justify-center' : 'gap-2.5'
+                }`}
+                title={isDesktopDrawerCollapsed ? user.displayName : undefined}
+              >
+                <div className="relative w-8 h-8 rounded-full bg-[var(--color-brand-primary)] text-white flex items-center justify-center text-xs font-black overflow-hidden shrink-0 shadow-xs">
+                  {user.avatarUrl ? (
+                    <img src={user.avatarUrl} alt={user.displayName} className="w-full h-full object-cover" />
+                  ) : (
+                    <span>{user.displayName.charAt(0).toUpperCase()}</span>
+                  )}
+                </div>
+                {!isDesktopDrawerCollapsed && (
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-bold text-[var(--color-brand-brown)] group-hover:text-[var(--color-brand-primary)] truncate">
+                      {user.displayName}
+                    </p>
+                    <p className="text-[10px] text-[var(--color-brand-primary)] font-semibold truncate">
+                      Lvl {currentLevel} • {wallet ? `${wallet.balanceMjdq} mJDQ` : 'Demo Explorer'}
+                    </p>
+                  </div>
+                )}
+              </Link>
+            ) : (
+              <Link
+                href="/login"
+                className={`flex items-center justify-center rounded-xl bg-[var(--color-brand-primary)] text-white text-xs font-bold transition hover:bg-[var(--color-brand-primary-hover)] ${
+                  isDesktopDrawerCollapsed ? 'h-9 w-full' : 'py-2 px-3 gap-2'
+                }`}
+                title={isDesktopDrawerCollapsed ? 'Connect Wallet / Login' : undefined}
+              >
+                <User className="w-4 h-4 shrink-0" />
+                {!isDesktopDrawerCollapsed && <span>Login</span>}
+              </Link>
+            )}
+          </div>
+        </aside>
+
+        {/* Content Viewport Container */}
+        <div className="flex-1 min-w-0 flex flex-col min-h-0">
+          {/* Main Content Area with Skip Link Target */}
+          {children && (
+            <main
+              id="main-content"
+              tabIndex={-1}
+              className={
+                fullBleed
+                  ? 'flex-none min-h-0 w-full relative h-[calc(100dvh-64px)] max-h-[calc(100dvh-64px)] overflow-hidden flex flex-col focus:outline-none'
+                  : theater
+                  ? 'flex-1 w-full min-h-0 pb-20 lg:pb-12 focus:outline-none'
+                  : isExplore
+                  ? 'w-full flex-1 min-h-0 px-2 sm:px-3 py-2 lg:flex-none lg:h-[calc(100dvh-64px)] lg:max-h-[calc(100dvh-64px)] lg:overflow-hidden focus:outline-none'
+                  : 'flex-1 w-full max-w-7xl 2xl:max-w-[1560px] 3xl:max-w-[1720px] mx-auto px-3 sm:px-6 lg:px-8 py-5 pb-20 lg:pb-10 focus:outline-none'
+              }
+            >
+              {children}
+            </main>
+          )}
+
+          {/* Global Footer (Rendered on standard non-fullscreen views) */}
+          {!fullBleed && !isExplore && <Footer />}
+        </div>
+      </div>
 
       {/* Floating Bottom Navigation Bar (Primary destinations plus More) */}
       <nav
