@@ -37,6 +37,7 @@ import { DestinationMedia } from '@/components/DestinationMedia';
 import { HiddenGemHighlights } from '@/components/HiddenGemHighlights';
 import { JuanChoiceRail } from '@/components/JuanChoiceRail';
 import { DashboardQuizCard } from '@/components/DashboardQuizCard';
+import { DashboardCalendar } from '@/components/DashboardCalendar';
 import { triggerCelebration } from '@/components/CelebrationEffects';
 import { appRoutes } from '@/lib/routes';
 
@@ -308,7 +309,12 @@ export function DashboardClient() {
           </section>
 
           {/* ======================================================== */}
-          {/* 2. MAIN 2-COLUMN DASHBOARD GRID */}
+          {/* 2. PROMINENT MULTI-FUNCTIONAL EXPEDITION CALENDAR PANEL */}
+          {/* ======================================================== */}
+          <DashboardCalendar />
+
+          {/* ======================================================== */}
+          {/* 3. MAIN 2-COLUMN DASHBOARD GRID */}
           {/* ======================================================== */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             {/* Left 8-Column Area: Recommendations & Content */}
