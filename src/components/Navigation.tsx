@@ -24,6 +24,7 @@ import {
   Sparkles,
   Smartphone,
   Store,
+  LayoutDashboard,
 } from 'lucide-react';
 import { Footer } from '@/components/Footer';
 import { SearchSuggestionsDropdown } from '@/components/SearchSuggestionsDropdown';
@@ -343,6 +344,7 @@ export const Navigation: React.FC<{
   }
 
   const navItems: NavItem[] = [
+    { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, flair: 'Hub' },
     { label: 'Explore Feed', href: '/explore', icon: Compass, flair: 'Feed' },
     { label: 'Interactive Map', href: '/map', icon: MapPin },
     { label: 'The Trail', href: '/trail', icon: Route, flair: 'Soon' },
@@ -372,6 +374,8 @@ export const Navigation: React.FC<{
   const isAppWorkstation = isExplore || fullBleed;
 
   const isPrimaryBottomTab =
+    pathname === '/dashboard' ||
+    pathname.startsWith('/dashboard/') ||
     pathname === '/explore' ||
     pathname.startsWith('/explore/') ||
     pathname === '/map' ||
@@ -430,7 +434,7 @@ export const Navigation: React.FC<{
       <header className="sticky top-0 z-50 shrink-0 h-16 bg-white/95 backdrop-blur-md border-b border-[var(--color-border-default)] px-3 sm:px-5 lg:px-8 flex items-center justify-between shadow-xs gap-3">
         {/* Brand Logo (Clean & Minimalist) */}
         <div className="flex items-center gap-3 shrink-0">
-          <Link href="/explore" className="flex items-center group shrink-0" title="JuanDerQuest — Explore destinations">
+          <Link href="/dashboard" className="flex items-center group shrink-0" title="JuanDerQuest — Dashboard">
             <div className="w-10 h-10 rounded-xl bg-white border border-[var(--color-border-default)] p-1.5 flex items-center justify-center shadow-xs group-hover:border-[var(--color-brand-primary)]/60 transition-colors duration-200">
               <img src="/logo.png" alt="JuanDerQuest" width="28" height="28" className="w-7 h-7 object-contain" />
             </div>
@@ -1039,20 +1043,20 @@ export const Navigation: React.FC<{
       {/* Global Footer (Rendered on standard non-fullscreen views) */}
       {!fullBleed && !isExplore && <Footer />}
 
-      {/* Floating Bottom Navigation Bar (4 primary destinations plus More) */}
+      {/* Floating Bottom Navigation Bar (Primary destinations plus More) */}
       <nav
         aria-label="Mobile Bottom Navigation"
         className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-[var(--color-border-default)] px-2 pt-1 pb-[calc(0.5rem+env(safe-area-inset-bottom))] shadow-[0_-4px_16px_rgba(43,35,25,0.06)] flex items-center justify-around gap-0.5"
       >
         {[
+          { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
           { label: 'Explore', href: '/explore', icon: Compass },
           { label: 'Map', href: '/map', icon: MapPin },
-          { label: 'Trail', href: '/trail', icon: Route },
           { label: 'Quests', href: '/quests', icon: Zap },
         ].map((item) => {
           const Icon = item.icon;
           const isActive =
-            pathname === item.href || (item.href !== '/explore' && pathname.startsWith(`${item.href}/`));
+            pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(`${item.href}/`));
           return (
             <Link
               key={item.href}

@@ -17,6 +17,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Core public discovery routes
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: `${base}`, lastModified: now, changeFrequency: 'daily', priority: 1.0 },
+    { url: `${base}/dashboard`, lastModified: now, changeFrequency: 'daily', priority: 1.0 },
     { url: `${base}/explore`, lastModified: now, changeFrequency: 'daily', priority: 0.9 },
     { url: `${base}/map`, lastModified: now, changeFrequency: 'weekly', priority: 0.8 },
     { url: `${base}/quests`, lastModified: now, changeFrequency: 'daily', priority: 0.8 },
