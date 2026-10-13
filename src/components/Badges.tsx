@@ -816,28 +816,103 @@ export const DestinationBadgeList: React.FC<DestinationBadgeListProps> = ({
   iconOnly = false,
   className = '',
 }) => {
+  const [showSummaryModal, setShowSummaryModal] = useState(false);
   if (!badges || badges.length === 0) return null;
 
+  const isBracketed = badges.length >= 3;
   const visible = badges.slice(0, maxDisplay);
   const remainingCount = badges.length - maxDisplay;
 
   return (
-    <div className={`flex flex-wrap items-center ${iconOnly ? 'gap-1.5' : 'gap-1.5'} ${className}`}>
-      {visible.map((b) => (
-        <DestinationBadgeChip key={b.id} badge={b} size={size} iconOnly={iconOnly} />
-      ))}
-      {remainingCount > 0 && (
-        <span
-          className={`font-black select-none cursor-default ${
-            iconOnly
-              ? 'inline-flex items-center justify-center text-[9px] px-1 py-0.5 rounded bg-stone-100 text-stone-600 border border-stone-200'
-              : 'text-[9px] px-1.5 py-0.5 rounded-full bg-stone-100 text-stone-600 border border-stone-200'
-          }`}
-          aria-label={`${remainingCount} more badges`}
+    <>
+      <div
+        className={`inline-flex items-center gap-1 ${
+          isBracketed ? 'cursor-pointer hover:opacity-90 select-none' : ''
+        } ${className}`}
+        onClick={isBracketed ? () => setShowSummaryModal(true) : undefined}
+        title={isBracketed ? 'View destination badges summary' : undefined}
+        role={isBracketed ? 'button' : undefined}
+        tabIndex={isBracketed ? 0 : undefined}
+        onKeyDown={isBracketed ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setShowSummaryModal(true); } } : undefined}
+      >
+        {isBracketed && (
+          <span className="text-[11px] font-black text-amber-600/80 leading-none select-none">[</span>
+        )}
+        <div className={`flex flex-wrap items-center ${iconOnly ? 'gap-1' : 'gap-1.5'}`}>
+          {visible.map((b) => (
+            <DestinationBadgeChip key={b.id} badge={b} size={size} iconOnly={iconOnly} />
+          ))}
+          {remainingCount > 0 && (
+            <span
+              className={`font-black select-none ${
+                iconOnly
+                  ? 'inline-flex items-center justify-center text-[9px] px-1 py-0.5 rounded bg-stone-100 text-stone-600 border border-stone-200'
+                  : 'text-[9px] px-1.5 py-0.5 rounded-full bg-stone-100 text-stone-600 border border-stone-200'
+              }`}
+              aria-label={`${remainingCount} more badges`}
+            >
+              +{remainingCount}
+            </span>
+          )}
+        </div>
+        {isBracketed && (
+          <span className="text-[11px] font-black text-amber-600/80 leading-none select-none">]</span>
+        )}
+      </div>
+
+      {showSummaryModal && typeof document !== 'undefined' && createPortal(
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Destination Badges Summary"
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-fadeIn"
+          onClick={() => setShowSummaryModal(false)}
         >
-          +{remainingCount}
-        </span>
+          <div
+            className="w-full max-w-sm rounded-2xl bg-white border border-[#E3DFD5] shadow-2xl p-5 space-y-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-[#E8E5DE] pb-3">
+              <div className="flex items-center gap-2">
+                <span className="text-base">🏅</span>
+                <h3 className="text-sm font-black text-[#582F0E]">Destination Badges</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowSummaryModal(false)}
+                className="w-7 h-7 rounded-lg text-stone-400 hover:text-stone-700 hover:bg-stone-100 flex items-center justify-center font-bold text-sm cursor-pointer"
+                aria-label="Close badges summary"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-2.5 max-h-[60vh] overflow-y-auto pr-1">
+              {badges.map((b) => (
+                <div
+                  key={b.id}
+                  className={`flex items-start gap-3 p-2.5 rounded-xl border ${b.themeColor.bg} ${b.themeColor.border}`}
+                >
+                  <span className="text-lg shrink-0 leading-none pt-0.5">{b.icon}</span>
+                  <div className="min-w-0 flex-1">
+                    <p className={`text-xs font-black ${b.themeColor.text}`}>{b.name}</p>
+                    <p className="text-[11px] text-stone-600 leading-snug mt-0.5">{b.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowSummaryModal(false)}
+              className="w-full py-2.5 rounded-xl bg-[#2D6A4F] text-white text-xs font-bold hover:bg-[#1B4332] transition cursor-pointer"
+            >
+              Done
+            </button>
+          </div>
+        </div>,
+        document.body
       )}
-    </div>
+    </>
   );
 };

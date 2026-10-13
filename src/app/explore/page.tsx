@@ -35,7 +35,6 @@ import { JuanChoiceSpotlightCard } from '@/components/JuanChoiceSpotlightCard';
 import { getPublicJuanChoiceSpotlight, planJuanChoicePlacement, type JuanChoiceSpotlight } from '@/lib/juanchoice';
 import { fetchPublicTravelers, type PublicTravelerSummary } from '@/lib/social';
 import { DestinationMedia } from '@/components/DestinationMedia';
-import { SpotCommentSection } from '@/components/SpotCommentSection';
 import { SpotReportModal } from '@/components/SpotReportModal';
 import { PixelHeart } from '@/components/PixelIcons';
 import { getLocalLikedSpots, toggleSpotLike } from '@/lib/api';
@@ -63,7 +62,6 @@ export default function ExplorePage() {
   const { user } = useAuth();
   const { spots, loading, loadingMore, error, hasMore, expired, sentinelRef, feedRef, loadSpots, handleLoadMore } = useRankedFeed(user?.id || 'guest');
   const [likes, setLikes] = useState<Record<string, { isLiked: boolean }>>({});
-  const [openTips, setOpenTips] = useState<Record<string, boolean>>({});
   const [reportingSpot, setReportingSpot] = useState<{ id: string; name: string } | null>(null);
   const { library: savedLibrary, toggle: toggleSaved, isSaved } = useSavedLibrary();
   const [scouts, setScouts] = useState<PublicTravelerSummary[]>([]);
@@ -71,7 +69,7 @@ export default function ExplorePage() {
   const [scoutError, setScoutError] = useState('');
   const [juanChoiceSpotlight, setJuanChoiceSpotlight] = useState<JuanChoiceSpotlight | null>(null);
 
-  // Restore liked spots and open comment drawers from localStorage on mount
+  // Restore liked spots from localStorage on mount
   useEffect(() => {
     if (typeof window === 'undefined') return;
     try {
@@ -81,13 +79,6 @@ export default function ExplorePage() {
         if (localLikes[id]) initialMap[id] = { isLiked: true };
       });
       setLikes((prev) => ({ ...initialMap, ...prev }));
-    } catch {}
-
-    try {
-      const savedDrawers = localStorage.getItem('jdq_open_comments');
-      if (savedDrawers) {
-        setOpenTips(JSON.parse(savedDrawers));
-      }
     } catch {}
   }, []);
 
@@ -149,16 +140,6 @@ export default function ExplorePage() {
 
     // Persist in localStorage and sync with server
     await toggleSpotLike(spotId, nextLiked);
-  };
-
-  const handleToggleTips = (spotId: string) => {
-    setOpenTips((prev) => {
-      const next = { ...prev, [spotId]: !prev[spotId] };
-      try {
-        localStorage.setItem('jdq_open_comments', JSON.stringify(next));
-      } catch {}
-      return next;
-    });
   };
 
   const toggleSave = (spotId: string) => {
@@ -365,28 +346,39 @@ export default function ExplorePage() {
               <div className="space-y-4">
                 {visibleSpots.map((spot, index) => {
                   const likeState = likes[spot.id] ?? { isLiked: Boolean(spot.liked) };
-                  const isTipsOpen = Boolean(openTips[spot.id]);
                   const isFeaturedHero = index === 0;
+
+                  // Extract concise icon tags for title (max 2)
+                  const iconTags: string[] = [];
+                  if (spot.crowdStatus === 'quiet') {
+                    iconTags.push('🌿');
+                  } else if (spot.crowdStatus === 'estimated_busy') {
+                    iconTags.push('⚠️');
+                  }
+                  if (spot.category) {
+                    const cat = spot.category.toLowerCase();
+                    if (cat.includes('beach') || cat.includes('water') || cat.includes('sea')) iconTags.push('🌊');
+                    else if (cat.includes('nature') || cat.includes('park') || cat.includes('outdoor')) iconTags.push('🌴');
+                    else if (cat.includes('heritage') || cat.includes('historic') || cat.includes('shrine') || cat.includes('church')) iconTags.push('🏛️');
+                    else if (cat.includes('eat') || cat.includes('food') || cat.includes('restaurant')) iconTags.push('🍲');
+                    else if (cat.includes('mountain') || cat.includes('hill')) iconTags.push('⛰️');
+                  }
+                  const displayIconTags = iconTags.slice(0, 2);
+
+                  // Temporary author display: show user's account "@zernan"
+                  const displayAuthorName = '@zernan';
 
                   return (<React.Fragment key={spot.id}>
                     {featuredChoice && choiceInsertionIndex === index && <JuanChoiceSpotlightCard spotlight={featuredChoice} />}
                     <article
-                      className="bg-white rounded-2xl border border-[var(--color-border-default)] hover:border-[var(--color-brand-primary)]/40 shadow-xs hover:shadow-md transition-all duration-300 ease-out overflow-hidden"
+                      className={`bg-white rounded-2xl shadow-xs hover:shadow-md transition-all duration-300 ease-out overflow-hidden ${
+                        isFeaturedHero
+                          ? 'border-2 border-amber-400 ring-2 ring-amber-300/40 shadow-amber-100/50'
+                          : 'border border-[var(--color-border-default)] hover:border-[var(--color-brand-primary)]/40'
+                      }`}
                     >
                       {/* Compact Post Header & Caption Area */}
                       <div className="px-4 pt-3.5 pb-2.5 sm:px-5 sm:pt-4 sm:pb-3 space-y-2">
-                        {isFeaturedHero && (
-                          <div className="flex flex-wrap items-center gap-2 border-b border-emerald-100 pb-2">
-                            <span className="inline-flex items-center gap-1.5 rounded-md bg-emerald-100 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-[var(--color-brand-primary)]">
-                              <Sparkles className="h-3 w-3" />
-                              Featured Destination
-                            </span>
-                            <span className="text-[10px] font-medium text-[var(--color-text-muted)]">
-                              Featured destination
-                            </span>
-                          </div>
-                        )}
-
                         {/* Meta Header */}
                         <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-[var(--color-text-muted)] leading-none">
                           <span className="font-bold text-[var(--color-brand-primary)] flex items-center gap-1">
@@ -394,43 +386,17 @@ export default function ExplorePage() {
                             {spot.municipality}
                           </span>
                           <span>•</span>
-                          {spot.sourceName.startsWith('Photo:') && spot.sourceUrl ? (
-                            <a
-                              href={spot.sourceUrl}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="underline underline-offset-2"
-                            >
-                              Photo: {spot.sourceName.replace(/^Photo:\s*/, '')}
-                            </a>
-                          ) : (
-                            <span className="inline-flex items-center gap-1 flex-wrap">
-                              <span>Shared by</span>
-                              <UserNametag
-                                displayName={spot.sourceName}
-                                badges={getAuthorBadges(spot.id, spot.sourceName, user ?? undefined)}
-                                size="sm"
-                              />
-                            </span>
-                          )}
+                          <span className="inline-flex items-center gap-1 flex-wrap">
+                            <span>Shared by</span>
+                            <UserNametag
+                              displayName={displayAuthorName}
+                              badges={getAuthorBadges(spot.id, displayAuthorName, user ?? undefined)}
+                              size="sm"
+                            />
+                          </span>
 
-                          {/* Provenance Badge, Server Recommendation Reason, Quest & Report */}
+                          {/* Provenance Badge & Report */}
                           <div className="ml-auto flex items-center gap-1.5 flex-wrap">
-                            {spot.questId && (
-                              <Link
-                                href={appRoutes.quest(spot.questId)}
-                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#FFFBEB] text-[#92400E] font-bold text-[9px] border border-[#FDE68A] hover:bg-[#FEF3C7] transition"
-                              >
-                                <Trophy className="w-2.5 h-2.5 text-[#D97706]" />
-                                <span>Quest available</span>
-                              </Link>
-                            )}
-                            {spot.recommendationReasons && spot.recommendationReasons.length > 0 && (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 text-[var(--color-brand-accent-dark)] font-bold text-[9px] border border-amber-200">
-                                <Sparkles className="w-2.5 h-2.5 text-[var(--color-brand-accent)]" />
-                                <span>{spot.recommendationReasons[0]}</span>
-                              </span>
-                            )}
                             {spot.trustLevel === 'lgu_verified' && (
                               <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 font-bold text-[9px] border border-blue-200">
                                 <ShieldCheck className="w-2.5 h-2.5" />
@@ -451,12 +417,17 @@ export default function ExplorePage() {
                           </div>
                         </div>
 
-                        {/* Title & Micro Destination Badges Row */}
+                        {/* Title with Inlined Icon Tags & Micro Destination Badges Row */}
                         <div className="flex items-start justify-between gap-2.5">
                           <Link href={appRoutes.spot(spot.id)} className="min-w-0 flex-1 group">
                             <div className="flex items-center gap-1.5 flex-wrap">
                               <h2 className="text-base sm:text-lg font-bold text-[var(--color-brand-brown)] group-hover:text-[var(--color-brand-primary)] transition leading-snug">
                                 {spot.name}
+                                {displayIconTags.length > 0 && (
+                                  <span className="ml-1 text-sm font-normal select-none">
+                                    ({displayIconTags.join('')})
+                                  </span>
+                                )}
                               </h2>
                               {spot.isTest && (
                                 <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
@@ -465,7 +436,17 @@ export default function ExplorePage() {
                               )}
                             </div>
                           </Link>
-                          <div className="shrink-0 flex items-center gap-1 pt-0.5">
+                          <div className="shrink-0 flex items-center gap-1.5 pt-0.5">
+                            {/* Quest Indicator alongside badges */}
+                            {spot.questId && (
+                              <span
+                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 text-amber-900 font-bold text-[9px] border border-amber-200 select-none"
+                                title="Quest available at this destination"
+                              >
+                                <Trophy className="w-2.5 h-2.5 text-amber-600 shrink-0" />
+                                <span>Quest</span>
+                              </span>
+                            )}
                             <DestinationBadgeList
                               badges={getSampleDestinationBadges(spot.id, spot.category)}
                               maxDisplay={3}
@@ -475,46 +456,28 @@ export default function ExplorePage() {
                           </div>
                         </div>
 
-                        {/* Crowd Status Banner */}
-                        {spot.crowdStatus === 'estimated_busy' ? (
-                          <div className="py-1 px-2.5 rounded-lg bg-[#FFF3E8] border border-[#FFD8B8] flex items-center justify-between text-[11px] text-[#9E3E00]">
-                            <div className="flex items-center gap-1.5">
-                              <AlertTriangle className="w-3.5 h-3.5 text-[#D95D00] shrink-0" />
-                              <span className="font-bold">Peak Activity Reported</span>
-                            </div>
-                            <Link href={appRoutes.spot(spot.id)} className="text-[10px] font-bold underline text-[#D95D00]">
-                              Alternatives →
-                            </Link>
-                          </div>
-                        ) : spot.crowdStatus === 'quiet' ? (
-                          <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#E2F0E8] text-[#274E3C] text-[10px] font-bold">
-                            <span>🌿 Serene &amp; Low Crowd</span>
-                          </div>
-                        ) : null}
-
                         {/* Description Text */}
                         <p className="text-xs text-[#514532] leading-relaxed line-clamp-3">
                           {spot.description}
                         </p>
                       </div>
 
-                      {/* Missing or failed media collapses into a text-only post. */}
-                        <DestinationMedia
-                          key={spot.imageUrl || 'no-media'}
-                          src={spot.imageUrl}
-                          alt={spot.name}
-                          destinationName={spot.name}
-                          municipality={spot.municipality}
-                          priority={index === 0}
-                          aspectRatio="card"
-                          hideUnavailable
-                          href={appRoutes.spot(spot.id)}
-                          className="border-y border-[#E3DFD5]"
-                        />
+                      {/* Destination Media */}
+                      <DestinationMedia
+                        key={spot.imageUrl || 'no-media'}
+                        src={spot.imageUrl}
+                        alt={spot.name}
+                        destinationName={spot.name}
+                        municipality={spot.municipality}
+                        priority={index === 0}
+                        aspectRatio="card"
+                        hideUnavailable
+                        href={appRoutes.spot(spot.id)}
+                        className="border-y border-[#E3DFD5]"
+                      />
 
-                      {/* Interactive Engagement Action Row */}
+                      {/* Interactive Engagement Action Row (Like & Bookmark) */}
                       <div className="px-3.5 py-2.5 sm:px-5 sm:py-3 bg-white flex items-center justify-between gap-2 border-t border-[#E8E5DE]/80">
-                        {/* Social / Exploration Group */}
                         <div className="flex items-center gap-1.5 sm:gap-2">
                           {/* Instagram-style Heart Button */}
                           <button
@@ -529,25 +492,6 @@ export default function ExplorePage() {
                             title={likeState.isLiked ? 'Liked' : 'Like'}
                           >
                             <PixelHeart isLiked={likeState.isLiked} size="md" />
-                          </button>
-
-                          {/* Normal Comments Toggle */}
-                          <button
-                            type="button"
-                            onClick={() => handleToggleTips(spot.id)}
-                            className={`btn-tactile flex items-center justify-center w-10 h-10 rounded-xl transition duration-150 cursor-pointer ${
-                              isTipsOpen
-                                ? 'bg-emerald-50 text-[#2D6A4F] border border-emerald-200 shadow-2xs'
-                                : 'hover:bg-[#FAF9F5] text-[#582F0E] border border-transparent'
-                            }`}
-                            aria-label={isTipsOpen ? 'Hide comments' : 'Open comments'}
-                            title={isTipsOpen ? 'Hide comments' : 'Open comments'}
-                          >
-                            <MessageSquare
-                              className={`w-5 h-5 transition-colors ${
-                                isTipsOpen ? 'text-[#2D6A4F]' : 'text-[#837560]'
-                              }`}
-                            />
                           </button>
 
                           {/* Bookmark / Save */}
@@ -572,50 +516,15 @@ export default function ExplorePage() {
                           </button>
                         </div>
 
-                        {/* Primary Direct Actions */}
-                        <div className="flex items-center gap-1.5 shrink-0">
-                          {spot.questId && (
-                            <Link
-                              href={appRoutes.quest(spot.questId)}
-                              className="btn-tactile flex items-center justify-center w-10 h-10 rounded-xl bg-[#FFB703] hover:bg-[#F59E0B] text-[#582F0E] shadow-2xs transition"
-                              aria-label={`View Quest for ${spot.name}`}
-                              title="View Quest"
-                            >
-                              <Trophy className="w-5 h-5 text-[#582F0E]" />
-                            </Link>
-                          )}
-
-                          <Link
-                            href={`/navigate?name=${encodeURIComponent(spot.name)}&lat=${spot.gpsLat}&lng=${spot.gpsLng}&address=${encodeURIComponent(spot.address)}`}
-                            className="btn-tactile flex items-center justify-center w-10 h-10 rounded-xl bg-[#2D6A4F] hover:bg-[#1B4332] text-white shadow-2xs transition active:scale-95"
-                            aria-label={`Navigate to ${spot.name}`}
-                            title={`Navigate to ${spot.name}`}
-                          >
-                            <MapPin className="w-5 h-5 text-[#FFB703]" />
-                          </Link>
-                        </div>
+                        {/* Link to spot details where comments & routing live */}
+                        <Link
+                          href={appRoutes.spot(spot.id)}
+                          className="text-[11px] font-bold text-[var(--color-brand-primary)] hover:underline flex items-center gap-1"
+                        >
+                          <span>View Details & Comments</span>
+                          <span>→</span>
+                        </Link>
                       </div>
-
-                      {/* Comments Drawer (Normal Comments with Location Pins, Images, and Emojis) */}
-                      {isTipsOpen && (
-                        <div className="px-3.5 py-4 sm:px-5 sm:py-5 bg-[#FAF9F5] border-t border-[#E3DFD5] space-y-4 animate-fadeIn">
-                          {/* Venue Quick Address & Classification */}
-                          <div className="flex flex-wrap items-center justify-between gap-2 p-2.5 rounded-xl bg-white border border-[#E3DFD5] text-xs text-[#514532]">
-                            <div className="flex items-center gap-1.5 min-w-0">
-                              <MapPin className="w-3.5 h-3.5 text-[#2D6A4F] shrink-0" />
-                              <span className="truncate">{spot.address || spot.municipality}</span>
-                            </div>
-                            {spot.subcategory && (
-                              <span className="shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-50 text-[#7D5800] border border-amber-200 capitalize">
-                                {spot.subcategory.replace('_', ' ')}
-                              </span>
-                            )}
-                          </div>
-
-                          {/* Standard Comment Section with Attachments */}
-                          <SpotCommentSection spotId={spot.id} spotName={spot.name} />
-                        </div>
-                      )}
                     </article>
                     </React.Fragment>
                   );
