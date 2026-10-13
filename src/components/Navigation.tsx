@@ -39,6 +39,7 @@ import { findAreaByIdOrName, areaToHref } from '@/lib/areas';
 import { CelebrationEffects, triggerCelebration } from '@/components/CelebrationEffects';
 import { AnimatedCounter } from '@/components/AnimatedCounter';
 import { PixelSearchIcon } from '@/components/PixelIcons';
+import { fetchMerchantMe, fetchMyAffiliateApplication } from '@/lib/api';
 
 export interface NavigationNotification {
   id: string;
@@ -111,6 +112,7 @@ export const Navigation: React.FC<{
   const [rewardToast, setRewardToast] = useState<{ diff: number; total: number } | null>(null);
   const [isWelcomeCardExpanded, setIsWelcomeCardExpanded] = useState(false);
   const [drawerEngagement, setDrawerEngagement] = useState<EngagementSummary | null>(null);
+  const [hasMerchantOwnership, setHasMerchantOwnership] = useState<boolean>(false);
 
   useEffect(() => {
     let active = true;
@@ -120,6 +122,16 @@ export const Navigation: React.FC<{
           if (active) setDrawerEngagement(data);
         })
         .catch(() => {});
+
+      fetchMerchantMe()
+        .then((me) => {
+          if (active && me.has_merchant) {
+            setHasMerchantOwnership(true);
+          }
+        })
+        .catch(() => {});
+    } else {
+      setHasMerchantOwnership(false);
     }
     return () => {
       active = false;
@@ -378,7 +390,9 @@ export const Navigation: React.FC<{
     { label: 'JuanChoice', href: '/choice', icon: Award, flair: 'Free vote' },
     { label: 'Shop', href: '/shop', icon: ShoppingBag },
     { label: 'Leaderboard', href: '/leaderboard', icon: Award },
-    { label: 'Merchant Hub', href: '/affiliate', icon: Store, flair: 'Soon' },
+    hasMerchantOwnership
+      ? { label: 'Merchant Dashboard', href: '/merchant', icon: Store, flair: 'Owner' }
+      : { label: 'Merchant Hub', href: '/affiliate', icon: Store, flair: 'Partner' },
     { label: 'About Project', href: '/about', icon: ShieldCheck },
     { label: 'My Submissions', href: '/history', icon: History },
     { label: 'Traveler Profile', href: '/profile', icon: User },
@@ -844,7 +858,9 @@ export const Navigation: React.FC<{
                     <div className="space-y-0.5">
                       {[
                         { label: 'Merchant Voucher Shop', href: '/shop', icon: ShoppingBag, flair: 'Rewards' },
-                        { label: 'Merchant Hub', href: '/affiliate', icon: Store, flair: 'Soon' },
+                        hasMerchantOwnership
+                          ? { label: 'Merchant Dashboard', href: '/merchant', icon: Store, flair: 'Owner' }
+                          : { label: 'Merchant Hub', href: '/affiliate', icon: Store, flair: 'Partner' },
                         { label: 'Hall of Scouts', href: '/leaderboard', icon: Award, flair: 'Rankings' },
                         { label: 'JuanChoice Voting', href: '/choice', icon: Award, flair: 'Free vote' },
                         { label: 'My Submissions', href: '/history', icon: History, flair: 'Proofs' },

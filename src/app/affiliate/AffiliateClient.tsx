@@ -310,12 +310,10 @@ export function AffiliateClient() {
   const goalList = options?.sponsorship_goals || DEFAULT_GOALS;
 
   return (
-    <div className="min-h-screen bg-[#FDFBF7] text-[#1B1C1A]">
-      <Navigation />
-
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
+    <Navigation>
+      <div className="max-w-5xl mx-auto space-y-8">
         {/* Breadcrumb & Header */}
-        <div className="mb-6">
+        <div>
           <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#2D6A4F] mb-1">
             <Store size={14} /> JuanDerQuest Partner Network
           </div>
@@ -833,7 +831,7 @@ export function AffiliateClient() {
             </p>
           </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </Navigation>
   );
 }

@@ -222,20 +222,18 @@ export function MerchantClient() {
 
   if (loading || authLoading) {
     return (
-      <div className="min-h-screen bg-[#FDFBF7]">
-        <Navigation />
+      <Navigation>
         <div className="max-w-5xl mx-auto px-4 py-20 text-center text-[#888]">
           Loading merchant workspace...
         </div>
-      </div>
+      </Navigation>
     );
   }
 
   // Not signed in
   if (!user) {
     return (
-      <div className="min-h-screen bg-[#FDFBF7]">
-        <Navigation />
+      <Navigation>
         <div className="max-w-md mx-auto px-4 py-24 text-center">
           <div className="w-16 h-16 rounded-2xl bg-[#E8F5E9] text-[#2E7D32] flex items-center justify-center mx-auto mb-4">
             <Store size={32} />
@@ -251,15 +249,14 @@ export function MerchantClient() {
             Sign In to Continue
           </Link>
         </div>
-      </div>
+      </Navigation>
     );
   }
 
   // Signed in, but no active merchant workspace
   if (!identity?.has_merchant) {
     return (
-      <div className="min-h-screen bg-[#FDFBF7]">
-        <Navigation />
+      <Navigation>
         <div className="max-w-xl mx-auto px-4 py-20 text-center">
           <div className="w-16 h-16 rounded-2xl bg-[#FEF3C7] text-[#92400E] flex items-center justify-center mx-auto mb-4">
             <Building2 size={32} />
@@ -277,17 +274,15 @@ export function MerchantClient() {
             </Link>
           </div>
         </div>
-      </div>
+      </Navigation>
     );
   }
 
   const merchant = dashboardData?.merchant || identity.merchant!;
 
   return (
-    <div className="min-h-screen bg-[#FDFBF7] text-[#1B1C1A]">
-      <Navigation />
-
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
+    <Navigation>
+      <div className="max-w-5xl mx-auto space-y-8">
         {/* Workspace Top Bar */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
@@ -689,7 +684,7 @@ export function MerchantClient() {
             </div>
           </div>
         )}
-      </main>
-    </div>
+      </div>
+    </Navigation>
   );
 }
