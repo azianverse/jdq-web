@@ -357,9 +357,8 @@ export const Navigation: React.FC<{
     { label: 'The Trail', href: '/trail', icon: Route, flair: 'Soon' },
     { label: 'Eco-Quests', href: '/quests', icon: Zap, flair: 'Bounties' },
     { label: 'JuanChoice', href: '/choice', icon: Award, flair: 'Free vote' },
-    { label: 'Merchant Shop', href: '/shop', icon: ShoppingBag },
+    { label: 'Shop', href: '/shop', icon: ShoppingBag },
     { label: 'Leaderboard', href: '/leaderboard', icon: Award },
-    { label: 'Download App', href: '/download', icon: Smartphone, flair: 'APK' },
     { label: 'Merchant Hub', href: '/affiliate', icon: Store, flair: 'Soon' },
     { label: 'About Project', href: '/about', icon: ShieldCheck },
     { label: 'My Submissions', href: '/history', icon: History },
@@ -378,7 +377,7 @@ export const Navigation: React.FC<{
     : '/profile';
 
   const isExplore = pathname === '/explore' || pathname.startsWith('/explore/');
-  const isAppWorkstation = isExplore || fullBleed;
+  const isAppWorkstation = fullBleed;
 
   const isPrimaryBottomTab =
     pathname === '/dashboard' ||

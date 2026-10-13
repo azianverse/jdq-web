@@ -25,7 +25,6 @@ import {
   Flag
 } from 'lucide-react';
 import { Navigation } from '@/components/Navigation';
-import { HiddenGemHighlights } from '@/components/HiddenGemHighlights';
 import { useAuth } from '@/lib/auth';
 import { useRankedFeed } from '@/lib/use-ranked-feed';
 import { SpotCardSkeleton } from '@/components/Skeleton';
@@ -155,8 +154,19 @@ export default function ExplorePage() {
 
   const exploreSidePanel = (
     <div className="space-y-4">
-      {/* Spotlight Card */}
-      <HiddenGemHighlights actorId={user?.id} className="bg-transparent border-0 p-3 space-y-2 min-w-0" />
+      {/* Featured Destination Spotlight Card */}
+      {topHeroSpot && (
+        <div className="p-3 space-y-2.5 rounded-2xl bg-[#FAF9F5] border border-[#E3DFD5]">
+          <div className="flex items-center gap-1.5 text-xs font-black text-[#582F0E]">
+            <Sparkles className="w-4 h-4 text-[#FFB703]" />
+            <span>Featured Destination</span>
+          </div>
+          <Link href={appRoutes.spot(topHeroSpot.id)} className="block space-y-1">
+            <h4 className="text-xs font-bold text-[#2C221E]">{topHeroSpot.name}</h4>
+            <p className="text-[10px] text-[#837560]">{topHeroSpot.municipality}</p>
+          </Link>
+        </div>
+      )}
 
       {/* JuanChoice Spotlight Rail */}
       <JuanChoiceRail className="bg-transparent border-0 p-3 shadow-none space-y-3" />
@@ -549,91 +559,81 @@ export default function ExplorePage() {
             )}
           </div>
 
-          {/* Right Column: Community Scouts, Destination Spotlight & Preview Standings */}
+          {/* Right Column: Featured Destination Spotlight */}
           <aside
-            aria-label="Destination recommendations"
+            aria-label="Featured Destination"
             tabIndex={0}
             className="hidden lg:block lg:order-2 explore-scroll space-y-3"
           >
-            {/* Spotlight Card: Shows distinct spot, not identical duplicate of hero spot */}
-            <HiddenGemHighlights actorId={user?.id} className="bg-transparent border-0 p-3 space-y-2 min-w-0" />
+            {topHeroSpot ? (
+              <div className="bg-white rounded-2xl border border-[var(--color-border-default)] p-4 shadow-xs space-y-3 min-w-0">
+                <div className="flex items-center justify-between pb-2 border-b border-[#E8E5DE]">
+                  <div className="flex items-center gap-1.5">
+                    <Sparkles className="w-4 h-4 text-[#FFB703]" />
+                    <h3 className="text-xs font-black text-[#582F0E] uppercase tracking-wider">
+                      Featured Destination
+                    </h3>
+                  </div>
+                  <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300">
+                    Spotlight
+                  </span>
+                </div>
 
-            <JuanChoiceRail className="bg-transparent border-0 p-3 shadow-none space-y-3" />
+                <Link href={appRoutes.spot(topHeroSpot.id)} className="block group space-y-2.5">
+                  <DestinationMedia
+                    src={topHeroSpot.imageUrl}
+                    alt={topHeroSpot.name}
+                    destinationName={topHeroSpot.name}
+                    municipality={topHeroSpot.municipality}
+                    aspectRatio="card"
+                    className="rounded-xl overflow-hidden border border-[#E3DFD5]"
+                  />
 
-            {/* Community Scouts Discovery (Real Public Profiles) */}
-            <div className="p-3 space-y-3 rounded-2xl bg-white border border-[var(--color-border-default)] shadow-xs">
-              <div className="flex items-center justify-between pb-2 border-b border-[#E8E5DE]">
-                <div>
-                  <h3 className="text-xs font-black text-[#582F0E] uppercase tracking-wider">
-                    Community Scouts
-                  </h3>
-                  <span className="text-[10px] font-bold text-[#837560]">Public Travelers</span>
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-1 text-[11px] font-bold text-[var(--color-brand-primary)]">
+                      <MapPin className="w-3.5 h-3.5" />
+                      <span>{topHeroSpot.municipality}</span>
+                    </div>
+
+                    <h4 className="text-sm font-black text-[var(--color-brand-brown)] group-hover:text-[var(--color-brand-primary)] transition leading-snug">
+                      {topHeroSpot.name}
+                    </h4>
+
+                    {topHeroSpot.description && (
+                      <p className="text-xs text-[var(--color-text-secondary)] line-clamp-3 leading-relaxed">
+                        {topHeroSpot.description}
+                      </p>
+                    )}
+                  </div>
+                </Link>
+
+                <div className="pt-2 border-t border-[#F2EFE9] flex items-center justify-between">
+                  <Link
+                    href={appRoutes.spot(topHeroSpot.id)}
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-[var(--color-brand-primary)] hover:underline"
+                  >
+                    <span>View Destination</span>
+                    <span>→</span>
+                  </Link>
+
+                  {topHeroSpot.questId && (
+                    <Link
+                      href={appRoutes.quest(topHeroSpot.questId)}
+                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 text-amber-900 text-[10px] font-bold border border-amber-200"
+                    >
+                      <Trophy className="w-3 h-3 text-amber-600" />
+                      <span>Eco-Quest</span>
+                    </Link>
+                  )}
                 </div>
               </div>
-
-              {loadingScouts ? (
-                <div className="py-4 text-center">
-                  <span className="text-xs text-[#837560]">Loading scouts...</span>
-                </div>
-              ) : scoutError ? (
-                <p role="alert" className="py-3 text-xs text-red-800">{scoutError}</p>
-              ) : scouts.length === 0 ? (
-                <div className="py-3 text-center px-2 space-y-1">
-                  <p className="text-xs font-bold text-[#582F0E]">No public scouts yet</p>
-                  <p className="text-[10px] text-[#837560]">
-                    Enable your public profile in settings to appear here.
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-1.5">
-                  {scouts.slice(0, 5).map((profile) => {
-                    const initials = profile.display_name
-                      .split(' ')
-                      .filter(Boolean)
-                      .slice(0, 2)
-                      .map((w) => w[0].toUpperCase())
-                      .join('');
-
-                    return (
-                      <Link
-                        key={profile.id}
-                        href={travelerProfileHref(profile.id)}
-                        className="flex items-center justify-between gap-2.5 rounded-xl p-2 hover:bg-[#FAF9F5] transition group min-h-[40px]"
-                      >
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#2D6A4F] to-[#1B4332] text-[10px] font-black text-white shadow-2xs group-hover:ring-2 group-hover:ring-[#FFB703]/50 transition overflow-hidden">
-                            {profile.avatar_url ? (
-                              <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
-                            ) : (
-                              <span>{initials || 'TR'}</span>
-                            )}
-                          </span>
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-1 flex-wrap">
-                              <span className="truncate text-xs font-bold text-[#2C221E] group-hover:text-[#2D6A4F] transition">
-                                {profile.display_name}
-                              </span>
-                              <UserBadgesRow
-                                userIdOrName={profile.id || profile.display_name}
-                                size="xs"
-                                enablePreviewModal={false}
-                              />
-                            </div>
-                            <span className="block truncate text-[10px] text-[#837560]">
-                              {profile.handle ? `@${profile.handle} · ` : ''}
-                              {profile.scout_reputation ?? 0} Rep
-                            </span>
-                          </div>
-                        </div>
-                        <span className="text-[10px] font-bold text-[#2D6A4F] group-hover:translate-x-0.5 transition-transform">
-                          →
-                        </span>
-                      </Link>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
+            ) : (
+              <div className="bg-white rounded-2xl border border-[var(--color-border-default)] p-6 text-center space-y-2 shadow-xs">
+                <Sparkles className="w-6 h-6 text-amber-400 mx-auto" />
+                <h4 className="text-xs font-bold text-[var(--color-brand-brown)]">Featured Destination</h4>
+                <p className="text-[11px] text-[var(--color-text-muted)]">Loading highlights...</p>
+              </div>
+            )}
           </aside>
         </div>
       </div>
