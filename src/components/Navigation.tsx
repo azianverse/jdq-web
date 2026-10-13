@@ -1029,8 +1029,36 @@ export const Navigation: React.FC<{
             </button>
           </div>
 
+          {/* Mabuhay Greeting Card (Top of Drawer) */}
+          {!isDesktopDrawerCollapsed ? (
+            <div className="p-3 mx-2 mt-2 mb-1 rounded-2xl bg-gradient-to-br from-[#1B4332] via-[#2D6A4F] to-[#1E4A38] text-white shadow-xs border border-emerald-500/20 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-amber-400/10 rounded-full blur-xl pointer-events-none" />
+              <div className="relative z-10 space-y-1.5">
+                <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-900/70 border border-emerald-400/30 text-[9px] font-black uppercase tracking-wider text-amber-300">
+                  <Sparkles className="w-3 h-3 text-[#FFB703]" />
+                  <span>Pangasinan Hub</span>
+                </div>
+                <h3 className="text-xs font-black tracking-tight text-white truncate">
+                  {user?.displayName ? `Mabuhay, ${user.displayName}!` : 'Mabuhay, Explorer!'}
+                </h3>
+                <p className="text-[10px] text-emerald-100/80 leading-snug line-clamp-2">
+                  Track visits, streaks, and voting across all 48 municipalities.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="mx-2 mt-2 mb-1 flex justify-center">
+              <div
+                title={user?.displayName ? `Mabuhay, ${user.displayName}!` : 'Mabuhay, Explorer!'}
+                className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#1B4332] to-[#2D6A4F] text-amber-300 flex items-center justify-center border border-emerald-500/30 shadow-2xs cursor-default"
+              >
+                <Sparkles className="w-4 h-4 text-[#FFB703]" />
+              </div>
+            </div>
+          )}
+
           {/* Navigation Links Scrollable Area */}
-          <div className="flex-1 overflow-y-auto px-2 py-3 space-y-1 scrollbar-thin">
+          <div className="flex-1 overflow-y-auto px-2 py-2 space-y-1 scrollbar-thin">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive =

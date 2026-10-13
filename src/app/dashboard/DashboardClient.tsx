@@ -192,129 +192,107 @@ export function DashboardClient() {
       <ErrorBoundary fallbackTitle="Unable to load Explorer Dashboard">
         <div className="max-w-7xl 2xl:max-w-[1560px] mx-auto space-y-8 pb-16">
           {/* ======================================================== */}
-          {/* 1. HERO EXPEDITION BANNER & USER PROGRESSION OVERVIEW */}
+          {/* 1. TOP ASYMMETRIC ROW: EXPLORER PROGRESSION + EXPEDITION CALENDAR */}
           {/* ======================================================== */}
-          <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#1B4332] via-[#2D6A4F] to-[#1E4A38] text-white p-6 sm:p-8 lg:p-10 shadow-lg border border-emerald-500/20">
-            {/* Background Texture & Ambient Lights */}
-            <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#FAF9F5_1px,transparent_1px)] [background-size:20px_20px] pointer-events-none" />
-            <div className="absolute top-0 right-0 w-96 h-96 bg-amber-400/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-stretch">
+            {/* Explorer Summary Overview Panel (Level, Streak, XP, Verified Visits) */}
+            <div className="xl:col-span-5 flex flex-col justify-between rounded-3xl bg-gradient-to-br from-[#1B4332] via-[#2D6A4F] to-[#1E4A38] text-white p-5 sm:p-6 shadow-md border border-emerald-500/20 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-amber-400/10 rounded-full blur-3xl pointer-events-none" />
+              
+              <div className="relative z-10 space-y-4">
+                {/* Header Badge & Level */}
+                <div className="flex items-center justify-between pb-3 border-b border-white/10">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-10 h-10 rounded-2xl bg-amber-400/20 border border-amber-400/40 flex items-center justify-center shrink-0">
+                      <Trophy className="w-5 h-5 text-[#FFB703]" />
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-black uppercase text-amber-300 tracking-wider block">
+                        Explorer Overview
+                      </span>
+                      <h2 className="text-base sm:text-lg font-black text-white">Level {explorerLevel} Tier</h2>
+                    </div>
+                  </div>
 
-            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-              {/* Left Column: Greeting & Summary */}
-              <div className="lg:col-span-7 space-y-4">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-900/60 border border-emerald-400/30 text-[11px] font-black uppercase tracking-wider text-amber-300">
-                  <Sparkles className="w-3.5 h-3.5 text-[#FFB703]" />
-                  <span>Pangasinan Sovereign Explorer Hub</span>
+                  {/* Round Streak Counter */}
+                  <div className="flex items-center gap-1.5 bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-400/30 px-3 py-1.5 rounded-2xl">
+                    <Flame className="w-4 h-4 text-amber-400 animate-pulse shrink-0" />
+                    <div>
+                      <span className="text-xs font-black text-amber-200 block leading-tight">
+                        {streakCount} {streakCount === 1 ? 'Streak' : 'Streaks'}
+                      </span>
+                      <span className="text-[9px] text-amber-200/70 block leading-tight">DAO Round</span>
+                    </div>
+                  </div>
                 </div>
 
+                {/* Level Progress Bar */}
                 <div className="space-y-1.5">
-                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white">
-                    {user?.displayName ? `Mabuhay, ${user.displayName}!` : 'Mabuhay, Pangasinan Explorer!'}
-                  </h1>
-                  <p className="text-xs sm:text-sm text-emerald-100/90 max-w-xl leading-relaxed">
-                    Track your physical verified visits, round streaks, voting rights, and cultural discoveries across all 48 municipalities.
-                  </p>
+                  <div className="flex items-center justify-between text-xs font-bold text-emerald-100">
+                    <span>XP to Level {explorerLevel + 1}</span>
+                    <span className="font-mono text-amber-300">{totalPoints % 50} / 50 XP ({currentLevelProgress}%)</span>
+                  </div>
+                  <div className="w-full bg-white/15 h-2.5 rounded-full overflow-hidden p-0.5">
+                    <div
+                      className="bg-gradient-to-r from-[#FFB703] to-[#F59E0B] h-full rounded-full transition-all duration-500 shadow-2xs"
+                      style={{ width: `${Math.max(6, currentLevelProgress)}%` }}
+                    />
+                  </div>
                 </div>
 
-                {/* Quick Action Chips */}
-                <div className="flex flex-wrap items-center gap-2.5 pt-2">
-                  <Link
-                    href="/explore"
-                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#FFB703] hover:bg-[#F59E0B] text-[#582F0E] text-xs font-black shadow-sm transition active:scale-95 cursor-pointer"
-                  >
-                    <Compass className="w-4 h-4 text-[#582F0E]" />
-                    <span>Explore Feed</span>
-                  </Link>
-
-                  <Link
-                    href="/map"
-                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-extrabold border border-white/20 backdrop-blur-xs transition active:scale-95 cursor-pointer"
-                  >
-                    <MapPin className="w-4 h-4 text-emerald-300" />
-                    <span>Open Interactive Map</span>
-                  </Link>
-
-                  <Link
-                    href="/choice"
-                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-extrabold border border-white/20 backdrop-blur-xs transition active:scale-95 cursor-pointer"
-                  >
-                    <Vote className="w-4 h-4 text-amber-300" />
-                    <span>JuanChoice Spotlight</span>
-                  </Link>
+                {/* Mini Stats 3-Grid */}
+                <div className="grid grid-cols-3 gap-2 pt-1 text-center">
+                  <div className="p-2.5 rounded-2xl bg-white/10 backdrop-blur-xs border border-white/10">
+                    <span className="text-base sm:text-lg font-black text-white block leading-tight">{totalPoints}</span>
+                    <span className="text-[9px] font-bold text-emerald-200/90 uppercase tracking-wider">Total XP</span>
+                  </div>
+                  <div className="p-2.5 rounded-2xl bg-white/10 backdrop-blur-xs border border-white/10">
+                    <span className="text-base sm:text-lg font-black text-amber-300 block leading-tight">{verifiedVisitsCount}</span>
+                    <span className="text-[9px] font-bold text-emerald-200/90 uppercase tracking-wider">Verified Visits</span>
+                  </div>
+                  <div className="p-2.5 rounded-2xl bg-white/10 backdrop-blur-xs border border-white/10">
+                    <span className="text-base sm:text-lg font-black text-white block leading-tight">{municipalitiesExplored} / 48</span>
+                    <span className="text-[9px] font-bold text-emerald-200/90 uppercase tracking-wider">LGUs Visited</span>
+                  </div>
                 </div>
               </div>
 
-              {/* Right Column: Gamified Progress & Streak Dashboard Card */}
-              <div className="lg:col-span-5">
-                <div className="bg-black/30 backdrop-blur-md rounded-2xl sm:rounded-3xl border border-white/15 p-5 sm:p-6 space-y-4">
-                  {/* Streak & Level Row */}
-                  <div className="flex items-center justify-between pb-3 border-b border-white/10">
-                    {/* Explorer Tier */}
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-10 h-10 rounded-2xl bg-amber-400/20 border border-amber-400/40 flex items-center justify-center">
-                        <Trophy className="w-5 h-5 text-[#FFB703]" />
-                      </div>
-                      <div>
-                        <span className="text-[10px] font-black uppercase text-amber-300 tracking-wider block">
-                          Explorer Tier
-                        </span>
-                        <span className="text-base font-black text-white">Level {explorerLevel}</span>
-                      </div>
-                    </div>
+              {/* Quick Navigation Action Chips */}
+              <div className="relative z-10 pt-4 mt-2 border-t border-white/10 flex flex-wrap items-center gap-2">
+                <Link
+                  href="/explore"
+                  className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-[#FFB703] hover:bg-[#F59E0B] text-[#582F0E] text-xs font-black shadow-2xs transition active:scale-95 cursor-pointer"
+                >
+                  <Compass className="w-3.5 h-3.5 text-[#582F0E]" />
+                  <span>Feed</span>
+                </Link>
 
-                    {/* Round Streak Counter */}
-                    <div className="flex items-center gap-2 bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-400/30 px-3 py-1.5 rounded-2xl">
-                      <Flame className="w-5 h-5 text-amber-400 animate-pulse" />
-                      <div>
-                        <div className="text-xs font-black text-amber-200">
-                          {streakCount} {streakCount === 1 ? 'Round Streak' : 'Rounds Streak'}
-                        </div>
-                        <span className="text-[9px] text-amber-200/70 block">Civic participation</span>
-                      </div>
-                    </div>
-                  </div>
+                <Link
+                  href="/map"
+                  className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-white/15 hover:bg-white/25 text-white text-xs font-bold border border-white/20 transition active:scale-95 cursor-pointer"
+                >
+                  <MapPin className="w-3.5 h-3.5 text-emerald-300" />
+                  <span>Map</span>
+                </Link>
 
-                  {/* Level Progress Bar */}
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-between text-xs font-bold text-emerald-100">
-                      <span>XP to Level {explorerLevel + 1}</span>
-                      <span className="font-mono text-amber-300">{totalPoints % 50} / 50 XP ({currentLevelProgress}%)</span>
-                    </div>
-                    <div className="w-full bg-white/15 h-2.5 rounded-full overflow-hidden p-0.5">
-                      <div
-                        className="bg-gradient-to-r from-[#FFB703] to-[#F59E0B] h-full rounded-full transition-all duration-500 shadow-2xs"
-                        style={{ width: `${Math.max(6, currentLevelProgress)}%` }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Mini Stats Grid */}
-                  <div className="grid grid-cols-3 gap-2 pt-2 border-t border-white/10 text-center">
-                    <div className="p-2 rounded-xl bg-white/5">
-                      <span className="text-base font-black text-white block">{totalPoints}</span>
-                      <span className="text-[9px] font-bold text-emerald-200/80 uppercase">Total XP</span>
-                    </div>
-                    <div className="p-2 rounded-xl bg-white/5">
-                      <span className="text-base font-black text-amber-300 block">{verifiedVisitsCount}</span>
-                      <span className="text-[9px] font-bold text-emerald-200/80 uppercase">Verified Visits</span>
-                    </div>
-                    <div className="p-2 rounded-xl bg-white/5">
-                      <span className="text-base font-black text-white block">{municipalitiesExplored} / 48</span>
-                      <span className="text-[9px] font-bold text-emerald-200/80 uppercase">Municipalities</span>
-                    </div>
-                  </div>
-                </div>
+                <Link
+                  href="/choice"
+                  className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-white/15 hover:bg-white/25 text-white text-xs font-bold border border-white/20 transition active:scale-95 cursor-pointer"
+                >
+                  <Vote className="w-3.5 h-3.5 text-amber-300" />
+                  <span>Vote</span>
+                </Link>
               </div>
             </div>
-          </section>
+
+            {/* Compressed Expedition Calendar Panel */}
+            <div className="xl:col-span-7">
+              <DashboardCalendar />
+            </div>
+          </div>
 
           {/* ======================================================== */}
-          {/* 2. PROMINENT COMPRESSED EXPEDITION CALENDAR */}
-          {/* ======================================================== */}
-          <DashboardCalendar />
-
-          {/* ======================================================== */}
-          {/* 3. MAIN 2-COLUMN DASHBOARD GRID */}
+          {/* 2. MAIN 2-COLUMN DASHBOARD GRID */}
           {/* ======================================================== */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             {/* Left 8-Column Area: Recommendations & Content */}
