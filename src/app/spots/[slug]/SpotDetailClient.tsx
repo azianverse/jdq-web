@@ -512,7 +512,7 @@ export const SpotDetailClient: React.FC<SpotDetailClientProps> = ({ slug }) => {
                       className="btn-tactile btn-sheen inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#FFB703] hover:bg-[#F59E0B] text-[#582F0E] text-xs sm:text-sm font-extrabold shadow-sm transition cursor-pointer min-h-[44px]"
                     >
                       <Trophy className="w-4 h-4 text-[#582F0E]" />
-                      <span>Play Quest Trail</span>
+                      <span>Play Eco-Quest</span>
                     </Link>
                   )}
 
@@ -652,7 +652,7 @@ export const SpotDetailClient: React.FC<SpotDetailClientProps> = ({ slug }) => {
                       className="w-full inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-[#FFB703] hover:bg-[#F59E0B] text-[#582F0E] text-xs font-black shadow-md transition active:scale-98 cursor-pointer"
                     >
                       <PlusCircle className="w-4 h-4" />
-                      <span>{spot.questId ? 'Add Another Quest Trail' : 'Create Quest for this Spot'}</span>
+                      <span>{spot.questId ? 'Add Another Eco-Quest' : 'Create Eco-Quest for this Spot'}</span>
                     </button>
                   </div>
                 )}
@@ -664,7 +664,7 @@ export const SpotDetailClient: React.FC<SpotDetailClientProps> = ({ slug }) => {
                       <div className="flex items-center gap-2">
                         <Award className="w-4 h-4 text-[#FFB703]" />
                         <h3 className="text-xs font-black text-[#582F0E] uppercase tracking-wider">
-                          Active Quest Trail
+                          Active Eco-Quest
                         </h3>
                       </div>
                       <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold">
@@ -673,14 +673,14 @@ export const SpotDetailClient: React.FC<SpotDetailClientProps> = ({ slug }) => {
                     </div>
 
                     <p className="text-xs text-[#514532] leading-relaxed">
-                      This destination has an active quest checkpoint. Travelers can verify their physical visit on-site to earn $mJDQ tokens and Explorer XP.
+                      This destination has an active Eco-Quest checkpoint. Travelers can verify their physical visit on-site to earn $mJDQ tokens and Explorer XP.
                     </p>
 
                     <Link
                       href={appRoutes.quest(spot.questId)}
                       className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-[#2D6A4F] hover:bg-[#1B4332] text-white text-xs font-bold transition shadow-xs cursor-pointer active:scale-98"
                     >
-                      <span>Explore Quest Checkpoint</span>
+                      <span>Explore Eco-Quest Checkpoint</span>
                       <ExternalLink className="w-3.5 h-3.5" />
                     </Link>
                   </div>

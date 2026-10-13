@@ -348,7 +348,7 @@ export const Navigation: React.FC<{
     { label: 'Explore Feed', href: '/explore', icon: Compass, flair: 'Feed' },
     { label: 'Interactive Map', href: '/map', icon: MapPin },
     { label: 'The Trail', href: '/trail', icon: Route, flair: 'Soon' },
-    { label: 'Quests & Events', href: '/quests', icon: Zap, flair: 'Bounties' },
+    { label: 'Eco-Quests', href: '/quests', icon: Zap, flair: 'Bounties' },
     { label: 'JuanChoice', href: '/choice', icon: Award, flair: 'Free vote' },
     { label: 'Merchant Shop', href: '/shop', icon: ShoppingBag },
     { label: 'Leaderboard', href: '/leaderboard', icon: Award },
@@ -1052,7 +1052,7 @@ export const Navigation: React.FC<{
           { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
           { label: 'Explore', href: '/explore', icon: Compass },
           { label: 'Map', href: '/map', icon: MapPin },
-          { label: 'Quests', href: '/quests', icon: Zap },
+          { label: 'Eco-Quests', href: '/quests', icon: Zap },
         ].map((item) => {
           const Icon = item.icon;
           const isActive =

@@ -384,7 +384,7 @@ export function DashboardClient() {
 
                           <div className="pt-2 border-t border-[#F2EFE9] flex items-center justify-between text-xs">
                             <span className="text-[11px] text-[#837560] font-semibold">
-                              {spot.questId ? '🎯 Quest Attached' : '📍 Open Discovery'}
+                              {spot.questId ? '🌿 Eco-Quest Attached' : '📍 Open Discovery'}
                             </span>
                             <Link
                               href={appRoutes.spot(spot.id)}

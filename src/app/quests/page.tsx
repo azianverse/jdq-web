@@ -215,13 +215,13 @@ function QuestsContent() {
               <div className="space-y-1.5 max-w-2xl">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--color-brand-primary)]/10 border border-[var(--color-brand-primary)]/20 text-[var(--color-brand-primary)] text-xs font-semibold">
                   <Sparkles className="w-3.5 h-3.5 text-[var(--color-brand-accent)]" />
-                  <span>Gamified Tourism &amp; Bounties Engine</span>
+                  <span>Gamified Eco-Tourism &amp; Bounties Engine</span>
                 </div>
                 <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-[var(--color-brand-brown)]">
-                  Quest Trails &amp; Campaigns
+                  Eco-Quests &amp; Trails
                 </h1>
                 <p className="text-xs sm:text-sm text-[var(--color-text-secondary)] leading-relaxed max-w-xl">
-                  Explore location-based quest trails, beginning in Pangasinan. Event registration and campaign rewards are preview features under development.
+                  Explore location-based Eco-Quests, beginning in Pangasinan. Physical visits on-site unlock rewards, badges, and verified traveler progression.
                 </p>
               </div>
 

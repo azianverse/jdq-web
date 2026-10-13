@@ -446,10 +446,10 @@ export default function ExplorePage() {
                             <Link
                               href={appRoutes.quest(spot.questId)}
                               className="shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 hover:bg-amber-100 text-amber-900 font-bold text-[9px] border border-amber-200 shadow-2xs transition"
-                              title="Active quest available for this destination"
+                              title="Active Eco-Quest available for this destination"
                             >
                               <Trophy className="w-2.5 h-2.5 text-amber-600 shrink-0" />
-                              <span>Active Quest</span>
+                              <span>Eco-Quest</span>
                             </Link>
                           )}
                         </div>
