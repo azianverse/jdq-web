@@ -27,7 +27,12 @@ import {
   LayoutDashboard,
   PanelLeft,
   PanelLeftClose,
+  Trophy,
+  Flame,
+  ChevronRight,
+  ChevronUp,
 } from 'lucide-react';
+import { fetchMyEngagement, EngagementSummary } from '@/lib/engagement';
 import { Footer } from '@/components/Footer';
 import { SearchSuggestionsDropdown } from '@/components/SearchSuggestionsDropdown';
 import { useSearchPreview } from '@/lib/use-search-preview';
@@ -106,6 +111,22 @@ export const Navigation: React.FC<{
   const [selectedIndex, setSelectedIndex] = useState<number>(-1);
   const [logoutError, setLogoutError] = useState('');
   const [rewardToast, setRewardToast] = useState<{ diff: number; total: number } | null>(null);
+  const [isWelcomeCardExpanded, setIsWelcomeCardExpanded] = useState(false);
+  const [drawerEngagement, setDrawerEngagement] = useState<EngagementSummary | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    if (user) {
+      fetchMyEngagement()
+        .then((data) => {
+          if (active) setDrawerEngagement(data);
+        })
+        .catch(() => {});
+    }
+    return () => {
+      active = false;
+    };
+  }, [user]);
 
   useEffect(() => {
     const handleReward = (e: Event) => {
@@ -1029,31 +1050,117 @@ export const Navigation: React.FC<{
             </button>
           </div>
 
-          {/* Mabuhay Greeting Card (Top of Drawer) */}
+          {/* Mabuhay Greeting Card (Top of Drawer - Expandable Explorer Overview) */}
           {!isDesktopDrawerCollapsed ? (
-            <div className="p-3 mx-2 mt-2 mb-1 rounded-2xl bg-gradient-to-br from-[#1B4332] via-[#2D6A4F] to-[#1E4A38] text-white shadow-xs border border-emerald-500/20 relative overflow-hidden">
+            <div className="mx-2 mt-2 mb-1.5 rounded-2xl bg-gradient-to-br from-[#1B4332] via-[#2D6A4F] to-[#1E4A38] text-white shadow-xs border border-emerald-500/20 relative overflow-hidden transition-all duration-200">
               <div className="absolute top-0 right-0 w-24 h-24 bg-amber-400/10 rounded-full blur-xl pointer-events-none" />
-              <div className="relative z-10 space-y-1.5">
-                <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-900/70 border border-emerald-400/30 text-[9px] font-black uppercase tracking-wider text-amber-300">
-                  <Sparkles className="w-3 h-3 text-[#FFB703]" />
-                  <span>Pangasinan Hub</span>
+              
+              {/* Clickable Header Card */}
+              <button
+                type="button"
+                onClick={() => setIsWelcomeCardExpanded((prev) => !prev)}
+                className="w-full text-left p-3 relative z-10 flex items-center justify-between gap-2 cursor-pointer group select-none"
+                aria-expanded={isWelcomeCardExpanded}
+                aria-label="Toggle Explorer Overview"
+              >
+                <div className="min-w-0 flex-1 space-y-0.5">
+                  <div className="flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-[#FFB703] shrink-0" />
+                    <h3 className="text-xs sm:text-[13px] font-black tracking-tight text-white truncate group-hover:text-amber-200 transition">
+                      {user?.displayName ? `Mabuhay, ${user.displayName}!` : 'Mabuhay, Explorer!'}
+                    </h3>
+                  </div>
+                  <p className="text-[10px] text-emerald-100/80 leading-tight">
+                    Level {currentLevel} • {wallet ? `${wallet.balanceMjdq.toLocaleString()} mJDQ` : 'Demo Explorer'}
+                  </p>
                 </div>
-                <h3 className="text-xs font-black tracking-tight text-white truncate">
-                  {user?.displayName ? `Mabuhay, ${user.displayName}!` : 'Mabuhay, Explorer!'}
-                </h3>
-                <p className="text-[10px] text-emerald-100/80 leading-snug line-clamp-2">
-                  Track visits, streaks, and voting across all 48 municipalities.
-                </p>
-              </div>
+
+                <div className="p-1 rounded-lg bg-white/10 group-hover:bg-white/20 transition text-emerald-200 shrink-0">
+                  {isWelcomeCardExpanded ? (
+                    <ChevronUp className="w-3.5 h-3.5 text-amber-300" />
+                  ) : (
+                    <ChevronDown className="w-3.5 h-3.5 text-emerald-200" />
+                  )}
+                </div>
+              </button>
+
+              {/* Expandable Overview Details */}
+              {isWelcomeCardExpanded && (
+                <div className="px-3 pb-3 pt-1 border-t border-white/15 space-y-2.5 relative z-10 animate-in fade-in duration-200">
+                  {/* Streak and Level Row */}
+                  <div className="flex items-center justify-between text-[11px] pt-1">
+                    <div className="flex items-center gap-1.5 text-amber-300 font-bold">
+                      <Trophy className="w-3.5 h-3.5 text-[#FFB703]" />
+                      <span>Level {currentLevel} Explorer</span>
+                    </div>
+
+                    <div className="flex items-center gap-1 bg-amber-500/20 px-2 py-0.5 rounded-full border border-amber-400/30 text-[10px] font-black text-amber-200">
+                      <Flame className="w-3 h-3 text-amber-400 animate-pulse" />
+                      <span>{drawerEngagement?.streak?.current ?? 1} Streak</span>
+                    </div>
+                  </div>
+
+                  {/* Level Progress Bar */}
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between text-[10px] text-emerald-100/90 font-semibold">
+                      <span>XP to Level {currentLevel + 1}</span>
+                      <span className="font-mono text-amber-300">
+                        {currentPoints % 50} / 50 XP ({Math.min(100, Math.round(((currentPoints % 50) / 50) * 100))}%)
+                      </span>
+                    </div>
+                    <div className="w-full bg-white/15 h-2 rounded-full overflow-hidden p-0.5">
+                      <div
+                        className="bg-gradient-to-r from-[#FFB703] to-[#F59E0B] h-full rounded-full transition-all duration-300"
+                        style={{ width: `${Math.max(6, Math.min(100, Math.round(((currentPoints % 50) / 50) * 100)))}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Metric Chips */}
+                  <div className="grid grid-cols-3 gap-1.5 text-center pt-0.5">
+                    <div className="p-1.5 rounded-xl bg-white/10">
+                      <span className="text-xs font-black text-white block leading-tight">{currentPoints}</span>
+                      <span className="text-[8px] font-bold text-emerald-200/90 uppercase">Total XP</span>
+                    </div>
+                    <div className="p-1.5 rounded-xl bg-white/10">
+                      <span className="text-xs font-black text-amber-300 block leading-tight">
+                        {drawerEngagement?.impact?.verified_visits ?? 0}
+                      </span>
+                      <span className="text-[8px] font-bold text-emerald-200/90 uppercase">Visits</span>
+                    </div>
+                    <div className="p-1.5 rounded-xl bg-white/10">
+                      <span className="text-xs font-black text-white block leading-tight">
+                        {drawerEngagement?.impact?.municipalities ?? 1} / 48
+                      </span>
+                      <span className="text-[8px] font-bold text-emerald-200/90 uppercase">LGUs</span>
+                    </div>
+                  </div>
+
+                  {/* Profile link button */}
+                  <Link
+                    href={userProfileHref}
+                    className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-xl bg-[#FFB703] hover:bg-[#F59E0B] text-[#582F0E] text-[11px] font-black shadow-2xs transition active:scale-95"
+                  >
+                    <span>Open Passport Profile</span>
+                    <ChevronRight className="w-3 h-3 text-[#582F0E]" />
+                  </Link>
+                </div>
+              )}
             </div>
           ) : (
             <div className="mx-2 mt-2 mb-1 flex justify-center">
-              <div
+              <button
+                type="button"
+                onClick={() => {
+                  setIsDesktopDrawerCollapsed(false);
+                  setIsWelcomeCardExpanded(true);
+                }}
                 title={user?.displayName ? `Mabuhay, ${user.displayName}!` : 'Mabuhay, Explorer!'}
-                className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#1B4332] to-[#2D6A4F] text-amber-300 flex items-center justify-center border border-emerald-500/30 shadow-2xs cursor-default"
+                aria-label="Expand sidebar for overview"
+                className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#1B4332] to-[#2D6A4F] text-amber-300 flex items-center justify-center border border-emerald-500/30 shadow-2xs cursor-pointer hover:scale-105 transition active:scale-95"
               >
                 <Sparkles className="w-4 h-4 text-[#FFB703]" />
-              </div>
+              </button>
             </div>
           )}
 
