@@ -335,8 +335,7 @@ function QuestsContent() {
 
           {/* Tab Content Display */}
           {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-4 sm:gap-5" aria-busy="true">
-              <QuestCardSkeleton />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5" aria-busy="true">
               <QuestCardSkeleton />
               <QuestCardSkeleton />
               <QuestCardSkeleton />
@@ -352,14 +351,14 @@ function QuestsContent() {
               </button>
             </div>
           ) : activeTab === 'trails' ? (
-            /* Ongoing Quest Trails Grid - Responsive 4 Columns */
+            /* Ongoing Quest Trails Grid - Responsive 3 Columns */
             filteredQuests.length === 0 ? (
               <div className="bg-white p-12 rounded-2xl border border-[#E3DFD5] text-center text-xs text-[#837560] shadow-xs">
                 No quest trails match your filter.
               </div>
             ) : (
               <div className="space-y-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-4 sm:gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
                   {paginatedQuests.map((quest) => (
                     <article
                       key={quest.id}
