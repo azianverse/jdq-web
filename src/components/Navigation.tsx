@@ -395,7 +395,6 @@ export const Navigation: React.FC<{
       : { label: 'Merchant Hub', href: '/affiliate', icon: Store, flair: 'Partner' },
     { label: 'About Project', href: '/about', icon: ShieldCheck },
     { label: 'My Submissions', href: '/history', icon: History },
-    { label: 'Traveler Profile', href: '/profile', icon: User },
     { label: 'Explorer Settings', href: '/settings', icon: Settings },
   ];
 
@@ -816,21 +815,6 @@ export const Navigation: React.FC<{
                       </a>
                     )}
                     <Link
-                      href={userProfileHref}
-                      onClick={() => setIsProfileOpen(false)}
-                      role="menuitem"
-                      className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold text-[var(--color-brand-brown)] hover:bg-[var(--color-bg-subtle)] hover:text-[var(--color-brand-primary)] transition"
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-7 h-7 rounded-lg bg-[var(--color-brand-primary)]/10 text-[var(--color-brand-primary)] flex items-center justify-center shrink-0">
-                          <User className="w-4 h-4" />
-                        </div>
-                        <span>Traveler Profile</span>
-                      </div>
-                      <span className="text-[10px] text-[var(--color-text-muted)] font-normal">Passport →</span>
-                    </Link>
-
-                    <Link
                       href="/settings"
                       onClick={() => setIsProfileOpen(false)}
                       role="menuitem"
@@ -844,59 +828,6 @@ export const Navigation: React.FC<{
                       </div>
                       <span className="text-[10px] text-[var(--color-text-muted)] font-normal">Preferences →</span>
                     </Link>
-                  </div>
-
-                  {/* Explorer Directory Section (like the mobile hamburger menu) */}
-                  <div className="pt-2 pb-1 border-t border-[var(--color-border-default)]">
-                    <div className="px-2.5 pb-1.5 flex items-center justify-between">
-                      <span className="text-[10px] font-black uppercase tracking-wider text-[var(--color-brand-accent-dark)]">
-                        Explorer Directory
-                      </span>
-                      <span className="text-[9px] font-bold text-[var(--color-text-muted)]">Pages</span>
-                    </div>
-
-                    <div className="space-y-0.5">
-                      {[
-                        { label: 'Merchant Voucher Shop', href: '/shop', icon: ShoppingBag, flair: 'Rewards' },
-                        hasMerchantOwnership
-                          ? { label: 'Merchant Dashboard', href: '/merchant', icon: Store, flair: 'Owner' }
-                          : { label: 'Merchant Hub', href: '/affiliate', icon: Store, flair: 'Partner' },
-                        { label: 'Hall of Scouts', href: '/leaderboard', icon: Award, flair: 'Rankings' },
-                        { label: 'JuanChoice Voting', href: '/choice', icon: Award, flair: 'Free vote' },
-                        { label: 'My Submissions', href: '/history', icon: History, flair: 'Proofs' },
-                        { label: 'About Project', href: '/about', icon: ShieldCheck, flair: 'Story' },
-                      ].map((item) => {
-                        const Icon = item.icon;
-                        const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
-                        return (
-                          <Link
-                            key={item.href}
-                            href={item.href}
-                            onClick={() => setIsProfileOpen(false)}
-                            role="menuitem"
-                            className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition ${
-                              isActive
-                                ? 'bg-[var(--color-brand-primary)]/10 text-[var(--color-brand-primary)]'
-                                : 'text-[var(--color-text-primary)] hover:bg-[var(--color-bg-subtle)]'
-                            }`}
-                          >
-                            <div className="flex items-center gap-2.5">
-                              <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
-                                isActive ? 'bg-[var(--color-brand-primary)] text-white' : 'bg-stone-100 text-stone-600'
-                              }`}>
-                                <Icon className="w-3.5 h-3.5" />
-                              </div>
-                              <span>{item.label}</span>
-                            </div>
-                            {item.flair && (
-                              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[var(--color-bg-subtle)] text-[var(--color-brand-accent-dark)]">
-                                {item.flair}
-                              </span>
-                            )}
-                          </Link>
-                        );
-                      })}
-                    </div>
                   </div>
 
                   {/* Log Out */}
