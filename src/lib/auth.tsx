@@ -36,6 +36,28 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const isStoredUser = (raw: unknown): raw is { display_name?: unknown; demo_points?: unknown; id?: unknown; role?: unknown } =>
   typeof raw === 'object' && raw !== null;
 
+export const isAuthBypassEnabled = (): boolean =>
+  process.env.NODE_ENV !== 'production' &&
+  process.env.NEXT_PUBLIC_BYPASS_AUTH === 'true';
+
+export const DEV_BYPASS_USER: UserModel = {
+  id: 'usr-dev-traveler-01',
+  seedId: 'dev-traveler',
+  displayName: 'Dev Explorer',
+  email: 'dev@juanderquest.local',
+  avatarUrl: 'https://api.dicebear.com/7.x/identicon/svg?seed=dev-traveler',
+  role: 'admin',
+  points: 1250,
+  handle: 'dev_explorer',
+};
+
+export const DEV_BYPASS_WALLET: WalletModel = {
+  settlement: 'off_chain_points',
+  unit: 'mJDQ',
+  balanceMjdq: 250000,
+  balanceJdq: 50,
+};
+
 export const adminHandoffUrl = (token: string) => `${ADMIN_URL}/#session=${encodeURIComponent(token)}`;
 
 export const shouldStayInTravelerApp = (): boolean => {
@@ -101,15 +123,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           clearStoredSession();
           invalidateCache();
           if (!cancelled) {
-            setToken(null);
-            setUser(null);
-            setWallet(null);
-            setSessionUnavailable(false);
+            if (isAuthBypassEnabled()) {
+              setUser(DEV_BYPASS_USER);
+              setWallet(DEV_BYPASS_WALLET);
+              setToken('dev-bypass-token');
+              setSessionUnavailable(false);
+            } else {
+              setToken(null);
+              setUser(null);
+              setWallet(null);
+              setSessionUnavailable(false);
+            }
           }
         } else if (!cancelled) {
-          // Keep the cookie and any in-memory identity, but the route gate
-          // blocks protected content until the backend confirms the session.
-          setSessionUnavailable(true);
+          if (isAuthBypassEnabled()) {
+            setUser(DEV_BYPASS_USER);
+            setWallet(DEV_BYPASS_WALLET);
+            setToken('dev-bypass-token');
+            setSessionUnavailable(false);
+          } else {
+            // Keep the cookie and any in-memory identity, but the route gate
+            // blocks protected content until the backend confirms the session.
+            setSessionUnavailable(true);
+          }
         }
       } finally {
         if (!cancelled) setIsLoading(false);
@@ -443,11 +479,20 @@ export const useRequireAuth = (): { user: UserModel; token: string; isReady: boo
   const router = useRouter();
 
   useEffect(() => {
+    if (isAuthBypassEnabled()) return;
     if (!isLoading && !sessionUnavailable && !isTravelerSession(user)) {
       const path = `${window.location.pathname}${window.location.search}`;
       router.replace(`/login?redirect=${encodeURIComponent(path)}`);
     }
   }, [isLoading, sessionUnavailable, user, router]);
+
+  if (isAuthBypassEnabled()) {
+    return {
+      user: (user || DEV_BYPASS_USER) as UserModel,
+      token: (token || 'dev-bypass-token') as string,
+      isReady: true,
+    };
+  }
 
   return { user: user as UserModel, token: token as string, isReady: !isLoading && !sessionUnavailable && isTravelerSession(user) };
 };
