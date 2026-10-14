@@ -709,7 +709,7 @@ img, video {
   top: 1rem;
 }
 [id] {
-  scroll-margin-top: 5rem;
+  scroll-margin-top: 1rem;
 }
 
 @media (min-width: 1024px) {

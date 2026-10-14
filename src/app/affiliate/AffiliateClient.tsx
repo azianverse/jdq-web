@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import {
   Store,
@@ -100,6 +100,13 @@ export function AffiliateClient() {
   const [formError, setFormError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
+  const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+    };
+  }, []);
 
   const selectedLat = Number(gpsLat);
   const selectedLng = Number(gpsLng);
@@ -231,7 +238,10 @@ export function AffiliateClient() {
       });
       setLastDraftRevision(res.revision);
       setAutoSaveStatus('saved');
-      setTimeout(() => setAutoSaveStatus('idle'), 2000);
+      if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+      autoSaveTimerRef.current = setTimeout(() => {
+        setAutoSaveStatus('idle');
+      }, 2000);
     } catch {
       setAutoSaveStatus('error');
     }

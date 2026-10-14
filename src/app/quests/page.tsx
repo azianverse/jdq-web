@@ -283,7 +283,7 @@ function QuestsContent() {
           </div>
 
           {/* Sticky Controls Bar (Category Chips + Live Search + Quick Metric) */}
-          <div className="sticky top-16 z-20 bg-[#FAF9F5]/90 backdrop-blur-md py-3 -mx-3 px-3 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 border-y border-[var(--color-border-subtle)] flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
+          <div className="sticky top-0 z-20 bg-[#FAF9F5]/90 backdrop-blur-md py-3 -mx-3 px-3 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 border-y border-[var(--color-border-subtle)] flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
             {/* Category Chips tailored to active sub-tab */}
             <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
               {activeTab === 'trails'

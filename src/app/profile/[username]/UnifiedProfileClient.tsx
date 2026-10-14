@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/lib/auth';
+import { useAuth, adminHandoffUrl } from '@/lib/auth';
 import { api, isUnauthorizedError, normalizeSubmission, type SubmissionModel } from '@/lib/api';
 import { fetchWithCache } from '@/lib/cache';
 import { Navigation } from '@/components/Navigation';
@@ -50,6 +50,7 @@ import {
   Info,
   MapPin,
   TrendingUp,
+  LogOut,
 } from 'lucide-react';
 import { UserBadgeChip, UserBadgeIcon, UserBadgesRow } from '@/components/Badges';
 import {
@@ -67,7 +68,8 @@ interface UnifiedProfileClientProps {
 
 export function UnifiedProfileClient({ username }: UnifiedProfileClientProps) {
   const router = useRouter();
-  const { user, wallet, isLoading: authLoading } = useAuth();
+  const { user, wallet, token, logout, isLoading: authLoading } = useAuth();
+  const adminDashboardUrl = user?.role === 'admin' ? adminHandoffUrl() : null;
 
   // Normalize query param
   const cleanParam = decodeURIComponent(username).trim().toLowerCase().replace(/^@/, '');
@@ -815,6 +817,37 @@ export function UnifiedProfileClient({ username }: UnifiedProfileClientProps) {
                           Base Sepolia Ready
                         </span>
                       </div>
+                      {adminDashboardUrl && (
+                        <div className="py-2.5 flex items-center justify-between">
+                          <span className="text-[#837560]">Tourism Moderation</span>
+                          <a
+                            href={adminDashboardUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold text-amber-900 bg-amber-500/15 border border-amber-500/30 hover:bg-amber-500/25 transition shadow-2xs"
+                          >
+                            <ShieldCheck className="w-3.5 h-3.5 text-amber-700" />
+                            <span>Admin Control Room ↗</span>
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                    <div className="pt-2 border-t border-[#F2EFE9] flex items-center justify-between gap-2">
+                      <Link
+                        href="/settings"
+                        className="text-xs font-bold text-[var(--color-brand-brown)] hover:text-[var(--color-brand-primary)] flex items-center gap-1.5 transition"
+                      >
+                        <Settings className="w-3.5 h-3.5" />
+                        <span>Settings</span>
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => void logout()}
+                        className="text-xs font-bold text-red-600 hover:text-red-700 flex items-center gap-1 transition cursor-pointer"
+                      >
+                        <LogOut className="w-3.5 h-3.5" />
+                        <span>Sign Out</span>
+                      </button>
                     </div>
                   </div>
                 </div>

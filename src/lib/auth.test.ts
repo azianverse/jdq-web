@@ -8,8 +8,10 @@ describe('stored auth session helpers', () => {
     expect(isStoredUser({ role: 'user' })).toBe(true);
   });
 
-  it('hands admin tokens off in an encoded URL fragment', () => {
-    expect(adminHandoffUrl('token with + symbols')).toContain('#session=token%20with%20%2B%20symbols');
+  it('hands admins to the dashboard origin without exposing a token fragment', () => {
+    const url = adminHandoffUrl();
+    expect(url).not.toContain('#session=');
+    expect(url).toBe('https://admin.juanderquest.app');
   });
 
   it('preserves the session on outages but treats 401 as signed out', () => {

@@ -51,35 +51,7 @@ export interface NavigationNotification {
   type: 'quest' | 'dao' | 'system';
 }
 
-const INITIAL_NOTIFICATIONS: NavigationNotification[] = [
-  {
-    id: 'notif-1',
-    title: 'Hundred Islands Trail Quest',
-    description: 'New quest active! Visit Governor Island & Quezon Island to claim 150 mJDQ.',
-    time: '25m ago',
-    href: '/quests',
-    read: false,
-    type: 'quest',
-  },
-  {
-    id: 'notif-2',
-    title: 'Community DAO Proposal #2',
-    description: 'Voting is open for Bolinao Heritage Trail preservation incentives.',
-    time: '3h ago',
-    href: '/vote',
-    read: false,
-    type: 'dao',
-  },
-  {
-    id: 'notif-3',
-    title: 'Welcome to JuanDerQuest',
-    description: 'Your Pangasinan explorer profile and mJDQ governance wallet are active.',
-    time: '1d ago',
-    href: '/profile',
-    read: true,
-    type: 'system',
-  },
-];
+const INITIAL_NOTIFICATIONS: NavigationNotification[] = [];
 
 export const Navigation: React.FC<{
   children?: React.ReactNode;
@@ -97,8 +69,7 @@ export const Navigation: React.FC<{
   const pathname = usePathname();
   const router = useRouter();
   const { user, wallet, token, logout } = useAuth();
-  const adminDashboardUrl =
-    user?.role === 'admin' ? (token ? adminHandoffUrl(token) : 'https://admin.juanderquest.app') : null;
+  const adminDashboardUrl = user?.role === 'admin' ? adminHandoffUrl() : null;
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
   const [isDesktopDrawerCollapsed, setIsDesktopDrawerCollapsed] = useState(false);
@@ -382,11 +353,11 @@ export const Navigation: React.FC<{
   }
 
   const navItems: NavItem[] = [
-    { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, flair: 'Hub' },
+    { label: 'Home', href: '/dashboard', icon: LayoutDashboard, flair: 'Hub' },
     { label: 'Explore Feed', href: '/explore', icon: Compass, flair: 'Feed' },
     { label: 'Interactive Map', href: '/map', icon: MapPin },
     { label: 'The Trail', href: '/trail', icon: Route, flair: 'Soon' },
-    { label: 'Eco-Quests', href: '/quests', icon: Zap, flair: 'Bounties' },
+    { label: 'Quests', href: '/quests', icon: Zap, flair: 'Bounties' },
     { label: 'JuanChoice', href: '/choice', icon: Award, flair: 'Free vote' },
     { label: 'Shop', href: '/shop', icon: ShoppingBag },
     { label: 'Leaderboard', href: '/leaderboard', icon: Award },
@@ -418,10 +389,10 @@ export const Navigation: React.FC<{
     pathname.startsWith('/explore/') ||
     pathname === '/map' ||
     pathname.startsWith('/map/') ||
-    pathname === '/trail' ||
-    pathname.startsWith('/trail/') ||
     pathname === '/quests' ||
-    pathname.startsWith('/quests/');
+    pathname.startsWith('/quests/') ||
+    pathname === '/profile' ||
+    pathname.startsWith('/profile/');
   const isMenuTabActive = !isPrimaryBottomTab || drawerOpen;
 
   return (
@@ -468,130 +439,47 @@ export const Navigation: React.FC<{
         </aside>
       )}
 
-      {/* Top Global Header Bar (Sticky Top) */}
-      <header className="sticky top-0 z-50 shrink-0 h-16 bg-white/95 backdrop-blur-md border-b border-[var(--color-border-default)] px-3 sm:px-5 lg:px-8 flex items-center justify-between shadow-xs gap-3">
-        {/* Brand Logo (Clean & Minimalist) */}
-        <div className="flex items-center gap-3 shrink-0">
-          <Link href="/dashboard" className="flex items-center group shrink-0" title="JuanDerQuest — Dashboard">
-            <div className="w-10 h-10 rounded-xl bg-white border border-[var(--color-border-default)] p-1.5 flex items-center justify-center shadow-xs group-hover:border-[var(--color-brand-primary)]/60 transition-colors duration-200">
-              <img src="/logo.png" alt="JuanDerQuest" width="28" height="28" className="w-7 h-7 object-contain" />
-            </div>
-            <span className="hidden sm:inline font-black text-sm text-[var(--color-brand-brown)] tracking-tight">
-              JuanDerQuest
-            </span>
-          </Link>
-        </div>
-
-        {/* Smart Global Search Bar (Desktop - Prominent and Clean) */}
-        <div ref={desktopSearchContainerRef} className="hidden lg:flex flex-1 max-w-xl mx-4 relative items-center">
-          <div className="relative w-full flex items-center">
-            <PixelSearchIcon
-              className="w-4 h-4 absolute left-3.5 pointer-events-none select-none text-[#837560]"
-              size={18}
-            />
-            <input
-              ref={searchInputRef}
-              type="text"
-              value={searchQuery}
-              onFocus={() => {
-                if (!isSearchOpen) handleOpenSearch();
-              }}
-              onChange={(e) => {
-                if (!isSearchOpen) setIsSearchOpen(true);
-                handleQueryChange(e.target.value);
-              }}
-              onKeyDown={handleSearchKeyDown}
-              placeholder="Search Pangasinan, destinations, tags, @scouts... (Ctrl+K)"
-              aria-label="Search destinations, areas, or scouts"
-              className={`w-full h-10 rounded-xl pl-10 pr-14 text-xs font-medium outline-none transition-all duration-200 ${
-                isSearchOpen
-                  ? 'bg-white border-2 border-[#2D6A4F] text-[#2B2319] shadow-sm ring-4 ring-[#2D6A4F]/10'
-                  : 'bg-[#FAF9F5] hover:bg-white border border-[#E3DFD5] hover:border-[#2D6A4F]/50 text-[#6B5E4C] placeholder:text-[#837560]/70 shadow-2xs hover:shadow-xs'
-              }`}
-            />
-
-            {/* Action badges: Clear / Close / Ctrl+K badge */}
-            <div className="absolute right-2.5 flex items-center gap-1">
-              {searchQuery ? (
-                <button
-                  type="button"
-                  onClick={() => {
-                    handleQueryChange('');
-                    searchInputRef.current?.focus();
-                  }}
-                  className="w-5 h-5 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-500 hover:text-stone-800 flex items-center justify-center cursor-pointer transition"
-                  title="Clear query"
-                  aria-label="Clear search query"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              ) : !isSearchOpen ? (
-                <kbd className="hidden xl:inline-block text-[9px] font-mono px-1.5 py-0.5 rounded bg-stone-200/70 text-stone-600 font-bold pointer-events-none">
-                  Ctrl+K
-                </kbd>
-              ) : (
-                <button
-                  type="button"
-                  onClick={handleCloseSearch}
-                  className="w-5 h-5 rounded-full hover:bg-stone-100 text-stone-400 hover:text-stone-700 flex items-center justify-center cursor-pointer transition"
-                  title="Close search (ESC)"
-                  aria-label="Close search"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              )}
-            </div>
+      {/* Compact Mobile/Tablet Top Bar (Hidden on desktop lg+) */}
+      <header className="lg:hidden sticky top-0 z-40 shrink-0 h-14 bg-white/95 backdrop-blur-md border-b border-[var(--color-border-default)] px-3 sm:px-4 flex items-center justify-between shadow-xs gap-2">
+        {/* Brand Logo & Title */}
+        <Link href="/dashboard" className="flex items-center gap-2 group shrink-0" title="JuanDerQuest — Home">
+          <div className="w-8 h-8 rounded-xl bg-white border border-[var(--color-border-default)] p-1 flex items-center justify-center shadow-xs">
+            <img src="/logo.png" alt="JuanDerQuest" width="24" height="24" className="w-6 h-6 object-contain" />
           </div>
+          <span className="font-black text-sm text-[var(--color-brand-brown)] tracking-tight">
+            JuanDerQuest
+          </span>
+        </Link>
 
-          {/* Suggestions Dropdown (Desktop) */}
-          <SearchSuggestionsDropdown
-            isOpen={isSearchOpen}
-            onClose={handleCloseSearch}
-            query={searchQuery}
-            setQuery={setSearchQuery}
-            selectedIndex={selectedIndex}
-            setSelectedIndex={setSelectedIndex}
-            flatItems={flatItems}
-            matchedAreas={matchedAreas}
-            groups={groups}
-            loading={loading}
-            error={error}
-            onRetry={() => executeSearch(searchQuery)}
-            onSelectChip={handleSelectChip}
-            className="absolute top-full mt-2 left-0 right-0 max-w-full"
-          />
-        </div>
-
-        {/* User Pill, Wallet & Right Actions */}
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          {/* Mobile Global Search Button (Always visible on mobile/tablet) */}
+        {/* Compact Right Actions: Search, Notifications, SidePanel */}
+        <div className="flex items-center gap-1 sm:gap-1.5">
+          {/* Mobile Global Search Button */}
           <button
             type="button"
             onClick={handleOpenSearch}
-            className="lg:hidden p-2 rounded-xl text-[var(--color-brand-brown)] hover:bg-[var(--color-bg-subtle)] border border-[var(--color-border-default)] flex items-center justify-center cursor-pointer transition active:scale-95 min-h-[40px] min-w-[40px]"
-            aria-label="Open search (Ctrl+K)"
+            className="p-2 rounded-xl text-[var(--color-brand-brown)] hover:bg-[var(--color-bg-subtle)] border border-[var(--color-border-default)] flex items-center justify-center cursor-pointer transition active:scale-95 min-h-[38px] min-w-[38px]"
+            aria-label="Open search"
           >
-            <PixelSearchIcon className="w-5 h-5" size={20} />
+            <PixelSearchIcon className="w-4 h-4" size={18} />
           </button>
 
-          {/* Notification Button (Always immediately to the left of the profile button) */}
+          {/* Notifications Bell */}
           <div className="relative" ref={notificationsRef}>
             <button
               type="button"
               onClick={() => {
                 setIsNotificationsOpen((prev) => !prev);
-                setIsProfileOpen(false);
                 setIsSearchOpen(false);
               }}
-              className={`relative p-2 rounded-xl border transition cursor-pointer select-none min-h-[40px] min-w-[40px] flex items-center justify-center ${
+              className={`relative p-2 rounded-xl border transition cursor-pointer select-none min-h-[38px] min-w-[38px] flex items-center justify-center ${
                 isNotificationsOpen
                   ? 'bg-[var(--color-brand-primary)]/10 text-[var(--color-brand-primary)] border-[var(--color-brand-primary)]'
                   : 'text-[var(--color-brand-brown)] hover:bg-[var(--color-bg-subtle)] border-[var(--color-border-default)]'
               }`}
-              aria-label="Notifications"
+              aria-label="Notifications and activity"
               aria-expanded={isNotificationsOpen}
             >
-              <Bell className="w-5 h-5" />
+              <Bell className="w-4 h-4" />
               {unreadCount > 0 && (
                 <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#E76F51] text-white text-[10px] font-black flex items-center justify-center shadow-xs">
                   {unreadCount}
@@ -599,17 +487,17 @@ export const Navigation: React.FC<{
               )}
             </button>
 
-            {/* Notifications Dropdown Panel */}
+            {/* Notifications Dropdown Panel (Mobile) */}
             {isNotificationsOpen && (
               <div
                 role="region"
                 aria-label="Notifications panel"
-                className="absolute top-full mt-2.5 right-0 w-80 max-w-[calc(100vw-1.5rem)] bg-white rounded-2xl border border-[var(--color-border-default)] shadow-2xl p-3 z-50 motion-overlay-enter"
+                className="absolute top-full mt-2 right-0 w-80 max-w-[calc(100vw-1.5rem)] bg-white rounded-2xl border border-[var(--color-border-default)] shadow-2xl p-3 z-50 motion-overlay-enter"
               >
                 <div className="flex items-center justify-between pb-2.5 border-b border-[var(--color-border-default)]">
                   <div className="flex items-center gap-1.5">
                     <Bell className="w-4 h-4 text-[var(--color-brand-primary)]" />
-                    <span className="text-xs font-extrabold text-[var(--color-brand-brown)]">Notifications</span>
+                    <span className="text-xs font-extrabold text-[var(--color-brand-brown)]">Notifications &amp; Activity</span>
                     {unreadCount > 0 && (
                       <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#E76F51]/10 text-[#E76F51]">
                         {unreadCount} new
@@ -631,7 +519,8 @@ export const Navigation: React.FC<{
                   {notifications.length === 0 ? (
                     <div className="py-6 text-center text-stone-400">
                       <Bell className="w-6 h-6 mx-auto mb-1 text-stone-300" />
-                      <p className="text-xs font-semibold">No notifications</p>
+                      <p className="text-xs font-semibold">No recent activity</p>
+                      <p className="text-[10px] text-stone-400 mt-0.5">Explore Pangasinan or complete quests to see updates here.</p>
                     </div>
                   ) : (
                     notifications.map((item) => (
@@ -688,216 +577,39 @@ export const Navigation: React.FC<{
             )}
           </div>
 
-          {/* Profile Trigger: On mobile, direct link to traveler passport (no dropdown). On desktop, expandable dropdown with full page directory */}
-          {user ? (
-            <div className="relative" ref={profileMenuRef}>
-              {/* Mobile Direct Profile Link (Navigates directly to profile, avoiding dropdown on mobile) */}
-              <Link
-                href={userProfileHref}
-                className="lg:hidden flex items-center justify-center p-1 rounded-2xl border border-[var(--color-border-default)] hover:border-[var(--color-brand-primary)]/50 bg-[var(--color-bg-subtle)] transition shadow-xs active:scale-95 min-h-[40px] min-w-[40px]"
-                aria-label="View your traveler passport"
-                title="View your profile"
-              >
-                <div className="relative w-7 h-7 rounded-full bg-[var(--color-brand-primary)] text-white flex items-center justify-center text-xs font-black overflow-hidden shrink-0 shadow-xs">
-                  {user.avatarUrl ? (
-                    <img src={user.avatarUrl} alt={user.displayName} className="w-full h-full object-cover" />
-                  ) : (
-                    <span>{user.displayName.charAt(0).toUpperCase()}</span>
-                  )}
-                </div>
-              </Link>
-
-              {/* Desktop Expandable Profile Button */}
-              <button
-                type="button"
-                onClick={() => {
-                  setIsProfileOpen((prev) => !prev);
-                  setIsNotificationsOpen(false);
-                  setIsSearchOpen(false);
-                }}
-                className={`hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-2xl border transition shadow-xs cursor-pointer select-none group min-h-[40px] ${
-                  isProfileOpen
-                    ? 'bg-[var(--color-brand-primary)]/10 border-[var(--color-brand-primary)]'
-                    : 'bg-[var(--color-bg-subtle)] border-[var(--color-border-default)] hover:border-[var(--color-brand-primary)]/50'
-                }`}
-                aria-expanded={isProfileOpen}
-                aria-haspopup="menu"
-                aria-label="User account menu"
-              >
-                <div className="relative w-7 h-7 rounded-full bg-[var(--color-brand-primary)] text-white flex items-center justify-center text-xs font-black overflow-hidden shrink-0 shadow-xs">
-                  {user.avatarUrl ? (
-                    <img src={user.avatarUrl} alt={user.displayName} className="w-full h-full object-cover" />
-                  ) : (
-                    <span>{user.displayName.charAt(0).toUpperCase()}</span>
-                  )}
-                </div>
-                <div className="flex flex-col text-left pr-0.5">
-                  <span className="text-xs font-extrabold text-[var(--color-brand-brown)] leading-tight group-hover:text-[var(--color-brand-primary)] transition max-w-[120px] truncate">
-                    {user.displayName}
-                  </span>
-                  <span className="text-[10px] text-[var(--color-brand-primary)] font-bold">
-                    Lvl {currentLevel} • {wallet ? <><AnimatedCounter value={wallet.balanceMjdq} /> mJDQ</> : 'Demo Explorer'}
-                  </span>
-                </div>
-                <ChevronDown
-                  className={`w-3.5 h-3.5 text-stone-400 group-hover:text-stone-600 transition-transform duration-200 ${
-                    isProfileOpen ? 'rotate-180 text-[var(--color-brand-primary)]' : ''
-                  }`}
-                />
-              </button>
-
-              {/* Desktop Profile Panel with Full Pages Directory (like the mobile hamburger menu) */}
-              {isProfileOpen && (
-                <div
-                  role="menu"
-                  aria-orientation="vertical"
-                  className="hidden lg:block absolute top-full mt-2.5 right-0 w-80 max-h-[85vh] overflow-y-auto bg-white rounded-2xl border border-[var(--color-border-default)] shadow-2xl p-2.5 z-50 motion-overlay-enter"
-                >
-                  {/* User Identity Header Card */}
-                  <Link
-                    href={userProfileHref}
-                    onClick={() => setIsProfileOpen(false)}
-                    className="block p-2.5 rounded-xl bg-[var(--color-bg-subtle)]/70 hover:bg-[var(--color-bg-subtle)] border border-[var(--color-border-default)]/60 mb-2 transition group"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <div className="relative w-9 h-9 rounded-full bg-[var(--color-brand-primary)] text-white flex items-center justify-center text-sm font-black overflow-hidden shrink-0 shadow-xs">
-                        {user.avatarUrl ? (
-                          <img src={user.avatarUrl} alt={user.displayName} className="w-full h-full object-cover" />
-                        ) : (
-                          <span>{user.displayName.charAt(0).toUpperCase()}</span>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <div className="text-xs font-extrabold text-[var(--color-brand-brown)] group-hover:text-[var(--color-brand-primary)] transition truncate">
-                            {user.displayName}
-                          </div>
-                          {user.role === 'admin' && (
-                            <span className="text-[9px] font-black uppercase px-1.5 py-0.2 rounded-md bg-amber-500/15 text-amber-700 border border-amber-500/30 shrink-0">
-                              Admin
-                            </span>
-                          )}
-                        </div>
-                        <div className="text-[10px] text-[var(--color-text-muted)] truncate font-mono">
-                          {user.seedId || 'demo-traveler'}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="mt-2 pt-2 border-t border-[var(--color-border-default)]/50 flex items-center justify-between text-[11px]">
-                      <span className="font-bold text-[var(--color-brand-primary)]">
-                        Level {currentLevel}
-                      </span>
-                      <span className="font-extrabold text-[var(--color-brand-brown)]">
-                        {wallet ? `${wallet.balanceMjdq.toLocaleString()} mJDQ` : 'mJDQ unavailable'}
-                      </span>
-                    </div>
-                  </Link>
-
-                  {/* Account Quick Links */}
-                  <div className="space-y-0.5 mb-2">
-                    {adminDashboardUrl && (
-                      <a
-                        href={adminDashboardUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        role="menuitem"
-                        className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold text-amber-900 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 transition mb-1"
-                      >
-                        <div className="flex items-center gap-2.5">
-                          <div className="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-700 flex items-center justify-center shrink-0">
-                            <ShieldCheck className="w-4 h-4" />
-                          </div>
-                          <span>Admin Control Room</span>
-                        </div>
-                        <span className="text-[10px] text-amber-700 font-extrabold uppercase">
-                          Launch ↗
-                        </span>
-                      </a>
-                    )}
-                    <Link
-                      href="/settings"
-                      onClick={() => setIsProfileOpen(false)}
-                      role="menuitem"
-                      className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold text-[var(--color-brand-brown)] hover:bg-[var(--color-bg-subtle)] hover:text-[var(--color-brand-primary)] transition"
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-7 h-7 rounded-lg bg-stone-100 text-stone-700 flex items-center justify-center shrink-0">
-                          <Settings className="w-4 h-4" />
-                        </div>
-                        <span>Explorer Settings</span>
-                      </div>
-                      <span className="text-[10px] text-[var(--color-text-muted)] font-normal">Preferences →</span>
-                    </Link>
-                  </div>
-
-                  {/* Log Out */}
-                  <div className="pt-1.5 border-t border-[var(--color-border-default)]">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsProfileOpen(false);
-                        void handleLogout();
-                      }}
-                      role="menuitem"
-                      className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold text-[#BC4749] hover:bg-red-50 hover:text-red-700 transition cursor-pointer text-left"
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-7 h-7 rounded-lg bg-red-100/70 text-[#BC4749] flex items-center justify-center shrink-0">
-                          <LogOut className="w-3.5 h-3.5" />
-                        </div>
-                        <span>Log Out</span>
-                      </div>
-                      <span className="text-[10px] text-red-400 font-normal">End session</span>
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          ) : (
-            <Link
-              href="/login"
-              className="flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-xl bg-[var(--color-brand-primary)] text-white text-xs font-extrabold hover:bg-[var(--color-brand-primary-hover)] shadow-xs transition active:scale-95 min-h-[40px]"
-            >
-              <User className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Connect Wallet / Login</span>
-              <span className="sm:hidden">Login</span>
-            </Link>
-          )}
-
-          {/* Mobile Page Side-Panel Trigger (Exclusive to mobile when active page provides side panels) */}
+          {/* Mobile Page Side-Panel Trigger */}
           {sidePanel && (
             <button
               type="button"
               onClick={() => {
                 setSidePanelOpen(true);
-                setIsProfileOpen(false);
                 setIsNotificationsOpen(false);
                 setIsSearchOpen(false);
               }}
-              className="lg:hidden relative p-2 rounded-xl text-[var(--color-brand-brown)] hover:bg-[var(--color-bg-subtle)] border border-[var(--color-border-default)] cursor-pointer min-h-[40px] min-w-[40px] flex items-center justify-center transition active:scale-95 group"
+              className="relative p-2 rounded-xl text-[var(--color-brand-brown)] hover:bg-[var(--color-bg-subtle)] border border-[var(--color-border-default)] cursor-pointer min-h-[38px] min-w-[38px] flex items-center justify-center transition active:scale-95 group"
               aria-label={`Open ${sidePanelTitle}`}
               title={`Open ${sidePanelTitle}`}
             >
-              <Menu className="w-5 h-5 text-[var(--color-brand-primary)]" />
-              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-[#FFB703] border-2 border-white shadow-xs animate-pulse" />
+              <Menu className="w-4 h-4 text-[var(--color-brand-primary)]" />
+              <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-[#FFB703] border-2 border-white shadow-xs animate-pulse" />
             </button>
           )}
         </div>
 
-        {/* Mobile Header Bar Extended Search Mode (Extends directly across top bar) */}
+        {/* Mobile Header Bar Extended Search Mode */}
         {isSearchOpen && (
           <div
             ref={mobileSearchContainerRef}
-            className="lg:hidden absolute inset-y-2 inset-x-2 sm:inset-x-4 flex items-center gap-2 bg-white rounded-2xl border-2 border-[#2D6A4F] px-3 shadow-md z-50 animate-in fade-in duration-200"
+            className="absolute inset-y-1.5 inset-x-2 flex items-center gap-2 bg-white rounded-xl border-2 border-[#2D6A4F] px-3 shadow-md z-50 animate-in fade-in duration-150"
           >
-            <PixelSearchIcon className="w-5 h-5 shrink-0" size={20} />
+            <PixelSearchIcon className="w-4 h-4 shrink-0" size={18} />
             <input
               ref={mobileSearchInputRef}
               type="text"
               value={searchQuery}
               onChange={(e) => handleQueryChange(e.target.value)}
               onKeyDown={handleSearchKeyDown}
-              placeholder="Search places, food, tags, @users..."
+              placeholder="Search places, food, tags, @scouts..."
               aria-label="Search destinations, users or quests"
               className="flex-1 bg-transparent text-xs sm:text-sm font-semibold text-[#2C221E] placeholder:text-[#837560]/70 outline-none"
             />
@@ -920,7 +632,7 @@ export const Navigation: React.FC<{
               Cancel
             </button>
 
-            {/* Suggestions Dropdown (Mobile - attached directly to the bottom of the mobile top bar) */}
+            {/* Suggestions Dropdown (Mobile) */}
             <SearchSuggestionsDropdown
               isOpen={isSearchOpen}
               onClose={handleCloseSearch}
@@ -935,69 +647,303 @@ export const Navigation: React.FC<{
               error={error}
               onRetry={() => executeSearch(searchQuery)}
               onSelectChip={handleSelectChip}
-              className="absolute top-full mt-2 left-0 right-0 max-h-[calc(100dvh-5.5rem)]"
+              className="absolute top-full mt-2 left-0 right-0 max-h-[calc(100dvh-5rem)]"
             />
           </div>
         )}
       </header>
 
-      {/* Subtle Backdrop Scrim for Focus & Click-Outside (renders below the sticky top bar) */}
+      {/* Desktop Search Dialog Modal (Centered when triggered via Ctrl+K or search button) */}
       {isSearchOpen && (
         <div
-          className="fixed inset-0 top-16 bg-black/20 backdrop-blur-[1px] z-40 transition-opacity animate-in fade-in duration-150"
+          className="hidden lg:flex fixed inset-0 z-50 bg-black/40 backdrop-blur-xs items-start justify-center pt-20 px-4 animate-in fade-in duration-150"
           onClick={handleCloseSearch}
-          aria-hidden="true"
-        />
+        >
+          <div
+            ref={desktopSearchContainerRef}
+            className="w-full max-w-2xl bg-white rounded-2xl border border-[var(--color-border-default)] shadow-2xl overflow-hidden relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Search Input Bar inside Modal */}
+            <div className="relative flex items-center p-3 border-b border-[var(--color-border-default)] bg-[#FAF9F5]">
+              <PixelSearchIcon
+                className="w-5 h-5 absolute left-5 pointer-events-none select-none text-[#837560]"
+                size={20}
+              />
+              <input
+                ref={searchInputRef}
+                type="text"
+                value={searchQuery}
+                onChange={(e) => handleQueryChange(e.target.value)}
+                onKeyDown={handleSearchKeyDown}
+                placeholder="Search Pangasinan destinations, tags, @scouts... (ESC to close)"
+                aria-label="Search destinations, areas, or scouts"
+                className="w-full h-11 bg-white rounded-xl pl-12 pr-20 text-sm font-semibold outline-none border border-[#E3DFD5] focus:border-[#2D6A4F] text-[#2B2319] placeholder:text-[#837560]/70 shadow-xs"
+              />
+              <div className="absolute right-5 flex items-center gap-1.5">
+                {searchQuery ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleQueryChange('');
+                      searchInputRef.current?.focus();
+                    }}
+                    className="w-6 h-6 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-500 hover:text-stone-800 flex items-center justify-center cursor-pointer transition"
+                    title="Clear query"
+                    aria-label="Clear search query"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                ) : (
+                  <kbd className="text-[10px] font-mono px-2 py-0.5 rounded bg-stone-200/80 text-stone-600 font-bold pointer-events-none">
+                    ESC
+                  </kbd>
+                )}
+              </div>
+            </div>
+
+            {/* Suggestions Dropdown (Desktop modal embedded) */}
+            <SearchSuggestionsDropdown
+              isOpen={isSearchOpen}
+              onClose={handleCloseSearch}
+              query={searchQuery}
+              setQuery={setSearchQuery}
+              selectedIndex={selectedIndex}
+              setSelectedIndex={setSelectedIndex}
+              flatItems={flatItems}
+              matchedAreas={matchedAreas}
+              groups={groups}
+              loading={loading}
+              error={error}
+              onRetry={() => executeSearch(searchQuery)}
+              onSelectChip={handleSelectChip}
+              className="static max-h-[60vh] border-0 rounded-none shadow-none"
+            />
+          </div>
+        </div>
       )}
 
       {logoutError && <p role="alert" className="z-40 bg-red-50 px-4 py-2 text-center text-sm text-red-800">{logoutError}</p>}
 
-      {/* Desktop Main Layout with Persistent Left Drawer Navigation */}
+      {/* Desktop Main Layout with Persistent Left Sidebar Navigation */}
       <div className="flex-1 flex min-h-0 w-full relative">
-        {/* Persistent Desktop Left Navigation Drawer */}
+        {/* Persistent Desktop Left Navigation Sidebar */}
         <aside
           aria-label="Sidebar Navigation"
-          className={`hidden lg:flex flex-col shrink-0 border-r border-[var(--color-border-default)] bg-white/95 backdrop-blur-md sticky top-16 h-[calc(100dvh-64px)] z-30 transition-all duration-300 ease-in-out select-none ${
+          className={`hidden lg:flex flex-col shrink-0 border-r border-[var(--color-border-default)] bg-white/95 backdrop-blur-md sticky top-0 h-dvh z-30 transition-all duration-300 ease-in-out select-none ${
             isDesktopDrawerCollapsed ? 'w-[72px]' : 'w-64 xl:w-72'
           }`}
         >
-          {/* Collapse / Expand Toggle Header */}
-          <div className="h-12 px-3 border-b border-[var(--color-border-default)]/60 flex items-center justify-between shrink-0">
-            {!isDesktopDrawerCollapsed ? (
-              <span className="text-[11px] font-black uppercase tracking-wider text-[var(--color-brand-brown)] px-1">
-                Navigation
-              </span>
-            ) : (
-              <span className="w-full text-center text-[10px] font-black uppercase tracking-wider text-[var(--color-text-muted)]">
-                JDQ
-              </span>
+          {/* Top Brand Logo & Collapse / Expand Toggle Header */}
+          <div className="h-14 px-3 border-b border-[var(--color-border-default)]/60 flex items-center justify-between shrink-0">
+            <Link
+              href="/dashboard"
+              className={`flex items-center group shrink-0 ${isDesktopDrawerCollapsed ? 'w-full justify-center' : 'gap-2.5'}`}
+              title="JuanDerQuest — Home"
+            >
+              <div className="w-8 h-8 rounded-xl bg-white border border-[var(--color-border-default)] p-1 flex items-center justify-center shadow-xs group-hover:border-[var(--color-brand-primary)]/60 transition-colors duration-200">
+                <img src="/logo.png" alt="JuanDerQuest" width="24" height="24" className="w-6 h-6 object-contain" />
+              </div>
+              {!isDesktopDrawerCollapsed && (
+                <span className="font-black text-sm text-[var(--color-brand-brown)] tracking-tight">
+                  JuanDerQuest
+                </span>
+              )}
+            </Link>
+
+            {!isDesktopDrawerCollapsed && (
+              <button
+                type="button"
+                onClick={() => {
+                  setIsDesktopDrawerCollapsed(true);
+                  try {
+                    localStorage.setItem('juanderquest_nav_collapsed', 'true');
+                  } catch {}
+                }}
+                title="Collapse sidebar"
+                aria-label="Collapse sidebar"
+                className="p-1.5 rounded-lg text-stone-500 hover:text-[var(--color-brand-primary)] hover:bg-[var(--color-bg-subtle)] transition cursor-pointer"
+              >
+                <PanelLeftClose className="w-4 h-4" />
+              </button>
             )}
+          </div>
+
+          {/* Quick Expand Button when Collapsed */}
+          {isDesktopDrawerCollapsed && (
+            <div className="py-1 flex justify-center border-b border-[var(--color-border-default)]/40">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsDesktopDrawerCollapsed(false);
+                  try {
+                    localStorage.setItem('juanderquest_nav_collapsed', 'false');
+                  } catch {}
+                }}
+                title="Expand sidebar"
+                aria-label="Expand sidebar"
+                className="p-1.5 rounded-lg text-stone-500 hover:text-[var(--color-brand-primary)] hover:bg-[var(--color-bg-subtle)] transition cursor-pointer"
+              >
+                <PanelLeft className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+
+          {/* Global Search Action Row */}
+          <div className="px-2 pt-2 pb-1 shrink-0">
+            {!isDesktopDrawerCollapsed ? (
+              <button
+                type="button"
+                onClick={handleOpenSearch}
+                className="w-full h-9 px-3 rounded-xl bg-[#FAF9F5] hover:bg-white border border-[#E3DFD5] hover:border-[#2D6A4F]/50 flex items-center justify-between text-stone-600 transition shadow-2xs hover:shadow-xs group cursor-pointer"
+                aria-label="Search destinations or scouts (Ctrl+K)"
+              >
+                <div className="flex items-center gap-2 min-w-0">
+                  <PixelSearchIcon className="w-3.5 h-3.5 text-[#837560] group-hover:text-[#2D6A4F]" size={15} />
+                  <span className="text-xs font-medium text-stone-500 group-hover:text-stone-700 truncate">
+                    Search...
+                  </span>
+                </div>
+                <kbd className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-stone-200/70 text-stone-600 font-bold shrink-0">
+                  Ctrl+K
+                </kbd>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleOpenSearch}
+                className="w-full h-9 rounded-xl bg-[#FAF9F5] hover:bg-white border border-[#E3DFD5] hover:border-[#2D6A4F]/50 flex items-center justify-center text-stone-600 transition shadow-2xs cursor-pointer"
+                title="Search (Ctrl+K)"
+                aria-label="Search"
+              >
+                <PixelSearchIcon className="w-4 h-4 text-[#837560]" size={17} />
+              </button>
+            )}
+          </div>
+
+          {/* Activity / Notifications Action Row */}
+          <div className="px-2 pb-1.5 shrink-0 relative" ref={notificationsRef}>
             <button
               type="button"
-              onClick={() => {
-                setIsDesktopDrawerCollapsed((prev) => {
-                  const next = !prev;
-                  try {
-                    localStorage.setItem('juanderquest_nav_collapsed', String(next));
-                  } catch {}
-                  return next;
-                });
-              }}
-              title={isDesktopDrawerCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-              aria-label={isDesktopDrawerCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-              className="p-1.5 rounded-lg text-stone-500 hover:text-[var(--color-brand-primary)] hover:bg-[var(--color-bg-subtle)] transition cursor-pointer"
+              onClick={() => setIsNotificationsOpen((prev) => !prev)}
+              className={`w-full rounded-xl transition flex items-center cursor-pointer select-none ${
+                isDesktopDrawerCollapsed
+                  ? 'justify-center h-9'
+                  : 'px-3 py-2 justify-between'
+              } ${
+                isNotificationsOpen
+                  ? 'bg-[var(--color-brand-primary)]/10 text-[var(--color-brand-primary)] border border-[var(--color-brand-primary)]'
+                  : 'text-[var(--color-text-secondary)] hover:text-[var(--color-brand-primary)] hover:bg-[var(--color-bg-subtle)] font-medium border border-transparent'
+              }`}
+              aria-label="Notifications and Activity"
+              aria-expanded={isNotificationsOpen}
             >
-              {isDesktopDrawerCollapsed ? (
-                <PanelLeft className="w-4 h-4" />
-              ) : (
-                <PanelLeftClose className="w-4 h-4" />
+              <div className="flex items-center gap-2.5">
+                <div className="relative">
+                  <Bell className="w-4 h-4" />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-[#E76F51]" />
+                  )}
+                </div>
+                {!isDesktopDrawerCollapsed && (
+                  <span className="text-xs font-semibold">Activity</span>
+                )}
+              </div>
+              {!isDesktopDrawerCollapsed && unreadCount > 0 && (
+                <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-[#E76F51]/15 text-[#E76F51]">
+                  {unreadCount}
+                </span>
               )}
             </button>
+
+            {/* Desktop Notifications Side Flyout */}
+            {isNotificationsOpen && (
+              <div
+                role="region"
+                aria-label="Activity panel"
+                className="absolute top-0 left-full ml-2 w-80 bg-white rounded-2xl border border-[var(--color-border-default)] shadow-2xl p-3 z-50 motion-overlay-enter"
+              >
+                <div className="flex items-center justify-between pb-2 border-b border-[var(--color-border-default)]">
+                  <div className="flex items-center gap-1.5">
+                    <Bell className="w-4 h-4 text-[var(--color-brand-primary)]" />
+                    <span className="text-xs font-extrabold text-[var(--color-brand-brown)]">Notifications &amp; Activity</span>
+                  </div>
+                  {unreadCount > 0 && (
+                    <button
+                      type="button"
+                      onClick={handleMarkAllAsRead}
+                      className="text-[10px] font-bold text-[var(--color-brand-primary)] hover:underline cursor-pointer"
+                    >
+                      Mark all read
+                    </button>
+                  )}
+                </div>
+
+                <div className="divide-y divide-[var(--color-border-default)]/60 max-h-72 overflow-y-auto my-1">
+                  {notifications.length === 0 ? (
+                    <div className="py-6 text-center text-stone-400">
+                      <Bell className="w-6 h-6 mx-auto mb-1 text-stone-300" />
+                      <p className="text-xs font-semibold">No recent activity</p>
+                      <p className="text-[10px] text-stone-400 mt-0.5">Explore Pangasinan or complete quests to see updates here.</p>
+                    </div>
+                  ) : (
+                    notifications.map((item) => (
+                      <Link
+                        key={item.id}
+                        href={item.href}
+                        onClick={() => handleNotificationClick(item.id)}
+                        className={`flex items-start gap-2.5 py-2 px-2 rounded-xl transition ${
+                          item.read
+                            ? 'hover:bg-[var(--color-bg-subtle)] opacity-75'
+                            : 'bg-emerald-50/40 hover:bg-emerald-50/70 font-medium'
+                        }`}
+                      >
+                        <div className="w-7 h-7 rounded-lg bg-[var(--color-brand-primary)]/10 text-[var(--color-brand-primary)] flex items-center justify-center shrink-0 mt-0.5">
+                          {item.type === 'quest' && <Zap className="w-3.5 h-3.5 text-amber-600" />}
+                          {item.type === 'dao' && <Vote className="w-3.5 h-3.5 text-emerald-700" />}
+                          {item.type === 'system' && <Compass className="w-3.5 h-3.5 text-stone-600" />}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-1">
+                            <span className="text-xs font-bold text-[var(--color-brand-brown)] truncate">
+                              {item.title}
+                            </span>
+                            {!item.read && <span className="w-2 h-2 rounded-full bg-[#E76F51] shrink-0" />}
+                          </div>
+                          <p className="text-[11px] text-[var(--color-text-muted)] line-clamp-2 mt-0.5 leading-tight">
+                            {item.description}
+                          </p>
+                          <span className="text-[9px] text-stone-400 block mt-1 font-mono">{item.time}</span>
+                        </div>
+                      </Link>
+                    ))
+                  )}
+                </div>
+
+                <div className="pt-2 border-t border-[var(--color-border-default)] flex items-center justify-between text-[11px]">
+                  <Link
+                    href="/quests"
+                    onClick={() => setIsNotificationsOpen(false)}
+                    className="text-xs font-bold text-[var(--color-brand-primary)] hover:underline flex items-center gap-1"
+                  >
+                    <span>Quests</span>
+                    <span>→</span>
+                  </Link>
+                  <Link
+                    href="/settings"
+                    onClick={() => setIsNotificationsOpen(false)}
+                    className="text-[10px] text-stone-400 hover:text-stone-700"
+                  >
+                    Settings
+                  </Link>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Explorer welcome card */}
           {!isDesktopDrawerCollapsed ? (
-            <div className="mx-2 mt-2 mb-2 rounded-2xl bg-gradient-to-br from-[#173F31] via-[var(--color-brand-primary)] to-[#245541] text-white border border-white/10 shadow-md relative overflow-hidden">
+            <div className="mx-2 mt-1 mb-2 rounded-2xl bg-gradient-to-br from-[#173F31] via-[var(--color-brand-primary)] to-[#245541] text-white border border-white/10 shadow-md relative overflow-hidden">
               <div className="absolute -top-10 -right-8 w-36 h-36 rounded-full border border-white/10 pointer-events-none" aria-hidden="true" />
               <div className="absolute -top-3 -right-12 w-36 h-36 rounded-full border border-white/10 pointer-events-none" aria-hidden="true" />
               <button
@@ -1139,6 +1085,7 @@ export const Navigation: React.FC<{
                   isDesktopDrawerCollapsed ? 'justify-center' : 'gap-2.5'
                 }`}
                 title={isDesktopDrawerCollapsed ? user.displayName : undefined}
+                aria-label="View your traveler passport"
               >
                 <div className="relative w-8 h-8 rounded-full bg-[var(--color-brand-primary)] text-white flex items-center justify-center text-xs font-black overflow-hidden shrink-0 shadow-xs">
                   {user.avatarUrl ? (
@@ -1183,11 +1130,11 @@ export const Navigation: React.FC<{
               tabIndex={-1}
               className={
                 fullBleed
-                  ? 'flex-none min-h-0 w-full relative h-[calc(100dvh-64px)] max-h-[calc(100dvh-64px)] overflow-hidden flex flex-col focus:outline-none'
+                  ? 'flex-none min-h-0 w-full relative h-dvh max-h-dvh overflow-hidden flex flex-col focus:outline-none'
                   : theater
                   ? 'flex-1 w-full min-h-0 pb-20 lg:pb-12 focus:outline-none motion-page-enter'
                   : isExplore
-                  ? 'w-full flex-1 min-h-0 px-2 sm:px-3 py-2 lg:flex-none lg:h-[calc(100dvh-64px)] lg:max-h-[calc(100dvh-64px)] lg:overflow-hidden focus:outline-none motion-page-enter'
+                  ? 'w-full flex-1 min-h-0 px-2 sm:px-3 py-2 lg:flex-none lg:h-dvh lg:max-h-dvh lg:overflow-hidden focus:outline-none motion-page-enter'
                   : 'flex-1 w-full max-w-7xl 2xl:max-w-[1560px] 3xl:max-w-[1720px] mx-auto px-3 sm:px-6 lg:px-8 py-5 pb-20 lg:pb-10 focus:outline-none motion-page-enter'
               }
             >
@@ -1200,23 +1147,28 @@ export const Navigation: React.FC<{
         </div>
       </div>
 
-      {/* Floating Bottom Navigation Bar (Primary destinations plus More) */}
+      {/* Floating Bottom Navigation Bar (5 primary tabs: Home, Explore, Map, Quests, Profile) */}
       <nav
         aria-label="Mobile Bottom Navigation"
         className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-[var(--color-border-default)] px-2 pt-1 pb-[calc(0.5rem+env(safe-area-inset-bottom))] shadow-[0_-4px_16px_rgba(43,35,25,0.06)] flex items-center justify-around gap-0.5"
       >
         {[
-          { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+          { label: 'Home', href: '/dashboard', icon: LayoutDashboard },
           { label: 'Explore', href: '/explore', icon: Compass },
           { label: 'Map', href: '/map', icon: MapPin },
-          { label: 'Eco-Quests', href: '/quests', icon: Zap },
+          { label: 'Quests', href: '/quests', icon: Zap },
+          { label: 'Profile', href: userProfileHref, icon: User },
         ].map((item) => {
           const Icon = item.icon;
           const isActive =
-            pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(`${item.href}/`));
+            item.href === '/dashboard'
+              ? pathname === '/dashboard' || pathname === '/'
+              : item.label === 'Profile'
+              ? pathname === '/profile' || pathname.startsWith('/profile/')
+              : pathname === item.href || pathname.startsWith(`${item.href}/`);
           return (
             <Link
-              key={item.href}
+              key={item.label}
               href={item.href}
               aria-current={isActive ? 'page' : undefined}
               className={`flex-1 min-w-0 flex flex-col items-center justify-center py-1 px-0.5 rounded-xl transition min-h-[44px] ${
@@ -1232,27 +1184,6 @@ export const Navigation: React.FC<{
             </Link>
           );
         })}
-
-        {/* Menu opens the full navigation drawer */}
-        <button
-          type="button"
-          onClick={() => {
-            setSidePanelOpen(false);
-            setDrawerOpen((prev) => !prev);
-          }}
-          aria-label="Open navigation menu"
-          aria-expanded={drawerOpen}
-          className={`flex-1 min-w-0 flex flex-col items-center justify-center py-1 px-0.5 rounded-xl transition min-h-[44px] cursor-pointer ${
-            isMenuTabActive
-              ? 'text-[var(--color-brand-primary)] font-black'
-              : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] font-medium'
-          }`}
-        >
-          <div className={`p-1 rounded-xl transition ${isMenuTabActive ? 'bg-[var(--color-brand-primary)]/10' : ''}`}>
-            <Menu className={`w-5 h-5 ${isMenuTabActive ? 'text-[var(--color-brand-primary)]' : 'text-[var(--color-text-muted)]'}`} />
-          </div>
-          <span className="text-[11px] mt-0.5 tracking-tight">Menu</span>
-        </button>
       </nav>
 
       {/* Accessible Mobile Drawer */}

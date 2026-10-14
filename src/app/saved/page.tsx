@@ -157,7 +157,7 @@ export default function SavedLibraryPage() {
         </header>
 
         {/* Navigation & Segmented Tabs Bar (Sticky Controls) */}
-        <div className="sticky top-16 z-20 bg-[#FAF9F5]/90 backdrop-blur-md py-3 -mx-3 px-3 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 border-y border-[var(--color-border-subtle)] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="sticky top-0 z-20 bg-[#FAF9F5]/90 backdrop-blur-md py-3 -mx-3 px-3 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 border-y border-[var(--color-border-subtle)] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1.5 rounded-2xl border border-[#E3DFD5] bg-white p-1.5 shadow-2xs">
               <button

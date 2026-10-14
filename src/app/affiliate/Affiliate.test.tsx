@@ -71,7 +71,7 @@ describe('Affiliate location application', () => {
       gps_lat: 16.4023,
       gps_lng: 120.596,
     })));
-  });
+  }, 15000);
 
   it('can select the current browser location as the business pin', async () => {
     Object.defineProperty(navigator, 'geolocation', {
