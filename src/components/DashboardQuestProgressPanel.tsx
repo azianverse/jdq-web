@@ -67,9 +67,7 @@ export function DashboardQuestProgressPanel({ className = '' }: DashboardQuestPr
   // Approved submissions represent completed quests
   const completedSubmissions = submissions.filter((s) => s.status === 'approved');
   const completedQuestIds = new Set(completedSubmissions.map((s) => s.questId));
-  const pendingSubmissionQuestIds = new Set(
-    submissions.filter((s) => s.status === 'pending').map((s) => s.questId)
-  );
+  const pendingSubmissions = submissions.filter((s) => s.status === 'pending');
 
   // Completed quests: match completed submissions with quest metadata
   const completedItems = completedSubmissions.map((sub) => {
@@ -86,32 +84,25 @@ export function DashboardQuestProgressPanel({ className = '' }: DashboardQuestPr
     };
   });
 
-  // Ongoing / available quests: quests that haven't been completed yet
-  // Prioritize quests with pending verification, then active quests
-  const ongoingItems = quests
-    .filter((q) => !completedQuestIds.has(q.id))
-    .map((q) => {
-      const isPendingVerification = pendingSubmissionQuestIds.has(q.id);
-      return {
-        id: q.id,
-        questId: q.id,
-        title: q.title,
-        locationName: q.locationName,
-        category: q.category,
-        rewardPoints: q.rewardPoints,
-        stepsCount: Array.isArray(q.steps) && q.steps.length > 0 ? q.steps.length : 1,
-        isPendingVerification,
-        status: isPendingVerification ? ('pending' as const) : ('in_progress' as const),
-      };
-    })
-    .sort((a, b) => {
-      // Pending review first, then by points
-      if (a.isPendingVerification && !b.isPendingVerification) return -1;
-      if (!a.isPendingVerification && b.isPendingVerification) return 1;
-      return b.rewardPoints - a.rewardPoints;
-    });
+  // Ongoing / signed-up quests: ONLY quests the user is actively engaged in
+  // (e.g. proof submission in review/pending, or pre-registered/signed up)
+  // If the user has not signed up or submitted proofs for any quest, this remains empty.
+  const ongoingItems = pendingSubmissions.map((sub) => {
+    const matchedQuest = quests.find((q) => q.id === sub.questId);
+    return {
+      id: sub.id,
+      questId: sub.questId,
+      title: sub.questTitle || matchedQuest?.title || 'Active Trail',
+      locationName: matchedQuest?.locationName || 'Pangasinan Geofence',
+      category: sub.category || matchedQuest?.category || 'eco',
+      rewardPoints: sub.rewardPoints || matchedQuest?.rewardPoints || 50,
+      stepsCount: Array.isArray(matchedQuest?.steps) && matchedQuest.steps.length > 0 ? matchedQuest.steps.length : 1,
+      isPendingVerification: true,
+      status: 'pending' as const,
+    };
+  });
 
-  // Exactly 3 rows per request
+  // Exactly up to 3 rows per request
   const displayedItems = activeTab === 'ongoing' ? ongoingItems.slice(0, 3) : completedItems.slice(0, 3);
   const ongoingCount = ongoingItems.length;
   const completedCount = completedItems.length;
@@ -189,15 +180,15 @@ export function DashboardQuestProgressPanel({ className = '' }: DashboardQuestPr
           {activeTab === 'ongoing' ? (
             <>
               <Compass className="w-8 h-8 mx-auto text-stone-300" />
-              <p className="font-semibold text-[#2C221E]">All available quests completed!</p>
+              <p className="font-semibold text-[#2C221E]">No ongoing quests right now</p>
               <p className="text-[11px] text-[#837560]">
-                Explore new cultural campaigns or create your own community proposals.
+                You haven&apos;t signed up for or started any quests yet. Browse the quest catalog to begin your journey.
               </p>
               <Link
                 href="/quests"
                 className="inline-flex items-center gap-1 text-xs font-bold text-[#2D6A4F] hover:underline pt-1"
               >
-                <span>Browse Quest Directory</span>
+                <span>Browse Quests &amp; Trails</span>
                 <ArrowRight className="w-3 h-3" />
               </Link>
             </>
