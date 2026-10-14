@@ -22,6 +22,7 @@ export interface MiniMapPreviewProps {
   onLocationChange?: (lat: number, lng: number) => void;
   hideBadge?: boolean;
   badgeLabel?: string;
+  showMarker?: boolean;
 }
 
 export function MiniMapPreview({
@@ -40,6 +41,7 @@ export function MiniMapPreview({
   onLocationChange,
   hideBadge = false,
   badgeLabel,
+  showMarker = true,
 }: MiniMapPreviewProps) {
   const router = useRouter();
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
@@ -51,6 +53,13 @@ export function MiniMapPreview({
   // Validate coordinates
   const validLat = typeof lat === 'number' && !isNaN(lat) && lat >= -90 && lat <= 90 ? lat : 16.0232;
   const validLng = typeof lng === 'number' && !isNaN(lng) && lng >= -180 && lng <= 180 ? lng : 120.2317;
+  const viewRef = useRef({ lat: validLat, lng: validLng, zoom });
+  const onLocationChangeRef = useRef(onLocationChange);
+
+  useEffect(() => {
+    viewRef.current = { lat: validLat, lng: validLng, zoom };
+    onLocationChangeRef.current = onLocationChange;
+  }, [validLat, validLng, zoom, onLocationChange]);
 
   const handleOpenFullMap = (e?: React.MouseEvent | React.KeyboardEvent) => {
     if (e) {
@@ -85,18 +94,19 @@ export function MiniMapPreview({
         if (mapInstanceRef.current) {
           mapInstanceRef.current.remove();
           mapInstanceRef.current = null;
+          markerRef.current = null;
         }
 
         const map = L.map(mapContainerRef.current, {
-          zoomControl: false,
-          attributionControl: false,
+          zoomControl: interactive,
+          attributionControl: true,
           dragging: interactive,
           touchZoom: interactive,
           scrollWheelZoom: false,
           doubleClickZoom: interactive,
           boxZoom: false,
           keyboard: false,
-        }).setView([validLat, validLng], zoom);
+        }).setView([viewRef.current.lat, viewRef.current.lng], viewRef.current.zoom);
 
         L.tileLayer(MAP_TILE_URL, {
           maxZoom: MAP_TILE_MAX_ZOOM,
@@ -118,21 +128,21 @@ export function MiniMapPreview({
           iconAnchor: [18, 44],
         });
 
-        const marker = L.marker([validLat, validLng], {
+        const marker = showMarker ? L.marker([viewRef.current.lat, viewRef.current.lng], {
           icon: customIcon,
-          draggable: Boolean(interactive && onLocationChange),
-        }).addTo(map);
+          draggable: Boolean(interactive && onLocationChangeRef.current),
+        }).addTo(map) : null;
 
-        if (interactive && onLocationChange) {
-          marker.on('dragend', (ev: any) => {
+        if (interactive && onLocationChangeRef.current) {
+          marker?.on('dragend', (ev: any) => {
             const pos = ev.target.getLatLng();
-            onLocationChange(pos.lat, pos.lng);
+            onLocationChangeRef.current?.(pos.lat, pos.lng);
           });
 
           map.on('click', (ev: any) => {
-            marker.setLatLng(ev.latlng);
+            if (markerRef.current) markerRef.current.setLatLng(ev.latlng);
             map.panTo(ev.latlng, { animate: true });
-            onLocationChange(ev.latlng.lat, ev.latlng.lng);
+            onLocationChangeRef.current?.(ev.latlng.lat, ev.latlng.lng);
           });
         }
 
@@ -158,17 +168,18 @@ export function MiniMapPreview({
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
+        markerRef.current = null;
       }
     };
-  }, [mounted, interactive]);
+  }, [mounted, interactive, showMarker, pinType]);
 
   // Update center & marker position if coordinates change dynamically
   useEffect(() => {
-    if (mapInstanceRef.current && markerRef.current) {
-      markerRef.current.setLatLng([validLat, validLng]);
-      mapInstanceRef.current.panTo([validLat, validLng], { animate: true });
+    if (mapInstanceRef.current) {
+      markerRef.current?.setLatLng([validLat, validLng]);
+      mapInstanceRef.current.setView([validLat, validLng], zoom, { animate: true });
     }
-  }, [validLat, validLng]);
+  }, [validLat, validLng, zoom]);
 
   return (
     <div

@@ -482,6 +482,22 @@ export async function updateQuestStatus(questId: string, status: 'draft' | 'publ
   return normalizeQuest(res.data.data);
 }
 
+export async function fetchQuests(params?: { category?: string }): Promise<QuestModel[]> {
+  const res = await api.get('/quests', { params });
+  if (!res.data?.success) {
+    throw new Error(res.data?.error?.message || 'Failed to fetch quests');
+  }
+  return (res.data.data as Parameters<typeof normalizeQuest>[0][]).map(normalizeQuest);
+}
+
+export async function fetchSubmissions(): Promise<SubmissionModel[]> {
+  const res = await api.get('/submissions');
+  if (!res.data?.success) {
+    throw new Error(res.data?.error?.message || 'Failed to fetch submissions');
+  }
+  return (res.data.data as Parameters<typeof normalizeSubmission>[0][]).map(normalizeSubmission);
+}
+
 type BackendProposal = {
   id: string;
   title: string;

@@ -51,6 +51,7 @@ import { HiddenGemHighlights } from '@/components/HiddenGemHighlights';
 import { JuanChoiceRail } from '@/components/JuanChoiceRail';
 import { DashboardQuizCard } from '@/components/DashboardQuizCard';
 import { DashboardCalendar } from '@/components/DashboardCalendar';
+import { DashboardQuestProgressPanel } from '@/components/DashboardQuestProgressPanel';
 import { triggerCelebration } from '@/components/CelebrationEffects';
 import { appRoutes } from '@/lib/routes';
 
@@ -337,6 +338,11 @@ export function DashboardClient() {
                   </Link>
                 </section>
               )}
+
+              {/* SECTION: Quest Progress Panel (Ongoing Quests & Previous Done Quests - 3 rows) */}
+              <section className="space-y-4">
+                <DashboardQuestProgressPanel />
+              </section>
 
               {/* SECTION: Cultural Knowledge Quizzes (Migrated Here) */}
               <section className="space-y-4">
