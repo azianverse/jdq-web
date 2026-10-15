@@ -1,12 +1,24 @@
+import { Quicksand } from 'next/font/google';
 import { pageMetadata } from '@/lib/page-metadata';
-import { DashboardClient } from './DashboardClient';
+import { CozyDashboardClient } from './cozy/CozyDashboardClient';
+
+const quicksand = Quicksand({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  display: 'swap',
+  variable: '--font-quicksand',
+});
 
 export const metadata = pageMetadata(
-  'Explorer Dashboard',
-  'Your personal Pangasinan adventure hub: personalized recommendations, gamified explorer progression, voting rounds, cultural quizzes, and recent activities.',
+  'JuanDer Without Limits - Island Explorer Hub',
+  'Your personal Pangasinan adventure hub: live GPS mini-map, pre-registered events calendar, quest progress, community spotlight, merchant perks, and daily eco-tips.',
   '/dashboard'
 );
 
 export default function DashboardPage() {
-  return <DashboardClient />;
+  return (
+    <div className={`${quicksand.className} ${quicksand.variable}`}>
+      <CozyDashboardClient />
+    </div>
+  );
 }

@@ -42,13 +42,13 @@ export const isAuthBypassEnabled = (): boolean =>
 
 export const DEV_BYPASS_USER: UserModel = {
   id: 'usr-dev-traveler-01',
-  seedId: 'dev-traveler',
-  displayName: 'Dev Explorer',
-  email: 'dev@juanderquest.local',
-  avatarUrl: 'https://api.dicebear.com/7.x/identicon/svg?seed=dev-traveler',
-  role: 'admin',
+  seedId: 'guest:dev-traveler',
+  displayName: 'Explorer Juan (Guest)',
+  email: 'guest@juanderquest.local',
+  avatarUrl: 'https://api.dicebear.com/7.x/identicon/svg?seed=guest-traveler',
+  role: 'traveler',
   points: 1250,
-  handle: 'dev_explorer',
+  handle: 'guest_juan',
 };
 
 export const DEV_BYPASS_WALLET: WalletModel = {
@@ -103,6 +103,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     let cancelled = false;
     const restoreSession = async () => {
       setIsLoading(true);
+      if (typeof window !== 'undefined' && localStorage.getItem('jdq_guest_mode') === 'true') {
+        if (!cancelled) {
+          setUser(DEV_BYPASS_USER);
+          setWallet(DEV_BYPASS_WALLET);
+          setToken('guest-session-token');
+          setSessionUnavailable(false);
+          setIsLoading(false);
+        }
+        return;
+      }
       try {
         let response;
         try {
@@ -419,21 +429,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     clearStoredSession();
   };
 
-  const loginAsGuest = async (rememberMe: boolean): Promise<boolean> => {
+  const loginAsGuest = async (rememberMe: boolean = true): Promise<boolean> => {
     setIsLoading(true);
     try {
       const res = await api.post('/auth/guest-login', { remember_me: rememberMe });
-      if (!res.data?.success) return false;
-      clearStoredSession();
-      invalidateCache();
-      setWallet(null);
-      setUser(normalizeUser(res.data.data.user));
-      setToken('cookie-session');
-      setSessionUnavailable(false);
-      return true;
-    } finally {
-      setIsLoading(false);
+      if (res.data?.success) {
+        clearStoredSession();
+        invalidateCache();
+        setWallet(null);
+        setUser(normalizeUser(res.data.data.user));
+        setToken('cookie-session');
+        setSessionUnavailable(false);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('jdq_guest_mode', 'true');
+        }
+        setIsLoading(false);
+        return true;
+      }
+    } catch {
+      // Backend offline / unavailable: enable local guest mode for testing
     }
+
+    clearStoredSession();
+    invalidateCache();
+    setUser(DEV_BYPASS_USER);
+    setWallet(DEV_BYPASS_WALLET);
+    setToken('guest-session-token');
+    setSessionUnavailable(false);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('jdq_guest_mode', 'true');
+    }
+    setIsLoading(false);
+    return true;
   };
 
   return (

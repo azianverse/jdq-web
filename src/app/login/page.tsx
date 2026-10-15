@@ -30,6 +30,7 @@ export default function LoginPage() {
     registerWithEmail,
     verifyEmailOtp,
     loginWithWallet,
+    loginAsGuest,
   } = useAuth();
 
   const [activeTab, setActiveTab] = React.useState<AuthTab>('signin');
@@ -565,6 +566,18 @@ export default function LoginPage() {
         </label>
 
         {error && <p role="alert" className="text-xs font-bold text-red-600">{error}</p>}
+
+        <button
+          type="button"
+          onClick={async () => {
+            const ok = await loginAsGuest(rememberMe);
+            if (ok) router.replace(redirectTarget() ?? '/dashboard/cozy');
+          }}
+          disabled={isLoading}
+          className="w-full rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-extrabold py-3 px-5 flex justify-center items-center gap-2 shadow-xs transition active:scale-98 cursor-pointer text-sm"
+        >
+          <span>🌿 Continue as Guest (Testing)</span>
+        </button>
 
         <button
           type="button"

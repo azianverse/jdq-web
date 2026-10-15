@@ -213,6 +213,31 @@ export function DashboardClient() {
     <Navigation>
       <ErrorBoundary fallbackTitle="Unable to load Explorer Dashboard">
         <div className="max-w-7xl 2xl:max-w-[1560px] mx-auto space-y-8 pb-16">
+          {/* Cozy Island Dashboard Switcher Banner */}
+          <div className="bg-gradient-to-r from-[#1B4332] via-[#2D6A4F] to-[#582F0E] text-white rounded-3xl p-4 sm:p-5 shadow-sm border border-emerald-500/30 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-3.5">
+              <span className="text-3xl sm:text-4xl">🪵</span>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-400 text-stone-900">
+                    New View
+                  </span>
+                  <h3 className="font-extrabold text-base sm:text-lg">JuanDer Without Limits — Island Hub</h3>
+                </div>
+                <p className="text-xs text-emerald-100/90 mt-0.5">
+                  Experience the Animal Crossing-inspired cozy expedition dashboard with live GPS mini-map, pre-registered calendar, and eco-tips.
+                </p>
+              </div>
+            </div>
+            <Link
+              href="/dashboard/cozy"
+              className="shrink-0 px-4 py-2 rounded-2xl bg-[#FFB703] hover:bg-[#F77F00] text-[#1F3D2B] font-black text-xs sm:text-sm shadow-sm transition-all hover:scale-105 active:scale-95 flex items-center gap-2"
+            >
+              <span>Launch Cozy Island View 🍃</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+
           {/* ======================================================== */}
           {/* 1. EXPEDITION & FESTIVAL CALENDAR (FULL ROW) */}
           {/* ======================================================== */}
@@ -234,11 +259,10 @@ export function DashboardClient() {
                         <span className="px-2.5 py-0.5 rounded-full bg-emerald-400/20 text-emerald-200 border border-emerald-400/30 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5">
                           <Store className="w-3 h-3 text-amber-300" /> Verified Tourism Partner
                         </span>
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                          merchantMe.merchant.is_published
-                            ? 'bg-emerald-300 text-emerald-950'
-                            : 'bg-amber-300/20 text-amber-200 border border-amber-300/40'
-                        }`}>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${merchantMe.merchant.is_published
+                          ? 'bg-emerald-300 text-emerald-950'
+                          : 'bg-amber-300/20 text-amber-200 border border-amber-300/40'
+                          }`}>
                           {merchantMe.merchant.is_published ? 'Published to Travelers' : 'Draft Mode'}
                         </span>
                       </div>
@@ -285,13 +309,12 @@ export function DashboardClient() {
                       </div>
                     </div>
 
-                    <span className={`text-[10px] font-black uppercase px-2.5 py-1 rounded-full ${
-                      affiliateApp.status === 'approved'
-                        ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-                        : affiliateApp.status === 'needs_changes'
+                    <span className={`text-[10px] font-black uppercase px-2.5 py-1 rounded-full ${affiliateApp.status === 'approved'
+                      ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                      : affiliateApp.status === 'needs_changes'
                         ? 'bg-amber-50 text-amber-800 border border-amber-200'
                         : 'bg-blue-50 text-blue-800 border border-blue-200'
-                    }`}>
+                      }`}>
                       {affiliateApp.status === 'received' && 'Under Evaluation'}
                       {affiliateApp.status === 'in_review' && 'Tourism Moderation In Review'}
                       {affiliateApp.status === 'needs_changes' && 'Changes Requested'}
@@ -373,11 +396,10 @@ export function DashboardClient() {
                     </div>
                   </div>
 
-                  <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${
-                    votingStatus.voting_enabled
-                      ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-                      : 'bg-stone-100 text-stone-600'
-                  }`}>
+                  <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${votingStatus.voting_enabled
+                    ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                    : 'bg-stone-100 text-stone-600'
+                    }`}>
                     {votingStatus.voting_enabled ? 'Active Round' : 'Between Rounds'}
                   </span>
                 </div>
@@ -465,13 +487,12 @@ export function DashboardClient() {
                           </span>
                         </div>
 
-                        <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase shrink-0 ${
-                          act.status === 'approved'
-                            ? 'bg-emerald-100 text-[#2D6A4F]'
-                            : act.status === 'rejected'
+                        <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase shrink-0 ${act.status === 'approved'
+                          ? 'bg-emerald-100 text-[#2D6A4F]'
+                          : act.status === 'rejected'
                             ? 'bg-red-100 text-red-700'
                             : 'bg-amber-100 text-amber-800'
-                        }`}>
+                          }`}>
                           {act.status}
                         </span>
                       </div>
