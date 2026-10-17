@@ -11,9 +11,7 @@ import {
   Bell,
   Calendar as CalendarIcon,
   ChevronRight,
-  TreePine,
   X,
-  Navigation as NavigationIcon,
   LayoutGrid,
   Compass,
   Zap,
@@ -108,6 +106,34 @@ const REGISTERED_EVENTS: RegisteredEvent[] = [
     isRegistered: true,
     category: 'cultural',
   },
+  {
+    id: 'ev-4',
+    day: 26,
+    month: 'Oct',
+    year: 2026,
+    title: 'Lingayen Gulf Sunset Sand Sculpting Showcase',
+    time: '16:00 PM',
+    location: 'Lingayen Beachfront Park',
+    participants: 190,
+    maxParticipants: 250,
+    description: 'Artisan sand castle contest and coastal night bazaar with live acoustic folk music.',
+    isRegistered: true,
+    category: 'festival',
+  },
+  {
+    id: 'ev-5',
+    day: 26,
+    month: 'Oct',
+    year: 2026,
+    title: 'Capitol Heritage Trail Walking Tour',
+    time: '18:30 PM',
+    location: 'Pangasinan Provincial Capitol Grounds',
+    participants: 75,
+    maxParticipants: 100,
+    description: 'Guided evening walking quest covering neoclassical architecture and local folklore.',
+    isRegistered: true,
+    category: 'cultural',
+  },
 ];
 
 export function CozyDashboardClient() {
@@ -120,7 +146,6 @@ export function CozyDashboardClient() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [selectedBadge, setSelectedBadge] = useState<UserBadge | null>(null);
-  const [bonusTrees, setBonusTrees] = useState(0);
   const [currentTime, setCurrentTime] = useState('10:45 AM');
 
   // Sidebar Expand/Collapse State (persisted to localStorage)
@@ -187,12 +212,12 @@ export function CozyDashboardClient() {
     };
   }, [isNotificationsOpen]);
 
-  const totalPoints = (user?.points || 1250) + bonusTrees * 10;
-  const treesPlanted = 68 + bonusTrees;
+  const totalPoints = user?.points || 1250;
+  const treesPlanted = 68;
 
-  // Active event based on selected calendar day (null if no event on that day)
-  const activeEvent = useMemo(() => {
-    return REGISTERED_EVENTS.find((e) => e.day === selectedCalendarDay) || null;
+  // Events based on selected calendar day (empty array if no events on that day)
+  const selectedDayEvents = useMemo(() => {
+    return REGISTERED_EVENTS.filter((e) => e.day === selectedCalendarDay);
   }, [selectedCalendarDay]);
 
   const [claimedPerks, setClaimedPerks] = useState<string[]>([]);
@@ -201,11 +226,6 @@ export function CozyDashboardClient() {
   const handleNextTip = () => {
     setSelectedTipIndex((prev) => (prev + 1) % ECO_TIPS.length);
     triggerCelebration({ type: 'confetti', count: 18, playAudio: false });
-  };
-
-  const handlePlantTree = () => {
-    setBonusTrees((prev) => prev + 1);
-    triggerCelebration({ type: 'poppers', count: 30, playAudio: true });
   };
 
   const handleClaimPerk = (code: string, title: string) => {
@@ -455,15 +475,6 @@ export function CozyDashboardClient() {
                   <span className="text-xs">🍃</span>
                 </div>
               </div>
-
-              {/* Quick interactive action */}
-              <button
-                onClick={handlePlantTree}
-                className="mt-2.5 w-full py-2 px-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-[#2B3B2E] font-black text-xs shadow-sm transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer"
-              >
-                <TreePine className="w-4 h-4 text-[#1B3F2B]" />
-                <span>Plant Mangrove (+10 XP)</span>
-              </button>
             </div>
           </aside>
         )}
@@ -638,233 +649,215 @@ export function CozyDashboardClient() {
           {/* ========================================================= */}
           {/* 2. EXPEDITION CENTER: EXPANDED 2/3 CALENDAR + 1/3 LIVE GPS */}
           {/* ========================================================= */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
             {/* ------------------------------------------------------- */}
             {/* 2A. EXPANDED CALENDAR & EVENT SPOTLIGHT (2/3 Column)    */}
             {/* ------------------------------------------------------- */}
-            <div className="lg:col-span-2 bg-[#FAF7F0] rounded-3xl p-5 sm:p-6 border-2 border-[#E3DCce] shadow-sm flex flex-col justify-between">
-              <div>
-                {/* Header with Title and Month selector */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
-                  <div>
-                    <h3 className="text-base sm:text-lg font-extrabold text-[#1F452C] flex items-center gap-2">
-                      <span>🍃</span> Expedition Calendar &amp; Island Events
-                    </h3>
-                    <p className="text-xs text-[#5D6B5F] mt-0.5">
-                      Select a date to preview scheduled expeditions, local festivals, and joined traveler parties.
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-xs font-black px-3 py-1 rounded-full bg-[#E5EFE7] text-[#245C36] border border-[#CDE1CE] shadow-2xs">
-                      October 2026
-                    </span>
-                  </div>
-                </div>
-
-                {/* Expanded Calendar (Authentic Wall Calendar Layout — No calculator buttons) */}
-                <div className="bg-[#FAF7F0] rounded-2xl p-3.5 sm:p-5 border-2 border-[#E3DCce] shadow-xs">
-                  {/* Calendar Days Header: Sunday is the first day */}
-                  <div className="grid grid-cols-7 gap-1 text-center text-xs font-bold mb-2 pb-1.5 border-b border-[#E3DCce]/70">
-                    {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, i) => (
-                      <span
-                        key={i}
-                        className={`py-0.5 text-[11px] sm:text-xs font-black uppercase tracking-wider ${
-                          i === 0 ? 'text-rose-600' : 'text-[#55695A]'
-                        }`}
-                      >
-                        {day}
+            <div className="lg:col-span-2 bg-[#FAF7F0] rounded-3xl p-5 sm:p-6 border-2 border-[#E3DCce] shadow-sm flex flex-col justify-between h-full">
+              <div className="flex flex-col h-full justify-between">
+                <div>
+                  {/* Header with Title and Month selector */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                    <div>
+                      <h3 className="text-base sm:text-lg font-extrabold text-[#1F452C] flex items-center gap-2">
+                        <span>🍃</span> Expedition Calendar &amp; Island Events
+                      </h3>
+                      <p className="text-xs text-[#5D6B5F] mt-0.5">
+                        Select a date to preview scheduled expeditions, local festivals, and joined traveler parties.
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-xs font-black px-3 py-1 rounded-full bg-[#E5EFE7] text-[#245C36] border border-[#CDE1CE] shadow-2xs">
+                        October 2026
                       </span>
-                    ))}
+                    </div>
                   </div>
 
-                  {/* Calendar Days (Sun Sep 27 to Sat Oct 31 = exactly 5 clean rows of 7) */}
-                  <div className="grid grid-cols-7 gap-y-1 sm:gap-y-1.5 gap-x-0.5 sm:gap-x-1 text-center">
-                    {/* Previous Month padding days: Sep 27 (Sun), 28 (Mon), 29 (Tue), 30 (Wed) */}
-                    {[27, 28, 29, 30].map((padDay, i) => (
-                      <div key={`pad-${padDay}`} className="h-8 sm:h-9 flex items-center justify-center">
+                  {/* Expanded Calendar (Authentic Wall Calendar Layout — No calculator buttons) */}
+                  <div className="bg-[#FAF7F0] rounded-2xl p-3.5 sm:p-5 border-2 border-[#E3DCce] shadow-xs">
+                    {/* Calendar Days Header: Sunday is the first day */}
+                    <div className="grid grid-cols-7 gap-1 text-center text-xs font-bold mb-2 pb-1.5 border-b border-[#E3DCce]/70">
+                      {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, i) => (
                         <span
-                          className={`text-xs font-semibold select-none ${
-                            i === 0 ? 'text-rose-400/40' : 'text-[#8C9B8F]/35'
+                          key={i}
+                          className={`py-0.5 text-[11px] sm:text-xs font-black uppercase tracking-wider ${
+                            i === 0 ? 'text-rose-600' : 'text-[#55695A]'
                           }`}
                         >
-                          {padDay}
+                          {day}
                         </span>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
 
-                    {/* October 1 to 31 */}
-                    {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => {
-                      const eventOnDay = REGISTERED_EVENTS.find((e) => e.day === day);
-                      const isSelected = selectedCalendarDay === day;
-                      const isToday = day === 15;
-                      const isSunday = (day + 4) % 7 === 1;
-
-                      return (
-                        <div key={day} className="h-8 sm:h-9 flex items-center justify-center">
-                          <button
-                            type="button"
-                            onClick={() => setSelectedCalendarDay(day)}
-                            className={`relative w-8 h-8 sm:w-8.5 sm:h-8.5 rounded-full flex items-center justify-center transition-all cursor-pointer select-none ${
-                              isSelected
-                                ? 'bg-[#245C36] text-white font-black shadow-md scale-105 z-10'
-                                : isToday
-                                ? 'ring-2 ring-[#245C36] ring-offset-2 ring-offset-[#FAF7F0] bg-emerald-100/70 text-[#1F452C] font-black'
-                                : isSunday
-                                ? 'text-rose-600 font-extrabold hover:bg-rose-50'
-                                : 'text-[#2D3A2F] hover:bg-[#EAE4D7] font-bold'
+                    {/* Calendar Days (Sun Sep 27 to Sat Oct 31 = exactly 5 clean rows of 7) */}
+                    <div className="grid grid-cols-7 gap-y-1 sm:gap-y-1.5 gap-x-0.5 sm:gap-x-1 text-center">
+                      {/* Previous Month padding days: Sep 27 (Sun), 28 (Mon), 29 (Tue), 30 (Wed) */}
+                      {[27, 28, 29, 30].map((padDay, i) => (
+                        <div key={`pad-${padDay}`} className="h-8 sm:h-9 flex items-center justify-center">
+                          <span
+                            className={`text-xs font-semibold select-none ${
+                              i === 0 ? 'text-rose-400/40' : 'text-[#8C9B8F]/35'
                             }`}
                           >
-                            <span className="text-xs sm:text-sm leading-none">{day}</span>
-
-                            {/* Event Dot on Upper Right Side of the circle */}
-                            {eventOnDay && (
-                              <span
-                                className={`absolute top-0 right-0 w-2 h-2 rounded-full shadow-2xs ${
-                                  isSelected ? 'bg-amber-300 ring-1 ring-[#245C36]' : 'bg-amber-500 ring-1 ring-white'
-                                }`}
-                                title={`Event: ${eventOnDay.title}`}
-                              />
-                            )}
-                          </button>
+                            {padDay}
+                          </span>
                         </div>
-                      );
-                    })}
-                  </div>
+                      ))}
 
-                  {/* Calendar Legend */}
-                  <div className="mt-3 pt-2 border-t border-[#E3DCce] flex flex-wrap items-center justify-between gap-2 text-[11px] text-[#55695A] font-semibold">
-                    <div className="flex items-center gap-3.5">
+                      {/* October 1 to 31 */}
+                      {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => {
+                        const hasEvent = REGISTERED_EVENTS.some((e) => e.day === day);
+                        const isSelected = selectedCalendarDay === day;
+                        const isToday = day === 15;
+                        const isSunday = (day + 4) % 7 === 1;
+
+                        return (
+                          <div key={day} className="h-8 sm:h-9 flex items-center justify-center">
+                            <button
+                              type="button"
+                              onClick={() => setSelectedCalendarDay(day)}
+                              className={`relative w-8 h-8 sm:w-8.5 sm:h-8.5 rounded-full flex items-center justify-center transition-all cursor-pointer select-none ${
+                                isSelected
+                                  ? 'bg-[#245C36] text-white font-black shadow-md scale-105 z-10'
+                                  : isToday
+                                  ? 'ring-2 ring-[#245C36] ring-offset-2 ring-offset-[#FAF7F0] bg-emerald-100/70 text-[#1F452C] font-black'
+                                  : isSunday
+                                  ? 'text-rose-600 font-extrabold hover:bg-rose-50'
+                                  : 'text-[#2D3A2F] hover:bg-[#EAE4D7] font-bold'
+                              }`}
+                            >
+                              <span className="text-xs sm:text-sm leading-none">{day}</span>
+
+                              {/* Event Dot on Upper Right Side of the circle */}
+                              {hasEvent && (
+                                <span
+                                  className={`absolute top-0 right-0 w-2 h-2 rounded-full shadow-2xs ${
+                                    isSelected ? 'bg-amber-300 ring-1 ring-[#245C36]' : 'bg-amber-500 ring-1 ring-white'
+                                  }`}
+                                  title="Scheduled Expedition/Quest"
+                                />
+                              )}
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Calendar Legend */}
+                    <div className="mt-3 pt-2 border-t border-[#E3DCce] flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-[11px] text-[#55695A] font-semibold">
                       <span className="flex items-center gap-1.5">
                         <span className="w-2 h-2 rounded-full bg-amber-500 ring-1 ring-white shadow-2xs" />
                         <span>Expedition Event</span>
                       </span>
                       <span className="flex items-center gap-1.5">
-                        <span className="w-3 h-3 rounded-full ring-2 ring-[#245C36] ring-offset-1 bg-emerald-100 flex items-center justify-center text-[7px] font-black text-[#245C36]">15</span>
+                        <span className="w-3.5 h-3.5 rounded-full ring-2 ring-[#245C36] ring-offset-1 bg-emerald-100 flex items-center justify-center text-[8px] font-black text-[#245C36]">15</span>
                         <span>Today</span>
                       </span>
                       <span className="flex items-center gap-1.5">
-                        <span className="w-3 h-3 rounded-full bg-[#245C36]" />
+                        <span className="w-3.5 h-3.5 rounded-full bg-[#245C36] flex items-center justify-center text-[8px] font-black text-white">{selectedCalendarDay}</span>
                         <span>Selected Day</span>
                       </span>
                     </div>
-                    <span className="text-[#8C5E35] font-bold">3 Island Excursions Scheduled</span>
                   </div>
                 </div>
 
-                {/* Selected Event Details Spotlight Card (Shown ONLY if selected date has an event) */}
-                {activeEvent && (
-                  <div className="mt-4 bg-[#FAF1DF] rounded-2xl p-4 sm:p-5 border-2 border-[#E8DCC2] text-xs animate-in fade-in zoom-in-95 duration-150">
-                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-                      <div className="space-y-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-200/90 text-amber-900 border border-amber-300">
-                            {activeEvent.category === 'eco_quest' ? '🌿 Eco-Quest' : activeEvent.category === 'festival' ? '🎉 Coastal Festival' : '🏛️ Cultural Heritage'}
-                          </span>
-                          <span className="text-[11px] font-bold text-amber-900 flex items-center gap-1">
-                            <MapPin className="w-3.5 h-3.5 text-red-500" /> {activeEvent.location}
-                          </span>
-                          <span className="text-[11px] text-[#8C5E35] font-bold">
-                            ⏰ {activeEvent.time} · {activeEvent.month} {activeEvent.day}, {activeEvent.year}
-                          </span>
+                {/* Event Spotlight Cards or Empty State (Aligned bottom rectangle) */}
+                {selectedDayEvents.length > 0 ? (
+                  <div className="mt-4 max-h-[175px] overflow-y-auto space-y-2.5 pr-1 scrollbar-thin scrollbar-thumb-[#D5CCBC] scrollbar-track-transparent">
+                    {selectedDayEvents.map((event) => (
+                      <div
+                        key={event.id}
+                        className="bg-[#FAF1DF] rounded-2xl p-4 sm:p-4.5 border-2 border-[#E8DCC2] text-xs transition-all animate-in fade-in zoom-in-95 duration-150"
+                      >
+                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                          <div className="space-y-1 min-w-0">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="text-[11px] font-bold text-amber-900 flex items-center gap-1">
+                                <MapPin className="w-3.5 h-3.5 text-red-500 shrink-0" /> {event.location}
+                              </span>
+                              <span className="text-[11px] text-[#8C5E35] font-bold">
+                                ⏰ {event.time} · {event.month} {event.day}, {event.year}
+                              </span>
+                            </div>
+
+                            <h4 className="font-black text-sm sm:text-base text-[#233826] mt-0.5 leading-snug">
+                              {event.title}
+                            </h4>
+                            <p className="text-xs text-[#55695A] mt-0.5 leading-relaxed line-clamp-2">
+                              {event.description}
+                            </p>
+                          </div>
+
+                          <div className="shrink-0 flex sm:flex-col items-center sm:items-end justify-between gap-1.5">
+                            <span className="text-emerald-800 bg-emerald-100 font-black px-3 py-1 rounded-full border border-emerald-300 shadow-2xs text-[11px]">
+                              ✓ Pre-Registered
+                            </span>
+                            <span className="text-[11px] font-extrabold text-[#8C5E35]">
+                              👥 {event.participants} / {event.maxParticipants} Explorers
+                            </span>
+                          </div>
                         </div>
-
-                        <h4 className="font-black text-sm sm:text-base text-[#233826] mt-1 leading-snug">
-                          {activeEvent.title}
-                        </h4>
-                        <p className="text-xs text-[#55695A] mt-1 leading-relaxed">
-                          {activeEvent.description}
-                        </p>
                       </div>
-
-                      <div className="shrink-0 flex sm:flex-col items-center sm:items-end justify-between gap-2">
-                        <span className="text-emerald-800 bg-emerald-100 font-black px-3 py-1 rounded-full border border-emerald-300 shadow-2xs">
-                          ✓ Pre-Registered
-                        </span>
-                        <span className="text-[11px] font-extrabold text-[#8C5E35]">
-                          👥 {activeEvent.participants} / {activeEvent.maxParticipants} Explorers
-                        </span>
-                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="mt-4 bg-[#FAF1DF]/50 rounded-2xl p-5 border-2 border-dashed border-[#E8DCC2] text-xs flex items-center justify-center min-h-[110px] text-center animate-in fade-in duration-150">
+                    <div className="flex flex-col items-center gap-1.5 text-[#8C7A68]">
+                      <span className="text-2xl">🍃</span>
+                      <p className="font-bold text-sm text-[#233826]">No events/quests on this day.</p>
+                      <p className="text-[11px] text-[#7A6B56]">
+                        Select a date with an orange dot (e.g., Oct 18, 20, or 26) to preview scheduled expeditions.
+                      </p>
                     </div>
                   </div>
                 )}
-              </div>
-
-              {/* Bottom active party stat */}
-              <div className="mt-4 pt-3 border-t border-[#E3DCce] flex items-center justify-between text-xs font-bold text-[#55695A]">
-                <span>Active Island Expeditions in Pangasinan</span>
-                <span className="text-[#1F452C] font-black">8 / 10 Party Members Ready</span>
               </div>
             </div>
 
             {/* ------------------------------------------------------- */}
             {/* 2B. LIVE RADAR & GPS MINI MAP (1/3 Column)             */}
             {/* ------------------------------------------------------- */}
-            <div className="lg:col-span-1 bg-[#FAF7F0] rounded-3xl p-5 sm:p-6 border-2 border-[#E3DCce] shadow-sm flex flex-col justify-between">
-              <div>
-                {/* Header */}
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-base font-extrabold text-[#1F452C] flex items-center gap-2">
-                    <span>🧭</span> Island GPS Radar
-                  </h3>
-                  <Link
-                    href="/map"
-                    className="text-xs font-bold text-[#245C36] hover:underline flex items-center gap-1"
-                  >
-                    Full Map <ChevronRight className="w-3.5 h-3.5" />
-                  </Link>
-                </div>
+            <div className="lg:col-span-1 bg-[#FAF7F0] rounded-3xl p-5 sm:p-6 border-2 border-[#E3DCce] shadow-sm flex flex-col justify-between h-full">
+              {/* Header */}
+              <div className="flex items-center justify-between mb-3 shrink-0">
+                <h3 className="text-base font-extrabold text-[#1F452C] flex items-center gap-2">
+                  <span>🧭</span> Island GPS Radar
+                </h3>
+                <Link
+                  href="/map"
+                  className="text-xs font-bold text-[#245C36] hover:underline flex items-center gap-1"
+                >
+                  Full Map <ChevronRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
 
-                <p className="text-[11px] text-[#5D6B5F] mb-3">
-                  Real-time island GPS & trail tracker across Pangasinan
-                </p>
-
-                {/* Leaflet GPS Radar Mini Map Preview (1x1 Square) */}
-                <div className="relative rounded-2xl overflow-hidden border-2 border-[#DFD7C7] shadow-inner bg-[#EFE8D8] w-full aspect-square">
-                  <MiniMapPreview
-                    lat={16.0315}
-                    lng={120.2312}
-                    name="Lingayen Gulf Beachfront"
-                    municipality="Lingayen"
-                    zoom={13}
-                    height="w-full aspect-square"
-                    hideBadge={true}
-                  />
-                  {/* Live Status overlay badge */}
-                  <div className="absolute top-2.5 left-2.5 z-10 bg-white/95 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-extrabold text-emerald-800 border border-emerald-300 shadow-xs flex items-center gap-1.5 pointer-events-none">
-                    <span className="relative flex h-2 w-2 shrink-0">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-600" />
-                    </span>
-                    <span>Live GPS Active</span>
-                  </div>
-                </div>
-
-                {/* Location Telemetry Meta */}
-                <div className="mt-3.5 bg-[#EFEAE0] rounded-2xl p-3.5 border border-[#DFD7C7] text-xs space-y-2">
-                  <div className="flex items-center justify-between font-bold text-[#1F452C]">
-                    <span>Coordinates:</span>
-                    <span className="font-mono text-[#8C5E35]">16.0315° N, 120.2312° E</span>
-                  </div>
-                  <div className="flex items-center justify-between text-[#5D6B5F] text-[11px]">
-                    <span>Current Zone:</span>
-                    <span className="font-extrabold text-[#1F452C]">Lingayen Capitol Baywalk</span>
-                  </div>
-                  <div className="flex items-center justify-between text-[#5D6B5F] text-[11px] pt-1.5 border-t border-[#DFD7C7]">
-                    <span>Nearest Hub:</span>
-                    <span className="text-emerald-800 font-black">Lucap Wharf (2.1 km)</span>
-                  </div>
+              {/* Leaflet GPS Radar Mini Map Preview (Flexes to fill matching height with calendar) */}
+              <div className="relative rounded-2xl overflow-hidden border-2 border-[#DFD7C7] shadow-inner bg-[#EFE8D8] w-full flex-1 min-h-[260px] my-1 flex flex-col">
+                <MiniMapPreview
+                  lat={16.0315}
+                  lng={120.2312}
+                  name="Lingayen Gulf Beachfront"
+                  municipality="Lingayen"
+                  zoom={13}
+                  height="h-full w-full"
+                  hideBadge={true}
+                />
+                {/* Live Status overlay badge */}
+                <div className="absolute top-2.5 left-2.5 z-10 bg-white/95 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-extrabold text-emerald-800 border border-emerald-300 shadow-xs flex items-center gap-1.5 pointer-events-none">
+                  <span className="relative flex h-2 w-2 shrink-0">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-600" />
+                  </span>
+                  <span>Live GPS Active</span>
                 </div>
               </div>
 
-              {/* View Navigator Action */}
-              <div className="mt-4 pt-3 border-t border-[#E3DCce] flex items-center justify-between">
-                <span className="text-xs text-[#5D6B5F]">Accuracy: 98%</span>
-                <Link
-                  href="/map?lat=16.0315&lng=120.2312&name=Lingayen"
-                  className="text-xs font-black px-4 py-2 rounded-xl bg-[#245C36] text-white hover:bg-[#1B4332] transition-all flex items-center gap-1.5 shadow-xs hover:scale-102 active:scale-95 cursor-pointer"
-                >
-                  <NavigationIcon className="w-3.5 h-3.5" /> Open Navigator
-                </Link>
+              {/* Coordinates Pill */}
+              <div className="mt-3.5 bg-[#EFEAE0] rounded-2xl p-3.5 border border-[#DFD7C7] text-xs shrink-0">
+                <div className="flex items-center justify-between font-bold text-[#1F452C]">
+                  <span>Coordinates:</span>
+                  <span className="font-mono text-[#8C5E35]">16.0315° N, 120.2312° E</span>
+                </div>
               </div>
             </div>
           </div>

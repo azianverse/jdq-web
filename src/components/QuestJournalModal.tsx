@@ -127,31 +127,28 @@ export function QuestJournalModal({
         className="w-full max-w-xl bg-[#FAF7F0] border-4 border-[#8C5E35] rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] text-[#2D3A2F] relative animate-in zoom-in-95 duration-150"
       >
         {/* Top Wood Header Plaque */}
-        <div className="bg-gradient-to-r from-[#8C5E35] via-[#7B4E28] to-[#603816] text-[#FFF6E5] px-5 py-4 border-b-3 border-[#4A260F] flex items-center justify-between shadow-md relative">
-          <div className="flex items-center gap-2.5">
-            <span className="text-2xl drop-shadow-sm">📜</span>
-            <div>
-              <h3 id="quest-modal-title" className="font-black text-lg tracking-tight leading-none text-[#FFF6E5]">
-                Expedition Quest Journal
-              </h3>
-              <p className="text-[11px] text-[#F3D7A5] font-semibold mt-0.5">
-                Pangasinan Island Objectives &amp; Milestone Rewards
-              </p>
-            </div>
+        <div className="bg-gradient-to-r from-[#8C5E35] via-[#7B4E28] to-[#603816] text-[#FFF6E5] px-5 py-4 border-b-3 border-[#4A260F] flex items-center justify-center shadow-md relative text-center">
+          <div className="flex flex-col items-center justify-center">
+            <h3 id="quest-modal-title" className="font-black text-lg tracking-tight leading-none text-[#FFF6E5]">
+              Expedition Quest Journal
+            </h3>
+            <p className="text-[11px] text-[#F3D7A5] font-semibold mt-1">
+              Pangasinan Island Objectives &amp; Milestone Rewards
+            </p>
           </div>
 
           <button
             onClick={onClose}
             aria-label="Close Quest Journal"
-            className="w-8 h-8 rounded-full bg-[#3D1E0B]/60 hover:bg-[#3D1E0B] text-white flex items-center justify-center transition-all hover:scale-110 active:scale-95 border border-white/20 cursor-pointer"
+            className="absolute right-4 top-4 w-8 h-8 rounded-full bg-[#3D1E0B]/60 hover:bg-[#3D1E0B] text-white flex items-center justify-center transition-all hover:scale-110 active:scale-95 border border-white/20 cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Quest Filter Tabs */}
-        <div className="bg-[#EFEAE0] px-5 sm:px-6 py-3.5 sm:py-4 border-b border-[#DFD7C7] flex items-center justify-between gap-3 overflow-x-auto">
-          <div className="flex items-center gap-1.5">
+        <div className="bg-[#EFEAE0] px-4 py-3 border-b border-[#DFD7C7] flex flex-wrap items-center justify-center gap-2.5 sm:gap-4 text-center">
+          <div className="flex items-center justify-center gap-1.5 flex-wrap">
             {[
               { id: 'all', label: 'All Quests', count: quests.length },
               { id: 'daily', label: 'Daily (24h)', count: 2 },
@@ -174,7 +171,7 @@ export function QuestJournalModal({
             ))}
           </div>
 
-          <span className="text-[10px] font-bold text-[#8C5E35] shrink-0 hidden sm:inline">
+          <span className="text-[10px] font-bold text-[#8C5E35] shrink-0">
             Resets in 14h ⏰
           </span>
         </div>

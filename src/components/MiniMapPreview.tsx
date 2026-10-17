@@ -156,15 +156,28 @@ export function MiniMapPreview({
             mapInstanceRef.current.invalidateSize();
           }
         }, 150);
+
+        if (typeof ResizeObserver !== 'undefined' && mapContainerRef.current) {
+          resizeObserver = new ResizeObserver(() => {
+            if (!isDisposed && mapInstanceRef.current) {
+              mapInstanceRef.current.invalidateSize();
+            }
+          });
+          resizeObserver.observe(mapContainerRef.current);
+        }
       } catch (err) {
         console.error('Failed to initialize MiniMapPreview:', err);
       }
     }
 
+    let resizeObserver: ResizeObserver | null = null;
     initMiniMap();
 
     return () => {
       isDisposed = true;
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+      }
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
