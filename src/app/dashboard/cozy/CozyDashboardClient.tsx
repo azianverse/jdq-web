@@ -7,7 +7,6 @@ import { useRouter } from 'next/navigation';
 import {
   MapPin,
   Sparkles,
-  Search,
   Bell,
   Calendar as CalendarIcon,
   ChevronRight,
@@ -70,7 +69,7 @@ const REGISTERED_EVENTS: RegisteredEvent[] = [
     month: 'Oct',
     year: 2026,
     title: 'Dagupan Bangus Festival & Coastal Grill',
-    time: '17:00 PM',
+    time: '05:00 PM',
     location: 'Bonuan Tondaligan Beach, Dagupan',
     participants: 412,
     maxParticipants: 500,
@@ -112,7 +111,7 @@ const REGISTERED_EVENTS: RegisteredEvent[] = [
     month: 'Oct',
     year: 2026,
     title: 'Lingayen Gulf Sunset Sand Sculpting Showcase',
-    time: '16:00 PM',
+    time: '04:00 PM',
     location: 'Lingayen Beachfront Park',
     participants: 190,
     maxParticipants: 250,
@@ -126,7 +125,7 @@ const REGISTERED_EVENTS: RegisteredEvent[] = [
     month: 'Oct',
     year: 2026,
     title: 'Capitol Heritage Trail Walking Tour',
-    time: '18:30 PM',
+    time: '06:30 PM',
     location: 'Pangasinan Provincial Capitol Grounds',
     participants: 75,
     maxParticipants: 100,
@@ -308,18 +307,18 @@ export function CozyDashboardClient() {
                   item.iconName === 'Compass'
                     ? Compass
                     : item.iconName === 'MapPin'
-                    ? MapPin
-                    : item.iconName === 'Zap'
-                    ? Zap
-                    : item.iconName === 'Sparkles'
-                    ? Sparkles
-                    : item.iconName === 'ShoppingBag'
-                    ? ShoppingBag
-                    : item.iconName === 'BookOpen'
-                    ? BookOpen
-                    : item.iconName === 'Settings'
-                    ? Settings
-                    : LayoutGrid;
+                      ? MapPin
+                      : item.iconName === 'Zap'
+                        ? Zap
+                        : item.iconName === 'Sparkles'
+                          ? Sparkles
+                          : item.iconName === 'ShoppingBag'
+                            ? ShoppingBag
+                            : item.iconName === 'BookOpen'
+                              ? BookOpen
+                              : item.iconName === 'Settings'
+                                ? Settings
+                                : LayoutGrid;
 
                 if (item.active) {
                   return (
@@ -397,7 +396,7 @@ export function CozyDashboardClient() {
                 >
                   {/* Wood texture details */}
                   <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#000_1px,transparent_1px)] [background-size:6px_6px]" />
-                  
+
                   {/* 4 Corner Screws */}
                   <div className="absolute top-1.5 left-2 w-1.5 h-1.5 rounded-full bg-[#301607] opacity-80" />
                   <div className="absolute top-1.5 right-2 w-1.5 h-1.5 rounded-full bg-[#301607] opacity-80" />
@@ -424,11 +423,10 @@ export function CozyDashboardClient() {
                   <Link
                     key={idx}
                     href={item.href}
-                    className={`flex items-center gap-3.5 px-4 py-2.5 rounded-full font-bold text-xs transition-all duration-150 ${
-                      item.active
-                        ? 'bg-[#FAF7F0] text-[#1F452C] shadow-md scale-[1.01]'
-                        : 'text-[#DCE8DC] hover:bg-[#2C5E42] hover:text-white'
-                    }`}
+                    className={`flex items-center gap-3.5 px-4 py-2.5 rounded-full font-bold text-xs transition-all duration-150 ${item.active
+                      ? 'bg-[#FAF7F0] text-[#1F452C] shadow-md scale-[1.01]'
+                      : 'text-[#DCE8DC] hover:bg-[#2C5E42] hover:text-white'
+                      }`}
                   >
                     <span className="text-base">{item.icon}</span>
                     <span className="tracking-wide text-[13px]">{item.label}</span>
@@ -527,7 +525,13 @@ export function CozyDashboardClient() {
                   className="relative hidden sm:block"
                 >
                   <div className="flex items-center bg-[#FAF7F0]/95 backdrop-blur-md border border-[#D5CCBC] rounded-full px-3.5 py-1.5 shadow-xs hover:border-[#5B8E67] focus-within:border-[#244E36] focus-within:ring-2 focus-within:ring-[#5B8E67]/20 transition-all">
-                    <Search className="w-3.5 h-3.5 text-[#7A6046] mr-2 shrink-0" />
+                    <Image
+                      src="/icons/search.png"
+                      alt="Search"
+                      width={16}
+                      height={16}
+                      className="w-4 h-4 mr-2 shrink-0 [image-rendering:pixelated] object-contain"
+                    />
                     <input
                       type="text"
                       value={searchQuery}
@@ -680,9 +684,8 @@ export function CozyDashboardClient() {
                       {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, i) => (
                         <span
                           key={i}
-                          className={`py-0.5 text-[11px] sm:text-xs font-black uppercase tracking-wider ${
-                            i === 0 ? 'text-rose-600' : 'text-[#55695A]'
-                          }`}
+                          className={`py-0.5 text-[11px] sm:text-xs font-black uppercase tracking-wider ${i === 0 ? 'text-rose-600' : 'text-[#55695A]'
+                            }`}
                         >
                           {day}
                         </span>
@@ -695,9 +698,8 @@ export function CozyDashboardClient() {
                       {[27, 28, 29, 30].map((padDay, i) => (
                         <div key={`pad-${padDay}`} className="h-8 sm:h-9 flex items-center justify-center">
                           <span
-                            className={`text-xs font-semibold select-none ${
-                              i === 0 ? 'text-rose-400/40' : 'text-[#8C9B8F]/35'
-                            }`}
+                            className={`text-xs font-semibold select-none ${i === 0 ? 'text-rose-400/40' : 'text-[#8C9B8F]/35'
+                              }`}
                           >
                             {padDay}
                           </span>
@@ -716,24 +718,22 @@ export function CozyDashboardClient() {
                             <button
                               type="button"
                               onClick={() => setSelectedCalendarDay(day)}
-                              className={`relative w-8 h-8 sm:w-8.5 sm:h-8.5 rounded-full flex items-center justify-center transition-all cursor-pointer select-none ${
-                                isSelected
-                                  ? 'bg-[#245C36] text-white font-black shadow-md scale-105 z-10'
-                                  : isToday
+                              className={`relative w-8 h-8 sm:w-8.5 sm:h-8.5 rounded-full flex items-center justify-center transition-all cursor-pointer select-none ${isSelected
+                                ? 'bg-[#245C36] text-white font-black shadow-md scale-105 z-10'
+                                : isToday
                                   ? 'ring-2 ring-[#245C36] ring-offset-2 ring-offset-[#FAF7F0] bg-emerald-100/70 text-[#1F452C] font-black'
                                   : isSunday
-                                  ? 'text-rose-600 font-extrabold hover:bg-rose-50'
-                                  : 'text-[#2D3A2F] hover:bg-[#EAE4D7] font-bold'
-                              }`}
+                                    ? 'text-rose-600 font-extrabold hover:bg-rose-50'
+                                    : 'text-[#2D3A2F] hover:bg-[#EAE4D7] font-bold'
+                                }`}
                             >
                               <span className="text-xs sm:text-sm leading-none">{day}</span>
 
                               {/* Event Dot on Upper Right Side of the circle */}
                               {hasEvent && (
                                 <span
-                                  className={`absolute top-0 right-0 w-2 h-2 rounded-full shadow-2xs ${
-                                    isSelected ? 'bg-amber-300 ring-1 ring-[#245C36]' : 'bg-amber-500 ring-1 ring-white'
-                                  }`}
+                                  className={`absolute top-0 right-0 w-2 h-2 rounded-full shadow-2xs ${isSelected ? 'bg-amber-300 ring-1 ring-[#245C36]' : 'bg-amber-500 ring-1 ring-white'
+                                    }`}
                                   title="Scheduled Expedition/Quest"
                                 />
                               )}
@@ -770,17 +770,21 @@ export function CozyDashboardClient() {
                         className="bg-[#FAF1DF] rounded-2xl p-4 sm:p-4.5 border-2 border-[#E8DCC2] text-xs transition-all animate-in fade-in zoom-in-95 duration-150"
                       >
                         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-                          <div className="space-y-1 min-w-0">
+                          <div className="space-y-1.5 min-w-0">
+                            {/* Prominent Time badge on upper left + Location */}
                             <div className="flex flex-wrap items-center gap-2">
-                              <span className="text-[11px] font-bold text-amber-900 flex items-center gap-1">
-                                <MapPin className="w-3.5 h-3.5 text-red-500 shrink-0" /> {event.location}
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-[#245C36] text-white font-extrabold text-xs shadow-2xs tracking-wide">
+                                <span className="text-[11px]">⏰</span>
+                                <span>{event.time}</span>
                               </span>
-                              <span className="text-[11px] text-[#8C5E35] font-bold">
-                                ⏰ {event.time} · {event.month} {event.day}, {event.year}
+
+                              <span className="text-xs font-bold text-[#6D431D] flex items-center gap-1">
+                                <MapPin className="w-3.5 h-3.5 text-red-500 shrink-0" />
+                                <span className="truncate">{event.location}</span>
                               </span>
                             </div>
 
-                            <h4 className="font-black text-sm sm:text-base text-[#233826] mt-0.5 leading-snug">
+                            <h4 className="font-black text-sm sm:text-base text-[#233826] leading-snug">
                               {event.title}
                             </h4>
                             <p className="text-xs text-[#55695A] mt-0.5 leading-relaxed line-clamp-2">
@@ -881,33 +885,30 @@ export function CozyDashboardClient() {
               <div className="flex items-center gap-1.5 bg-[#EFEAE0] p-1.5 rounded-2xl border border-[#DFD7C7] self-start sm:self-auto overflow-x-auto">
                 <button
                   onClick={() => setActiveActivityTab('badges')}
-                  className={`px-3.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${
-                    activeActivityTab === 'badges'
-                      ? 'bg-[#245C36] text-white shadow-xs scale-102'
-                      : 'text-[#55695A] hover:bg-[#E3DCce]'
-                  }`}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${activeActivityTab === 'badges'
+                    ? 'bg-[#245C36] text-white shadow-xs scale-102'
+                    : 'text-[#55695A] hover:bg-[#E3DCce]'
+                    }`}
                 >
                   <span>🏅</span>
                   <span>Badges (8)</span>
                 </button>
                 <button
                   onClick={() => setActiveActivityTab('voting')}
-                  className={`px-3.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${
-                    activeActivityTab === 'voting'
-                      ? 'bg-[#245C36] text-white shadow-xs scale-102'
-                      : 'text-[#55695A] hover:bg-[#E3DCce]'
-                  }`}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${activeActivityTab === 'voting'
+                    ? 'bg-[#245C36] text-white shadow-xs scale-102'
+                    : 'text-[#55695A] hover:bg-[#E3DCce]'
+                    }`}
                 >
                   <span>🗳️</span>
                   <span>Juan Choice</span>
                 </button>
                 <button
                   onClick={() => setActiveActivityTab('perks')}
-                  className={`px-3.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${
-                    activeActivityTab === 'perks'
-                      ? 'bg-[#245C36] text-white shadow-xs scale-102'
-                      : 'text-[#55695A] hover:bg-[#E3DCce]'
-                  }`}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${activeActivityTab === 'perks'
+                    ? 'bg-[#245C36] text-white shadow-xs scale-102'
+                    : 'text-[#55695A] hover:bg-[#E3DCce]'
+                    }`}
                 >
                   <span>🏪</span>
                   <span>MSME Perks (3)</span>
